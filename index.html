@@ -9,202 +9,62 @@
     padding: 1.5rem 1rem;
     border-radius: 12px;
   }
-  .progress-bar-track {
-    height: 4px;
-    background: #1e1e35;
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: #7c3aed;
-    border-radius: 4px;
-    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
-  }
-  .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-    font-size: 13px;
-    color: #888;
-  }
+  .progress-bar-track { height: 4px; background: #1e1e35; border-radius: 4px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: #7c3aed; border-radius: 4px; transition: width 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; font-size: 13px; color: #888; }
   .q-label { color: #7c3aed; font-weight: 500; }
-  .timer-badge {
-    background: #1e1e35;
-    border: 1px solid #2a2a48;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: color 0.3s;
-  }
+  .timer-badge { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 20px; padding: 3px 12px; font-size: 13px; font-weight: 500; }
   .timer-badge.warn { color: #f59e0b; border-color: #f59e0b44; }
   .timer-badge.danger { color: #ef4444; border-color: #ef444444; }
   .timer-badge.ok { color: #7c3aed; }
-  .question-card {
-    background: #16162a;
-    border: 1px solid #2a2a48;
-    border-radius: 14px;
-    padding: 1.5rem 1.25rem;
-    margin-bottom: 1.25rem;
-    min-height: 90px;
-    display: flex;
-    align-items: center;
-  }
-  .question-text {
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.5;
-    color: #e8e8f0;
-  }
-  .options-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 1.25rem;
-  }
-  @media (max-width: 480px) {
-    .options-grid { grid-template-columns: 1fr; }
-  }
-  .option-btn {
-    background: #16162a;
-    border: 1px solid #2a2a48;
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    font-size: 14px;
-    color: #c8c8e0;
-    cursor: pointer;
-    text-align: left;
-    line-height: 1.4;
-    transition: background 0.15s, border-color 0.15s, transform 0.1s;
-  }
-  .option-btn:hover:not([disabled]) {
-    background: #1e1e38;
-    border-color: #7c3aed88;
-    color: #e8e8f0;
-  }
+  .question-card { background: #16162a; border: 1px solid #2a2a48; border-radius: 14px; padding: 1.5rem 1.25rem; margin-bottom: 1.25rem; min-height: 90px; display: flex; align-items: center; }
+  .question-text { font-size: 17px; font-weight: 500; line-height: 1.5; color: #e8e8f0; }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  @media (max-width: 480px) { .options-grid { grid-template-columns: 1fr; } }
+  .option-btn { background: #16162a; border: 1px solid #2a2a48; border-radius: 10px; padding: 0.85rem 1rem; font-size: 14px; color: #c8c8e0; cursor: pointer; text-align: left; line-height: 1.4; transition: background 0.15s, border-color 0.15s, transform 0.1s; }
+  .option-btn:hover:not([disabled]) { background: #1e1e38; border-color: #7c3aed88; color: #e8e8f0; }
   .option-btn:active:not([disabled]) { transform: scale(0.98); }
   .option-btn[disabled] { cursor: default; }
   .option-btn.correct { background: #0f2d1f; border-color: #22c55e; color: #86efac; }
   .option-btn.wrong { background: #2d0f0f; border-color: #ef4444; color: #fca5a5; }
-  .score-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  .score-chip {
-    background: #1e1e35;
-    border: 1px solid #2a2a48;
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 13px;
-    color: #a78bfa;
-    font-weight: 500;
-  }
-  .feedback-msg {
-    min-height: 24px;
-    font-size: 13px;
-    color: #888;
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
+  .score-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .score-chip { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 20px; padding: 4px 14px; font-size: 13px; color: #a78bfa; font-weight: 500; }
+  .feedback-msg { min-height: 24px; font-size: 13px; color: #888; text-align: center; margin-bottom: 0.5rem; }
   .feedback-msg.bonus { color: #a78bfa; }
-  .summary-card {
-    background: #16162a;
-    border: 1px solid #2a2a48;
-    border-radius: 16px;
-    padding: 2rem 1.5rem;
-    text-align: center;
-  }
   .big-score { font-size: 52px; font-weight: 500; color: #a78bfa; line-height: 1; margin-bottom: 0.25rem; }
-  .max-score { font-size: 15px; color: #555; margin-bottom: 2rem; }
-  .result-rows { margin-bottom: 2rem; text-align: left; }
-  .result-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #1e1e35;
-    font-size: 13px;
-  }
+  .max-score { font-size: 15px; color: #555; margin-bottom: 1.5rem; }
+  .result-rows { margin-bottom: 1.5rem; text-align: left; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e1e35; font-size: 13px; }
   .result-row:last-child { border-bottom: none; }
   .result-q { color: #aaa; flex: 1; margin-right: 8px; }
-  .result-badge {
-    font-size: 12px;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
+  .result-badge { font-size: 12px; padding: 2px 10px; border-radius: 12px; font-weight: 500; white-space: nowrap; }
   .badge-correct { background: #0f2d1f; color: #86efac; }
   .badge-wrong { background: #2d0f0f; color: #fca5a5; }
-  .share-btn {
-    width: 100%;
-    padding: 0.85rem;
-    background: #7c3aed;
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-bottom: 0.75rem;
-  }
+  .share-btn { width: 100%; padding: 0.85rem; background: #7c3aed; border: none; border-radius: 10px; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s; margin-bottom: 0.75rem; }
   .share-btn:hover { background: #6d28d9; }
-  .play-again-btn {
-    width: 100%;
-    padding: 0.75rem;
-    background: transparent;
-    border: 1px solid #2a2a48;
-    border-radius: 10px;
-    color: #888;
-    font-size: 14px;
-    cursor: pointer;
-    transition: border-color 0.2s, color 0.2s;
-  }
+  .play-again-btn { width: 100%; padding: 0.75rem; background: transparent; border: 1px solid #2a2a48; border-radius: 10px; color: #888; font-size: 14px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
   .play-again-btn:hover { border-color: #7c3aed88; color: #c4b5fd; }
   .start-title { font-size: 28px; font-weight: 500; color: #a78bfa; margin-bottom: 0.5rem; }
-  .start-sub { font-size: 14px; color: #666; margin-bottom: 0.35rem; }
-  .start-date { font-size: 13px; color: #7c3aed; margin-bottom: 2rem; }
-  .rules-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 2rem;
-    text-align: left;
-  }
-  .rule-card {
-    background: #1a1a2e;
-    border: 1px solid #2a2a48;
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    font-size: 13px;
-    color: #aaa;
-  }
+  .rules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 2rem; text-align: left; }
+  .rule-card { background: #1a1a2e; border: 1px solid #2a2a48; border-radius: 10px; padding: 0.85rem 1rem; font-size: 13px; color: #aaa; }
   .rule-card strong { display: block; color: #c4b5fd; font-weight: 500; font-size: 14px; margin-bottom: 3px; }
-  .start-btn {
-    width: 100%;
-    max-width: 260px;
-    padding: 0.9rem;
-    background: #7c3aed;
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+  .start-btn { width: 100%; max-width: 260px; padding: 0.9rem; background: #7c3aed; border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
   .start-btn:hover { background: #6d28d9; }
+  .hs-banner { background: #1a1a2e; border: 1px solid #2a2a48; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+  .hs-label { font-size: 12px; color: #666; margin-bottom: 2px; }
+  .hs-value { font-size: 20px; font-weight: 500; color: #a78bfa; }
+  .hs-date { font-size: 11px; color: #444; margin-top: 2px; }
+  .new-record-badge { background: #2d1a4e; border: 1px solid #7c3aed44; border-radius: 20px; padding: 4px 14px; font-size: 12px; color: #c4b5fd; font-weight: 500; }
+  .crown { font-size: 28px; }
+  .hs-block { background: #1a1a2e; border: 1px solid #2a2a48; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; }
+  .hs-block-title { font-size: 12px; color: #666; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hs-row { display: flex; justify-content: space-between; align-items: center; }
+  .hs-score-big { font-size: 32px; font-weight: 500; color: #a78bfa; }
+  .hs-meta { font-size: 12px; color: #555; margin-top: 2px; }
+  .hs-compare { font-size: 13px; color: #666; }
+  .hs-compare span { color: #a78bfa; font-weight: 500; }
   .fade-in { animation: fadeUp 0.35s ease forwards; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
 <div id="app">
@@ -221,34 +81,48 @@ const QUESTIONS = [
   { q: "What is the largest ocean on Earth?", opts: ["Atlantic", "Indian", "Arctic", "Pacific"], ans: 3, cat: "Geography" }
 ];
 
-const MAX_TIME = 15;
-const BASE = 10;
-const MAX_BONUS = 5;
+const MAX_TIME = 15, BASE = 10, MAX_BONUS = 5;
 const TOTAL_MAX = QUESTIONS.length * (BASE + MAX_BONUS);
+const TODAY = new Date().toISOString().slice(0, 10);
 const DATE_STR = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const STORAGE_KEY = `trivia-hs-${TODAY}`;
 
-let screen = 'start';
-let qi = 0;
-let score = 0;
-let timeLeft = MAX_TIME;
-let answered = false;
-let chosen = -1;
-let results = [];
-let feedbackText = '';
-let feedbackBonus = false;
-let timerInterval = null;
+let qi = 0, score = 0, timeLeft = MAX_TIME;
+let answered = false, results = [], timerInterval = null;
+let todayHS = null;
 
-function setHTML(html) {
-  document.getElementById('root').innerHTML = html;
+function setHTML(html) { document.getElementById('root').innerHTML = html; }
+
+async function loadHighScore() {
+  try {
+    const res = await window.storage.get(STORAGE_KEY, true);
+    todayHS = res ? JSON.parse(res.value) : null;
+  } catch(e) { todayHS = null; }
 }
 
-function showStart() {
-  screen = 'start';
+async function saveHighScore(newScore) {
+  const current = todayHS ? todayHS.score : 0;
+  if (newScore > current) {
+    todayHS = { score: newScore, date: DATE_STR, setAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) };
+    try { await window.storage.set(STORAGE_KEY, JSON.stringify(todayHS), true); } catch(e) {}
+    return true;
+  }
+  return false;
+}
+
+function hsBannerHTML() {
+  if (!todayHS) return `<div class="hs-banner"><div><div class="hs-label">Today's high score</div><div class="hs-value">—</div><div class="hs-date">No games played yet</div></div><div class="crown">🏆</div></div>`;
+  return `<div class="hs-banner"><div><div class="hs-label">Today's high score</div><div class="hs-value">${todayHS.score} / ${TOTAL_MAX}</div><div class="hs-date">Set at ${todayHS.setAt}</div></div><div class="crown">🏆</div></div>`;
+}
+
+async function showStart() {
+  await loadHighScore();
   setHTML(`
-    <div style="text-align:center;padding:2rem 1rem;">
+    <div style="text-align:center;padding:1.5rem 1rem 1rem;" class="fade-in">
       <div class="start-title">Daily Trivia</div>
-      <div class="start-sub">5 questions · Speed bonus · Daily challenge</div>
-      <div class="start-date">${DATE_STR}</div>
+      <div style="font-size:14px;color:#666;margin-bottom:0.35rem;">5 questions · Speed bonus · Daily challenge</div>
+      <div style="font-size:13px;color:#7c3aed;margin-bottom:1.5rem;">${DATE_STR}</div>
+      ${hsBannerHTML()}
       <div class="rules-grid">
         <div class="rule-card"><strong>10 pts</strong>Correct answer</div>
         <div class="rule-card"><strong>+5 bonus</strong>Answer fast!</div>
@@ -263,13 +137,8 @@ function showStart() {
 
 function showQuestion() {
   answered = false;
-  chosen = -1;
-  feedbackText = '';
-  feedbackBonus = false;
-
   const q = QUESTIONS[qi];
   const pct = (qi / QUESTIONS.length) * 100;
-
   setHTML(`
     <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
     <div class="meta-row">
@@ -277,10 +146,8 @@ function showQuestion() {
       <span style="color:#666;font-size:12px;">${q.cat}</span>
       <span class="timer-badge ok" id="timerBadge">${timeLeft}s</span>
     </div>
-    <div class="question-card fade-in">
-      <div class="question-text">${q.q}</div>
-    </div>
-    <div class="options-grid fade-in" id="optionsGrid">
+    <div class="question-card fade-in"><div class="question-text">${q.q}</div></div>
+    <div class="options-grid fade-in">
       ${q.opts.map((o, i) => `<button class="option-btn" data-i="${i}">${o}</button>`).join('')}
     </div>
     <div class="score-bar">
@@ -289,7 +156,6 @@ function showQuestion() {
     </div>
     <div class="feedback-msg" id="feedbackMsg"></div>
   `);
-
   document.querySelectorAll('.option-btn').forEach(btn => {
     btn.onclick = () => handleAnswer(parseInt(btn.dataset.i));
   });
@@ -309,10 +175,7 @@ function startTimer() {
   timerInterval = setInterval(() => {
     timeLeft--;
     updateTimerDisplay();
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      timeUp();
-    }
+    if (timeLeft <= 0) { clearInterval(timerInterval); timeUp(); }
   }, 1000);
 }
 
@@ -321,11 +184,8 @@ function lockButtons(chosenIdx) {
   document.querySelectorAll('.option-btn').forEach(btn => {
     btn.disabled = true;
     const i = parseInt(btn.dataset.i);
-    if (i === q.ans) {
-      btn.classList.add('correct');
-    } else if (i === chosenIdx && i !== q.ans) {
-      btn.classList.add('wrong');
-    }
+    if (i === q.ans) btn.classList.add('correct');
+    else if (i === chosenIdx && i !== q.ans) btn.classList.add('wrong');
   });
 }
 
@@ -339,61 +199,43 @@ function setFeedback(text, bonus) {
 function handleAnswer(idx) {
   if (answered) return;
   answered = true;
-  chosen = idx;
   clearInterval(timerInterval);
-
   const q = QUESTIONS[qi];
   const correct = idx === q.ans;
   const elapsed = MAX_TIME - timeLeft;
   let pts = 0;
-
   if (correct) {
     const bonus = Math.max(0, Math.round(MAX_BONUS * Math.max(0, (10 - elapsed) / 10)));
     pts = BASE + bonus;
     score += pts;
-    const msg = bonus > 0 ? `Correct! +${pts} pts (includes +${bonus} speed bonus)` : `Correct! +${pts} pts`;
-    setFeedback(msg, true);
+    setFeedback(bonus > 0 ? `Correct! +${pts} pts (includes +${bonus} speed bonus)` : `Correct! +${pts} pts`, true);
   } else {
     setFeedback(`Wrong. The correct answer was: ${q.opts[q.ans]}`, false);
   }
-
   results.push({ correct, pts });
   lockButtons(idx);
-
-  setTimeout(() => {
-    qi++;
-    if (qi >= QUESTIONS.length) {
-      showSummary();
-    } else {
-      showQuestion();
-      startTimer();
-    }
-  }, 1700);
+  setTimeout(advance, 1700);
 }
 
 function timeUp() {
   if (answered) return;
   answered = true;
-  chosen = -1;
   const q = QUESTIONS[qi];
   setFeedback(`Time's up! The answer was: ${q.opts[q.ans]}`, false);
   results.push({ correct: false, pts: 0 });
   lockButtons(-1);
-
-  setTimeout(() => {
-    qi++;
-    if (qi >= QUESTIONS.length) {
-      showSummary();
-    } else {
-      showQuestion();
-      startTimer();
-    }
-  }, 1700);
+  setTimeout(advance, 1700);
 }
 
-function showSummary() {
+function advance() {
+  qi++;
+  if (qi >= QUESTIONS.length) showSummary();
+  else { showQuestion(); startTimer(); }
+}
+
+async function showSummary() {
   clearInterval(timerInterval);
-  screen = 'summary';
+  const isNewRecord = await saveHighScore(score);
   const pct = Math.round((score / TOTAL_MAX) * 100);
   const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '⭐' : pct >= 40 ? '👍' : '💡';
   const msg = pct >= 80 ? 'Outstanding!' : pct >= 60 ? 'Great work!' : pct >= 40 ? 'Good effort!' : 'Keep practising!';
@@ -406,6 +248,24 @@ function showSummary() {
     </div>`;
   }).join('');
 
+  const prevBest = isNewRecord ? null : (todayHS ? todayHS.score : 0);
+  const hsBlockHtml = `
+    <div class="hs-block fade-in">
+      <div class="hs-block-title">Today's high score</div>
+      <div class="hs-row">
+        <div>
+          <div class="hs-score-big">${todayHS.score} <span style="font-size:16px;color:#555;">/ ${TOTAL_MAX}</span></div>
+          <div class="hs-meta">Set at ${todayHS.setAt}</div>
+        </div>
+        ${isNewRecord
+          ? `<div><div class="new-record-badge">New record!</div></div>`
+          : `<div class="hs-compare">Your score: <span>${score}</span><br>Best today: <span>${todayHS.score}</span></div>`
+        }
+      </div>
+      ${!isNewRecord && score < todayHS.score ? `<div style="font-size:12px;color:#555;margin-top:8px;">You need ${todayHS.score - score + 1} more pts to beat today's record.</div>` : ''}
+    </div>
+  `;
+
   setHTML(`
     <div class="progress-bar-track"><div class="progress-bar-fill" style="width:100%"></div></div>
     <div style="text-align:center;margin-bottom:1.5rem;" class="fade-in">
@@ -415,23 +275,20 @@ function showSummary() {
       <div class="big-score">${score}</div>
       <div class="max-score">out of ${TOTAL_MAX} points</div>
     </div>
+    ${hsBlockHtml}
     <div class="result-rows fade-in">${rowsHtml}</div>
     <button class="share-btn" id="shareBtn">Share on X (Twitter)</button>
     <button class="play-again-btn" id="replayBtn">Play again</button>
   `);
 
-  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Daily Trivia! ${emoji} Can you beat me? #DailyTrivia`);
+  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Daily Trivia! ${emoji} Today's record is ${todayHS.score}. Can you beat it? #DailyTrivia`);
   document.getElementById('shareBtn').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
   document.getElementById('replayBtn').onclick = startGame;
 }
 
 function startGame() {
   clearInterval(timerInterval);
-  qi = 0;
-  score = 0;
-  results = [];
-  answered = false;
-  chosen = -1;
+  qi = 0; score = 0; results = []; answered = false;
   showQuestion();
   startTimer();
 }
