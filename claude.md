@@ -17,3 +17,10 @@
 - Date uses local time not UTC to avoid timezone issues
 - api/questions.js uses native https module, no node-fetch
 - API key stored as ANTHROPIC_API_KEY in Vercel env vars
+
+## Git Workflow
+After making any code changes, always stage and commit with a descriptive commit message:
+```bash
+git add .
+git commit -m "Brief description of what changed"
+```
