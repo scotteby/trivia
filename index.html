@@ -252,6 +252,27 @@ function advance() {
   else { showQuestion(); startTimer(); }
 }
 
+async function saveHighScore(finalScore) {
+  const currentHS = todayHS ? todayHS.score : 0;
+  const isNewRecord = finalScore > currentHS;
+  
+  if (isNewRecord) {
+    const now = new Date();
+    const setAtTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    // Update Supabase with new high score
+    await sb.from('highscores').upsert(
+      { date: TODAY, score: finalScore, set_at: setAtTime, questions: QUESTIONS, updated_at: now.toISOString() },
+      { onConflict: 'date' }
+    );
+    
+    // Update local cache
+    todayHS = { score: finalScore, date: DATE_STR, setAt: setAtTime };
+  }
+  
+  return isNewRecord;
+}
+
 async function showSummary() {
   clearInterval(timerInterval);
   const isNewRecord = await saveHighScore(score);
