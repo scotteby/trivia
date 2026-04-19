@@ -1,8 +1,10 @@
 const https = require('https');
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  // Add these headers right at the top of your handler, after the CORS headers
+res.setHeader('Access-Control-Allow-Origin', '*');
+res.setHeader('Access-Control-Allow-Methods', 'GET');
+res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');  // ← add this
 
   const DATE_STR = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric'
