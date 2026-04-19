@@ -113,14 +113,25 @@ async function loadHighScore() {
 
 async function saveHighScore(newScore) {
   const current = todayHS ? todayHS.score : 0;
+  const setAt = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  
+  // Always set todayHS locally first so showSummary never reads null
   if (newScore > current) {
-    const setAt = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    await sb.from('highscores').upsert(
-      { date: TODAY, score: newScore, set_at: setAt, updated_at: new Date().toISOString() },
-      { onConflict: 'date' }
-    );
     todayHS = { score: newScore, date: DATE_STR, setAt };
+    try {
+      await sb.from('highscores').upsert(
+        { date: TODAY, score: newScore, set_at: setAt, updated_at: new Date().toISOString() },
+        { onConflict: 'date' }
+      );
+    } catch(e) {
+      console.error('saveHighScore error:', e);
+    }
     return true;
+  }
+
+  // Score wasn't beaten but make sure todayHS is never null
+  if (!todayHS) {
+    todayHS = { score: current, date: DATE_STR, setAt };
   }
   return false;
 }
