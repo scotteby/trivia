@@ -282,27 +282,36 @@ async function showSummary() {
 
   const rowsHtml = results.map((r, i) => {
     const short = QUESTIONS[i].q.length > 45 ? QUESTIONS[i].q.slice(0, 45) + '…' : QUESTIONS[i].q;
-    return `<div class="result-row">
-      <span class="result-q">${short}</span>
-      <span class="result-badge ${r.correct ? 'badge-correct' : 'badge-wrong'}">${r.correct ? '+' + r.pts + ' pts' : '0 pts'}</span>
-    </div>`;
+    return (`<div class="result-row">` +
+      `<span class="result-q">${short}</span>` +
+      `<span class="result-badge ${r.correct ? 'badge-correct' : 'badge-wrong'}">${r.correct ? '+' + r.pts + ' pts' : '0 pts'}</span>` +
+    `</div>`);
   }).join('');
 
-  const prevBest = isNewRecord ? null : (todayHS ? todayHS.score : 0);
+  const recordScore = todayHS ? todayHS.score : 0;
+  const recordSetAt = todayHS ? todayHS.setAt : 'No game played yet';
+  let comparisonHtml = `<div class="hs-compare">Your score: <span>${score}</span></div>`;
+  if (todayHS) {
+    comparisonHtml = isNewRecord
+      ? `<div><div class="new-record-badge">New record!</div></div>`
+      : `<div class="hs-compare">Your score: <span>${score}</span><br>Best today: <span>${todayHS.score}</span></div>`;
+  }
+
+  const moreHint = todayHS && !isNewRecord && score < todayHS.score
+    ? `<div style="font-size:12px;color:#555;margin-top:8px;">You need ${todayHS.score - score + 1} more pts to beat today's record.</div>`
+    : '';
+
   const hsBlockHtml = `
     <div class="hs-block fade-in">
       <div class="hs-block-title">Today's high score</div>
       <div class="hs-row">
         <div>
-          <div class="hs-score-big">${todayHS.score} <span style="font-size:16px;color:#555;">/ ${TOTAL_MAX}</span></div>
-          <div class="hs-meta">Set at ${todayHS.setAt}</div>
+          <div class="hs-score-big">${recordScore} <span style="font-size:16px;color:#555;">/ ${TOTAL_MAX}</span></div>
+          <div class="hs-meta">Set at ${recordSetAt}</div>
         </div>
-        ${isNewRecord
-          ? `<div><div class="new-record-badge">New record!</div></div>`
-          : `<div class="hs-compare">Your score: <span>${score}</span><br>Best today: <span>${todayHS.score}</span></div>`
-        }
+        ${comparisonHtml}
       </div>
-      ${!isNewRecord && score < todayHS.score ? `<div style="font-size:12px;color:#555;margin-top:8px;">You need ${todayHS.score - score + 1} more pts to beat today's record.</div>` : ''}
+      ${moreHint}
     </div>
   `;
 
@@ -318,9 +327,9 @@ async function showSummary() {
     ${hsBlockHtml}
     <div class="result-rows fade-in">${rowsHtml}</div>
     <button class="share-btn" id="shareBtn">Share on X (Twitter)</button>
-  `;
+  `);
 
-  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Daily Trivia! ${emoji} Today's record is ${todayHS.score}. Can you beat it? #DailyTrivia`);
+  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Daily Trivia! ${emoji} Today's record is ${todayHS ? todayHS.score : 0}. Can you beat it? #DailyTrivia`);
   document.getElementById('shareBtn').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
 }
 
