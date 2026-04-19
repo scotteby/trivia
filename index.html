@@ -72,6 +72,9 @@
   <div id="root"></div>
 </div>
 
+<!-- Add this in your <head>, replacing nothing else -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 const QUESTIONS = [
   { q: "Which planet has the most moons in our solar system?", opts: ["Jupiter", "Saturn", "Uranus", "Neptune"], ans: 1, cat: "Science" },
@@ -93,18 +96,30 @@ let todayHS = null;
 
 function setHTML(html) { document.getElementById('root').innerHTML = html; }
 
+const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 async function loadHighScore() {
   try {
-    const res = await window.storage.get(STORAGE_KEY, true);
-    todayHS = res ? JSON.parse(res.value) : null;
+    const { data } = await sb
+      .from('highscores')
+      .select('*')
+      .eq('date', TODAY)
+      .single();
+    todayHS = data ? { score: data.score, date: DATE_STR, setAt: data.set_at } : null;
   } catch(e) { todayHS = null; }
 }
 
 async function saveHighScore(newScore) {
   const current = todayHS ? todayHS.score : 0;
   if (newScore > current) {
-    todayHS = { score: newScore, date: DATE_STR, setAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) };
-    try { await window.storage.set(STORAGE_KEY, JSON.stringify(todayHS), true); } catch(e) {}
+    const setAt = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    await sb.from('highscores').upsert(
+      { date: TODAY, score: newScore, set_at: setAt, updated_at: new Date().toISOString() },
+      { onConflict: 'date' }
+    );
+    todayHS = { score: newScore, date: DATE_STR, setAt };
     return true;
   }
   return false;
