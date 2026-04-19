@@ -1,7 +1,3 @@
 {
-  "functions": {
-    "api/questions.js": {
-      "runtime": "nodejs20.x"
-    }
-  }
+  "buildCommand": "npm install"
 }
