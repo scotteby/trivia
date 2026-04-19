@@ -115,7 +115,7 @@ async function loadOrGenerateQuestions() {
   }
 
   // Not generated yet — call our serverless function (API key stays server-side)
-  const res = await fetch('/api/questions');
+  const res = await fetch(`/api/questions?t=${Date.now()}`);
   const { questions } = await res.json();
 
   // Save to Supabase so all players share the same questions today
