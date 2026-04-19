@@ -1,6 +1,6 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
@@ -65,4 +65,4 @@ Mix categories: Science, History, Geography, Art, Pop Culture.`
   }
 
   return res.status(200).json({ questions });
-}
+};
