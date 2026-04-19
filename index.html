@@ -101,40 +101,31 @@ const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function loadHighScore() {
-  try {
-    const { data } = await sb
-      .from('highscores')
-      .select('*')
-      .eq('date', TODAY)
-      .maybeSingle();
-    todayHS = data ? { score: data.score, date: DATE_STR, setAt: data.set_at } : null;
-  } catch(e) { todayHS = null; }
-}
+async function loadOrGenerateQuestions() {
+  // Check Supabase first — reuse today's questions if already generated
+  const { data, error } = await sb
+    .from('highscores')
+    .select('*')
+    .eq('date', TODAY)
+    .maybeSingle();
 
-async function saveHighScore(newScore) {
-  const current = todayHS ? todayHS.score : 0;
-  const setAt = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  
-  // Always set todayHS locally first so showSummary never reads null
-  if (newScore > current) {
-    todayHS = { score: newScore, date: DATE_STR, setAt };
-    try {
-      await sb.from('highscores').upsert(
-        { date: TODAY, score: newScore, set_at: setAt, updated_at: new Date().toISOString() },
-        { onConflict: 'date' }
-      );
-    } catch(e) {
-      console.error('saveHighScore error:', e);
-    }
-    return true;
+  if (data && data.questions) {
+    todayHS = data.score ? { score: data.score, date: DATE_STR, setAt: data.set_at } : null;
+    return data.questions;
   }
 
-  // Score wasn't beaten but make sure todayHS is never null
-  if (!todayHS) {
-    todayHS = { score: current, date: DATE_STR, setAt };
-  }
-  return false;
+  // Not generated yet — call our serverless function (API key stays server-side)
+  const res = await fetch('/api/questions');
+  const { questions } = await res.json();
+
+  // Save to Supabase so all players share the same questions today
+  await sb.from('highscores').upsert(
+    { date: TODAY, score: 0, set_at: '', questions, updated_at: new Date().toISOString() },
+    { onConflict: 'date' }
+  );
+
+  todayHS = null;
+  return questions;
 }
 
 function hsBannerHTML() {
@@ -143,7 +134,8 @@ function hsBannerHTML() {
 }
 
 async function showStart() {
-  await loadHighScore();
+ QUESTIONS = await loadOrGenerateQuestions();
+ 
   setHTML(`
     <div style="text-align:center;padding:1.5rem 1rem 1rem;" class="fade-in">
       <div class="start-title">Daily Trivia</div>
