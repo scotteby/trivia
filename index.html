@@ -106,7 +106,7 @@ async function loadHighScore() {
       .from('highscores')
       .select('*')
       .eq('date', TODAY)
-      .single();
+      .maybeSingle();
     todayHS = data ? { score: data.score, date: DATE_STR, setAt: data.set_at } : null;
   } catch(e) { todayHS = null; }
 }
