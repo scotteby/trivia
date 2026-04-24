@@ -442,11 +442,17 @@ async function submitAnswer(idx) {
 function timeUp() {
   state.hasAnswered = true;
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+
+  // Reveal correct answer
+  const q = state.room.questions[state.room.current_question_index];
+  const correctEl = document.getElementById('opt' + q.ans);
+  if (correctEl) correctEl.classList.add('correct');
+
   const statusEl = document.getElementById('statusMsg');
   if (statusEl) {
     statusEl.style.display = 'block';
     statusEl.style.color = '#888';
-    statusEl.textContent = "Time's up!";
+    statusEl.textContent = `Time's up! Correct answer: ${q.opts[q.ans]}`;
   }
   // Still save a "no answer" entry so host can count responses
   const qi = state.room.current_question_index;
@@ -671,11 +677,26 @@ function ordinal(n) {
 function shareRoom() {
   const code = state.room?.room_code;
   const url = `${window.location.origin}/join.html?code=${code}`;
-  if (navigator.share) {
-    navigator.share({ title: 'Join our Trivia Night!', text: `Join room ${code} at Trivia Night`, url });
-  } else {
-    navigator.clipboard.writeText(url).then(() => alert('Join link copied!'));
-  }
+  const doShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: 'Join our Trivia Night!', text: `Join room ${code}`, url }).catch(() => doCopy());
+    } else {
+      doCopy();
+    }
+  };
+  const doCopy = () => {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          const btn = document.querySelector('button[onclick="shareRoom()"]');
+          if (btn) { const t = btn.textContent; btn.textContent = '✓ Link copied!'; setTimeout(() => btn.textContent = t, 2000); }
+        })
+        .catch(() => prompt('Copy this link to share with players:', url));
+    } else {
+      prompt('Copy this link to share with players:', url);
+    }
+  };
+  doShare();
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────

@@ -234,7 +234,16 @@ module.exports = async function handler(req, res) {
 
     try {
       const catLabel = cfg.categories ? cfg.categories.join(',') : preset;
-      console.log(`[rooms] Creating room: categories=${catLabel} rounds=${rounds} timer=${timer} difficulty=${difficulty}`);
+      console.log(`[rooms] ${req.query?.questionsOnly ? 'Regenerating questions' : 'Creating room'}: categories=${catLabel} rounds=${rounds} timer=${timer} difficulty=${difficulty}`);
+
+      // questionsOnly mode: generate fresh questions without creating a room
+      // (used by "Play again" to keep the same room code)
+      if (req.query?.questionsOnly === 'true') {
+        const rawQuestions = await generateQuestions(categories, total, difficulty);
+        const questions = await enrichWithPreviews(rawQuestions);
+        console.log(`[rooms] Regenerated ${questions.length} questions`);
+        return res.status(200).json({ questions });
+      }
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),

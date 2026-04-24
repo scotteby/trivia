@@ -922,23 +922,37 @@ async function playAgain() {
   clearInterval(state.timerInterval);
   if (!state.room) { showSetup(); return; }
 
-  // Reset the existing room back to lobby — keeps the same code and questions
-  await sb.from('game_rooms').update({
-    status: 'lobby',
-    current_question_index: 0,
-    question_start_time: null,
-  }).eq('id', state.room.id);
+  setHTML(`<div style="text-align:center;padding:100px 20px;">
+    <div style="font-size:16px;font-weight:500;color:#a78bfa;margin-bottom:8px;">Generating new questions…</div>
+    <div style="font-size:12px;color:#555;">Same room code · fresh questions · ~10 seconds</div>
+  </div>`);
 
-  // Clear all players so they re-join fresh
+  const cfg = state.room.config || {};
+  const payload = { rounds: cfg.rounds || 3, timer: cfg.timer || 15, difficulty: cfg.difficulty || 'mixed' };
+  if (Array.isArray(cfg.categories) && cfg.categories.length) payload.categories = cfg.categories;
+  else payload.preset = cfg.preset || 'mixed';
+
+  let newQuestions = null;
+  try {
+    const res = await fetch('/api/rooms?questionsOnly=true', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (res.ok && data.questions) newQuestions = data.questions;
+  } catch(e) { /* fall through — reuse old questions as last resort */ }
+
+  const patch = { status: 'lobby', current_question_index: 0, question_start_time: null };
+  if (newQuestions) patch.questions = newQuestions;
+  await sb.from('game_rooms').update(patch).eq('id', state.room.id);
   await sb.from('players').delete().eq('room_id', state.room.id);
 
-  state.room.status = 'lobby';
-  state.room.current_question_index = 0;
-  state.room.question_start_time = null;
+  state.room = { ...state.room, ...patch };
   state.players = [];
   state.revealed = false;
 
-  subscribeToRoom(); // showResults() unsubscribes; re-connect before lobby
+  subscribeToRoom();
   showLobby();
 }
 
