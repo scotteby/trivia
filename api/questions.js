@@ -114,10 +114,12 @@ async function getSpotifyToken() {
 
 async function spotifySearch(token, query) {
   return new Promise(resolve => {
-    const q = encodeURIComponent(query);
+    const qs = new URLSearchParams({ q: query, type: 'track', limit: '20', offset: '0', market: 'US' });
+    const path = `/v1/search?${qs}`;
+    console.log('[spotify] search path:', path);
     const req = https.request({
       hostname: 'api.spotify.com',
-      path: `/v1/search?q=${q}&type=track&limit=20&offset=0&market=US`,
+      path,
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
     }, res => {
@@ -127,7 +129,7 @@ async function spotifySearch(token, query) {
         try {
           const data = JSON.parse(raw);
           if (res.statusCode !== 200) {
-            console.log(`[spotify] search HTTP ${res.statusCode}:`, data.error?.message || raw.slice(0, 120));
+            console.log(`[spotify] search HTTP ${res.statusCode}:`, data.error?.message || raw.slice(0, 200));
             return resolve([]);
           }
           resolve(data?.tracks?.items || []);
