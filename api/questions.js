@@ -143,24 +143,29 @@ Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder que
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
+  // Random position for the music question: not first (0) or last (4)
+  const musicPos = 1 + Math.floor(Math.random() * 3);
+
   try {
     const json = await callAnthropic({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
+      max_tokens: 1500,
       messages: [{
         role: 'user',
-        content: `Generate 5 trivia questions for ${DATE_STR}. Return ONLY valid JSON array, no other text, no markdown backticks:
-[
-  { "q": "question text", "opts": ["A", "B", "C", "D"], "ans": 0, "cat": "Category" },
-  { "q": "question text", "opts": ["A", "B", "C", "D"], "ans": 2, "cat": "Category" },
-  { "q": "question text", "opts": ["A", "B", "C", "D"], "ans": 1, "cat": "Category" },
-  { "q": "question text", "opts": ["A", "B", "C", "D"], "ans": 3, "cat": "Category" },
-  { "q": "question text", "opts": ["A", "B", "C", "D"], "ans": 0, "cat": "Category" }
-]
-Mix categories: Science, History, Geography, Art, Pop Culture.`,
+        content: `Generate exactly 5 trivia questions for ${DATE_STR}.
+Position ${musicPos} (0-indexed) must be a music question. All other positions are standard trivia.
+
+Standard format: {"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
+Music format (position ${musicPos} only): {"type":"music","artist":"Artist Name","song":"Song Title","year":YEAR,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
+For the music question, randomly use "Who is this artist?" or "What is this song?" as the question. Use a widely-known popular song.
+
+For standard questions, mix: Science, History, Geography, Pop Culture, Sports.
+Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array, no markdown, no extra text.`,
       }],
     });
-    return res.status(200).json({ questions: parseQuestions(json) });
+    let questions = parseQuestions(json);
+    questions = await enrichWithPreviews(questions);
+    return res.status(200).json({ questions });
   } catch(e) {
     return res.status(500).json({ error: 'Handler failed', detail: e.message });
   }

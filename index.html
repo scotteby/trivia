@@ -80,6 +80,12 @@ body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-syste
 .hs-meta { font-size: 12px; color: #555; margin-top: 2px; }
 .hs-compare { font-size: 13px; color: #666; }
 .hs-compare span { color: #a78bfa; font-weight: 500; }
+/* Music clip */
+.music-banner { background: #0f1a2e; border: 1px solid #378add44; border-radius: 12px; padding: 12px 16px; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 12px; }
+.wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
+@keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+.timer-badge.music { color: #60a5fa; border-color: #378add44; animation: musicPulse 1.4s ease-in-out infinite; }
+@keyframes musicPulse { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 </style>
 </head>
 <body>
@@ -103,10 +109,11 @@ const DATE_STR = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long
 
 // ─── Solo game state ─────────────────────────────────────────────────────────
 let QUESTIONS = [];
-const MAX_TIME = 15, BASE = 10, MAX_BONUS = 5;
+const MAX_TIME = 15, BASE = 10, MAX_BONUS = 5, CLIP_DURATION = 10;
 let TOTAL_MAX = 75;
 let qi = 0, score = 0, timeLeft = MAX_TIME;
 let answered = false, results = [], timerInterval = null;
+let audio = null, clipTimeout = null, clipPhaseTimeout = null;
 let todayHS = null;
 let currentView = 'home';
 
@@ -245,17 +252,49 @@ function showSoloStart() {
   `);
 }
 
+function stopClip() {
+  if (audio) { audio.pause(); audio = null; }
+  clearTimeout(clipTimeout); clearTimeout(clipPhaseTimeout);
+  clipTimeout = null; clipPhaseTimeout = null;
+}
+
+function playClip(url) {
+  try {
+    audio = new Audio(url);
+    audio.volume = 0.85;
+    audio.play().catch(() => {});
+    clipTimeout = setTimeout(() => stopClip(), (CLIP_DURATION + 30) * 1000);
+  } catch {}
+}
+
+function waveformHTML() {
+  return [0,0.15,0.3,0.45,0.6].map((d, i) => {
+    const h = [14,20,26,20,14][i];
+    return `<div class="wave-bar" style="height:${h}px;animation-delay:${d}s;"></div>`;
+  }).join('');
+}
+
 function showQuestion() {
   answered = false;
   const q = QUESTIONS[qi];
+  const isMusic = q.type === 'music' && !!(q.preview_url);
   const pct = (qi / QUESTIONS.length) * 100;
+  const musicBanner = isMusic ? `
+    <div class="music-banner">
+      <div style="display:flex;align-items:center;gap:3px;">${waveformHTML()}</div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#60a5fa;">Playing audio clip…</div>
+        <div style="font-size:11px;color:#378add;margin-top:2px;">Listen and pick your answer</div>
+      </div>
+    </div>` : '';
   setHTML(`
     <div class="progress-bar-track"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
     <div class="meta-row">
       <span class="q-label">Question ${qi+1} / ${QUESTIONS.length}</span>
       <span style="color:#666;font-size:12px;">${q.cat}</span>
-      <span class="timer-badge ok" id="timerBadge">${timeLeft}s</span>
+      <span class="timer-badge ${isMusic ? 'music' : 'ok'}" id="timerBadge">${isMusic ? '♫' : timeLeft+'s'}</span>
     </div>
+    ${musicBanner}
     <div class="question-card fade-in"><div class="question-text">${q.q}</div></div>
     <div class="options-grid fade-in">
       ${q.opts.map((o,i) => `<button class="option-btn" data-i="${i}">${o}</button>`).join('')}
@@ -306,10 +345,27 @@ function setFeedback(text, bonus) {
   el.className = 'feedback-msg' + (bonus ? ' bonus' : '');
 }
 
+function beginQuestion() {
+  clearInterval(timerInterval);
+  timeLeft = MAX_TIME;
+  showQuestion();
+  const q = QUESTIONS[qi];
+  if (q.type === 'music' && q.preview_url) {
+    playClip(q.preview_url);
+    clipPhaseTimeout = setTimeout(() => {
+      clipPhaseTimeout = null;
+      if (!answered) startTimer();
+    }, CLIP_DURATION * 1000);
+  } else {
+    startTimer();
+  }
+}
+
 function handleAnswer(idx) {
   if (answered) return;
   answered = true;
   clearInterval(timerInterval);
+  clearTimeout(clipPhaseTimeout); clipPhaseTimeout = null;
   const q = QUESTIONS[qi];
   const correct = idx === q.ans;
   const elapsed = MAX_TIME - timeLeft;
@@ -330,6 +386,7 @@ function handleAnswer(idx) {
 function timeUp() {
   if (answered) return;
   answered = true;
+  clearTimeout(clipPhaseTimeout); clipPhaseTimeout = null;
   const q = QUESTIONS[qi];
   setFeedback(`Time's up! The answer was: ${q.opts[q.ans]}`, false);
   results.push({ correct: false, pts: 0 });
@@ -338,9 +395,10 @@ function timeUp() {
 }
 
 function advance() {
+  stopClip();
   qi++;
   if (qi >= QUESTIONS.length) showSummary();
-  else { showQuestion(); startTimer(); }
+  else beginQuestion();
 }
 
 async function saveHighScore(finalScore) {
@@ -359,6 +417,7 @@ async function saveHighScore(finalScore) {
 
 async function showSummary() {
   clearInterval(timerInterval);
+  stopClip();
   const isNewRecord = await saveHighScore(score);
   const pct = Math.round((score / TOTAL_MAX) * 100);
   const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '⭐' : pct >= 40 ? '👍' : '💡';
@@ -403,10 +462,9 @@ async function showSummary() {
 }
 
 function startGame() {
-  clearInterval(timerInterval);
+  stopClip();
   qi = 0; score = 0; results = []; answered = false;
-  showQuestion();
-  startTimer();
+  beginQuestion();
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
