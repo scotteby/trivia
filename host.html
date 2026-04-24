@@ -620,8 +620,8 @@ async function startGame() {
   showIngame();
 }
 
-const CLIP_DURATION = 10;       // seconds music clip plays before countdown starts
-const CLIP_START_DELAY = 2;    // seconds to wait after question appears before playing clip
+const CLIP_DURATION = 10;             // seconds music clip plays before countdown starts
+const ROUND_LEADERBOARD_SECS = 5;    // must match showRoundLeaderboard secs in join.html
 
 function waveformHTML(color = '#7c3aed') {
   const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
@@ -697,7 +697,12 @@ function showIngame() {
 
   renderIngameSidebar();
   if (isMusic) {
-    state.clipStartTimeout = setTimeout(() => playClip(q.preview_url), CLIP_START_DELAY * 1000);
+    // Delay clip at round boundaries so players finish the leaderboard screen first
+    const isRoundStart = qi > 0 && qi % 5 === 0;
+    const delay = isRoundStart ? ROUND_LEADERBOARD_SECS * 1000 : 0;
+    state.clipStartTimeout = delay > 0
+      ? setTimeout(() => playClip(q.preview_url), delay)
+      : (playClip(q.preview_url), null);
   }
   startIngameTimer(timerDuration, isMusic);
 }
