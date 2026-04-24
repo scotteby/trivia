@@ -105,18 +105,44 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 async function getRecentQuestions() {
   try {
     const res = await sbReq('/game_rooms?select=questions&order=created_at.desc&limit=8');
-    if (!Array.isArray(res.data)) return [];
-    return res.data.flatMap(row => {
+    if (!Array.isArray(res.data)) return { questions: [], songs: [] };
+    const questions = [];
+    const songs = [];
+    res.data.forEach(row => {
       const qs = Array.isArray(row.questions) ? row.questions : [];
-      return qs.map(q => q.q).filter(Boolean);
+      qs.forEach(q => {
+        if (q.q) questions.push(q.q);
+        if (q.artist && q.song) songs.push(`${q.artist} - ${q.song}`);
+      });
     });
+    return { questions, songs };
   } catch {
-    return [];
+    return { questions: [], songs: [] };
   }
 }
 
+// ─── Music randomization constraint ──────────────────────────
+function getMusicConstraint(category) {
+  const decades = ['1965-1972','1973-1979','1980-1985','1986-1989','1990-1994','1995-1999','2000-2004','2005-2009','2010-2015','2016-2021'];
+  const tiers = [
+    'Avoid the 20 most famous songs. Pick album tracks or deep cuts true fans would know.',
+    'Pick songs that reached #1 on the charts but are now slightly forgotten.',
+    'Focus on one-hit wonders or artists who peaked quickly.',
+    'Pick songs from the middle of artists careers, not their most famous hits.',
+    'Focus on songs that were massive hits in their era but rarely appear in trivia today.',
+  ];
+  const regions = ['UK artists','Australian or Canadian artists','American artists outside New York or LA','Motown artists','artists who got their start in the 80s but peaked in the 90s'];
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const constraints = [
+    `Focus on songs from ${pick(decades)}.`,
+    pick(tiers),
+    `Focus on ${pick(regions)}.`,
+  ];
+  return pick(constraints);
+}
+
 // ─── Question generation ─────────────────────────────────────
-async function generateQuestions(categories, total, difficulty = 'mixed', customMusicCats = [], customCatsMeta = {}) {
+async function generateQuestions(categories, total, difficulty = 'mixed', customMusicCats = [], customCatsMeta = {}, avoidSongsExtra = []) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Missing ANTHROPIC_API_KEY env var');
 
   const customMusicSet = new Set(customMusicCats.map(s => s.toLowerCase()));
@@ -158,10 +184,21 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
   };
   const difficultyLine = difficultyInstructions[difficulty] || difficultyInstructions.mixed;
 
-  const recentQs = await getRecentQuestions();
-  const avoidBlock = recentQs.length > 0
+  const { questions: recentQs, songs: recentSongs } = await getRecentQuestions();
+  const allAvoidSongs = [...new Set([...recentSongs, ...avoidSongsExtra])];
+  const avoidQBlock = recentQs.length > 0
     ? `\nDo NOT repeat any of these recently used questions:\n${recentQs.map(q => `- ${q}`).join('\n')}\n`
     : '';
+  const avoidSongBlock = allAvoidSongs.length > 0
+    ? `\nDo NOT use any of these artist-song combinations:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}\n`
+    : '';
+
+  // Inject song avoid block and constraint into music format section
+  if (musicCats.length > 0) {
+    fmt += `\nMusic constraint (follow strictly): ${getMusicConstraint(musicCats[0] || 'music')}`;
+    fmt += `\nSession seed (ignore): ${Date.now()}-${Math.random()}`;
+    if (avoidSongBlock) fmt += avoidSongBlock;
+  }
 
   const body = JSON.stringify({
     model: 'claude-sonnet-4-6',
@@ -171,8 +208,8 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
       content: `Generate exactly ${total} pub quiz questions: ${Math.round(total / categories.length)} questions per category, in this exact order: ${categories.map((c, i) => `[${Math.round(total / categories.length)} questions for "${c}"]`).join(', then ')}.
 IMPORTANT: Output ALL questions for the first category first, then ALL questions for the second category, and so on. Do NOT interleave categories.
 ${fmt}
-${difficultyLine}${avoidBlock}
-Rules: "ans" is the 0-based index of the correct answer. For music, use only widely-known popular songs. Every question must be unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
+${difficultyLine}${avoidQBlock}
+Rules: "ans" is the 0-based index of the correct answer. Every question must be unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
     }],
   });
 
@@ -248,9 +285,10 @@ module.exports = async function handler(req, res) {
     const categories      = Array.isArray(cfg.categories) && cfg.categories.length > 0
       ? cfg.categories
       : (PRESETS[preset] || PRESETS.mixed).categories;
-    const customMusicCats = Array.isArray(cfg.customMusicCats) ? cfg.customMusicCats : [];
-    const customCatsMeta  = (cfg.customCatsMeta && typeof cfg.customCatsMeta === 'object') ? cfg.customCatsMeta : {};
-    const total           = rounds * 5;
+    const customMusicCats    = Array.isArray(cfg.customMusicCats) ? cfg.customMusicCats : [];
+    const customCatsMeta     = (cfg.customCatsMeta && typeof cfg.customCatsMeta === 'object') ? cfg.customCatsMeta : {};
+    const avoidSongsFromClient = cfg.avoidSongs ? cfg.avoidSongs.split('||').filter(Boolean) : [];
+    const total              = rounds * 5;
 
     try {
       const catLabel = cfg.categories ? cfg.categories.join(',') : preset;
@@ -259,7 +297,7 @@ module.exports = async function handler(req, res) {
       // questionsOnly mode: generate fresh questions without creating a room
       // (used by "Play again" to keep the same room code)
       if (req.query?.questionsOnly === 'true') {
-        const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta);
+        const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient);
         const questions = await enrichWithPreviews(rawQuestions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
@@ -267,7 +305,7 @@ module.exports = async function handler(req, res) {
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),
-        generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta),
+        generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient),
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
 
