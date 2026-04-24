@@ -11,7 +11,10 @@ const PRESETS = {
   musicmix: { categories: ['General knowledge', '90s music', 'Pop culture'] },
 };
 
-const MUSIC_CATS = new Set(['80s hits', '90s pop', 'current hits', '90s music', '80s music', 'music']);
+const MUSIC_CATS = new Set([
+  'music', '80s hits', '80s music', '90s pop', '90s music', 'current hits',
+  '60s & 70s classics', '2000s bangers', 'classic rock', 'hip hop', 'r&b & soul', 'country',
+]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
 // ─── HTTP helpers ─────────────────────────────────────────────
@@ -223,11 +226,14 @@ module.exports = async function handler(req, res) {
     const timer      = cfg.timer      || 15;
     const preset     = cfg.preset     || 'mixed';
     const difficulty = cfg.difficulty || 'mixed';
-    const categories = (PRESETS[preset] || PRESETS.mixed).categories;
+    const categories = Array.isArray(cfg.categories) && cfg.categories.length > 0
+      ? cfg.categories
+      : (PRESETS[preset] || PRESETS.mixed).categories;
     const total      = rounds * 5;
 
     try {
-      console.log(`[rooms] Creating room: preset=${preset} rounds=${rounds} timer=${timer} difficulty=${difficulty}`);
+      const catLabel = cfg.categories ? cfg.categories.join(',') : preset;
+      console.log(`[rooms] Creating room: categories=${catLabel} rounds=${rounds} timer=${timer} difficulty=${difficulty}`);
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),
