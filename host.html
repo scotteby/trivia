@@ -938,6 +938,7 @@ async function playAgain() {
   state.players = [];
   state.revealed = false;
 
+  subscribeToRoom(); // showResults() unsubscribes; re-connect before lobby
   showLobby();
 }
 
