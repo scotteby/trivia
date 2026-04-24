@@ -184,6 +184,7 @@ Session seed (ignore): ${Date.now()}-${Math.random()}${avoidSongBlock ? '\n' + a
           content: `Generate exactly ${totalCount} practice trivia questions: ${perCat} per category, in this order: ${cats.map(c => `"${c}"`).join(', ')}.
 ${fmtParts.join('\n\n')}
 ${difficultyLine}${avoidQBlock}
+For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });
@@ -219,6 +220,7 @@ Alternate "q" randomly among: "Who is this artist?", "What is this song called?"
 Music constraint (follow strictly): ${getMusicConstraint('music')}
 Session seed (ignore): ${Date.now()}-${Math.random()}
 
+For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array of exactly 5 questions, no markdown, no extra text.`,
       }],
     });

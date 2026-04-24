@@ -209,6 +209,7 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
 IMPORTANT: Output ALL questions for the first category first, then ALL questions for the second category, and so on. Do NOT interleave categories.
 ${fmt}
 ${difficultyLine}${avoidQBlock}
+For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Every question must be unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
     }],
   });
