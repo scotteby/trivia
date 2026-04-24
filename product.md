@@ -1,4 +1,4 @@
-# Trivia Night SaaS — Product Reference
+# Trivia Night SaaS — Product References
 
 A full record of all product decisions, UI descriptions, and feature plans from our planning session.
 
