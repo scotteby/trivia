@@ -1,5 +1,11 @@
 const https = require('https');
 
+const MUSIC_CATS = new Set([
+  'music', '80s hits', '80s music', '90s pop', '90s music', 'current hits',
+  '60s & 70s classics', '2000s bangers', 'classic rock', 'hip hop', 'r&b & soul', 'country',
+]);
+const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
+
 function callAnthropic(body) {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
@@ -31,6 +37,45 @@ function parseQuestions(json) {
   return JSON.parse(text);
 }
 
+async function getItunesPreview(artist, song) {
+  return new Promise(resolve => {
+    try {
+      const query = encodeURIComponent(`${artist} ${song}`);
+      const req = https.request({
+        hostname: 'itunes.apple.com',
+        path: `/search?term=${query}&media=music&entity=song&limit=10`,
+        method: 'GET',
+        headers: { 'User-Agent': 'TriviaApp/1.0' },
+      }, res => {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(raw);
+            if (!Array.isArray(data?.results)) return resolve(null);
+            const artistLower = artist.toLowerCase();
+            const match =
+              data.results.find(r => r.previewUrl && r.artistName.toLowerCase().includes(artistLower.split(' ')[0])) ||
+              data.results.find(r => r.previewUrl);
+            resolve(match?.previewUrl || null);
+          } catch { resolve(null); }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.end();
+    } catch { resolve(null); }
+  });
+}
+
+async function enrichWithPreviews(questions) {
+  await Promise.all(questions.map(async q => {
+    if (q.type === 'music' && q.artist && q.song) {
+      q.preview_url = await getItunesPreview(q.artist, q.song);
+    }
+  }));
+  return questions;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -47,10 +92,32 @@ module.exports = async function handler(req, res) {
     const count = Math.min(Math.max(parseInt(req.query.count) || 10, 1), 20);
     const explain = req.query.explain === 'true';
 
+    const musicCats   = cats.filter(isMusicCat);
+    const generalCats = cats.filter(c => !isMusicCat(c));
+    const hasMusicCats = musicCats.length > 0;
+
     const explainField = explain
       ? ',"explanation":"One concise sentence explaining why this answer is correct."'
       : '';
-    const maxTokens = Math.min(explain ? count * 260 + 500 : count * 140 + 300, 4000);
+
+    let fmt;
+    if (hasMusicCats && generalCats.length > 0) {
+      fmt = `
+For MUSIC categories (${musicCats.join(', ')}), use this format:
+{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
+Alternate "q" randomly between "Who is this artist?" and "What is this song?".
+
+For all other categories (${generalCats.join(', ')}):
+{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}`;
+    } else if (hasMusicCats) {
+      fmt = `All questions are music questions:
+{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
+Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
+    } else {
+      fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}`;
+    }
+
+    const maxTokens = Math.min(explain ? count * 300 + 600 : count * 180 + 400, 4000);
 
     try {
       const json = await callAnthropic({
@@ -58,18 +125,20 @@ module.exports = async function handler(req, res) {
         max_tokens: maxTokens,
         messages: [{
           role: 'user',
-          content: `Generate exactly ${count} trivia questions spread evenly across: ${cats.join(', ')}.
-Format each as: {"q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
-Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Questions must be unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
+          content: `Generate exactly ${count} trivia questions spread evenly across these categories: ${cats.join(', ')}.
+Format: ${fmt}
+Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Questions must be unique and interesting. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });
-      return res.status(200).json({ questions: parseQuestions(json) });
+      let questions = parseQuestions(json);
+      if (hasMusicCats) questions = await enrichWithPreviews(questions);
+      return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
     }
   }
 
-  // ─── Daily solo mode (existing) ─────────────────────────────────────────────
+  // ─── Daily solo mode ─────────────────────────────────────────────────────────
   const DATE_STR = new Date().toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
   });
