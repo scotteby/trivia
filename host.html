@@ -134,6 +134,7 @@ let state = {
   audio: null,
   clipTimeout: null,
   customCats: [],
+  playedSongs: [],
 };
 
 const PRESETS = {
@@ -981,6 +982,8 @@ function revealAnswer() {
     if (el) el.classList.add(i === q.ans ? 'correct' : 'wrong');
   });
 
+  if (q.artist && q.song) state.playedSongs.push(`${q.artist} - ${q.song}`);
+
   // Correct count
   const correctCount = state.players.filter(p => p.answers?.some(a => a.question_index === qi && a.correct)).length;
   const rsEl = document.getElementById('responseStatus');
@@ -1123,6 +1126,7 @@ async function playAgain() {
     customMusicCatObjs.forEach(c => { customCatsMeta[c.name] = { musicType: c.musicType || 'genre' }; });
     payload.customCatsMeta = customCatsMeta;
   }
+  if (state.playedSongs.length) payload.avoidSongs = state.playedSongs.join('||');
 
   let newQuestions = null;
   try {
@@ -1163,6 +1167,7 @@ async function newGame() {
   state.revealed = false;
   state.autoAdvanceTimeout = null;
   state.subscription = null;
+  state.playedSongs = [];
   showSetup();
 }
 
