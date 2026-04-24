@@ -97,6 +97,14 @@ module.exports = async function handler(req, res) {
       ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidList.map(q => `- ${q}`).join('\n')}\n`
       : '';
 
+    const difficultyInstructions = {
+      easy:  'Difficulty: EASY — use well-known mainstream facts that most adults would recognise. Avoid niche or obscure details.',
+      mixed: 'Difficulty: MIXED — balance roughly half straightforward questions with half that require a bit more knowledge.',
+      hard:  'Difficulty: HARD — use specific, less-obvious facts. Avoid questions with obvious answers. Distractors should be plausible.',
+    };
+    const difficulty = ['easy', 'mixed', 'hard'].includes(req.query.difficulty) ? req.query.difficulty : 'mixed';
+    const difficultyLine = difficultyInstructions[difficulty];
+
     const musicCats   = cats.filter(isMusicCat);
     const generalCats = cats.filter(c => !isMusicCat(c));
     const hasMusicCats = musicCats.length > 0;
@@ -132,7 +140,8 @@ Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
           role: 'user',
           content: `Generate exactly ${count} practice trivia questions spread evenly across these categories: ${cats.join(', ')}.
 ${fmt}${avoidBlock}
-Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Every question must be completely unique — no repeats, no rephrasing of prior questions. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
+${difficultyLine}
+Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique — no repeats, no rephrasing of prior questions. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });
       let questions = parseQuestions(json);

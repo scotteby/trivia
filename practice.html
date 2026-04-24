@@ -86,6 +86,7 @@ let state = {
   categories: [],
   expandedCat: null,
   count: 10,
+  difficulty: 'mixed',
   timerEnabled: false,
   timerSecs: 15,
   explainEnabled: true,
@@ -226,6 +227,19 @@ function renderSetup() {
       </div>
 
       <div class="card" style="margin-bottom:12px;">
+        <div class="sub-label">Difficulty</div>
+        <div style="display:flex;gap:8px;">
+          ${[
+            { key: 'easy',  label: 'Easy',  sub: 'well-known facts' },
+            { key: 'mixed', label: 'Mixed', sub: 'balanced' },
+            { key: 'hard',  label: 'Hard',  sub: 'obscure details' },
+          ].map(d => `<div class="rt-btn${state.difficulty===d.key?' sel':''}" onclick="setDifficulty('${d.key}')" style="flex:1;text-align:center;">
+            ${d.label}<div style="font-size:10px;color:${state.difficulty===d.key?'#a78bfa':'#555'};margin-top:2px;">${d.sub}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
         <div class="toggle-row" onclick="toggleTimer()" style="cursor:pointer;">
           <div>
             <div style="font-size:13px;color:#e8e8f0;font-weight:500;">Timer</div>
@@ -298,6 +312,7 @@ function selectAll() {
 
 function clearAll() { state.categories = []; renderSetup(); }
 function setCount(c) { state.count = c; renderSetup(); }
+function setDifficulty(d) { state.difficulty = d; renderSetup(); }
 function setTimerSecs(s) { state.timerSecs = s; renderSetup(); }
 function toggleTimer()   { state.timerEnabled = !state.timerEnabled; renderSetup(); }
 function toggleExplain() { state.explainEnabled = !state.explainEnabled; renderSetup(); }
@@ -310,6 +325,7 @@ async function fetchQuestions() {
     practice: 'true',
     categories: state.categories.join(','),
     count,
+    difficulty: state.difficulty,
     explain: state.explainEnabled ? 'true' : 'false',
   });
   if (state.questions.length > 0) {
