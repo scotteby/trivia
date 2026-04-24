@@ -273,6 +273,7 @@ function subscribeAsPlayer() {
 
 // ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
 const CLIP_DURATION = 10;
+const CLIP_START_DELAY = 2;
 
 function waveformHTML() {
   const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
@@ -328,11 +329,15 @@ function showIngame() {
     </div>
   `);
 
-  if (isMusic) playClip(q.preview_url);
+  if (isMusic) {
+    state.clipStartTimeout = setTimeout(() => playClip(q.preview_url), CLIP_START_DELAY * 1000);
+  }
   startPlayerTimer(timerDuration, isMusic);
 }
 
 function stopClip() {
+  clearTimeout(state.clipStartTimeout);
+  state.clipStartTimeout = null;
   clearTimeout(state.clipTimeout);
   state.clipTimeout = null;
   if (state.audio) {
@@ -685,16 +690,10 @@ function shareRoom() {
     }
   };
   const doCopy = () => {
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url)
-        .then(() => {
-          const btn = document.querySelector('button[onclick="shareRoom()"]');
-          if (btn) { const t = btn.textContent; btn.textContent = '✓ Link copied!'; setTimeout(() => btn.textContent = t, 2000); }
-        })
-        .catch(() => prompt('Copy this link to share with players:', url));
-    } else {
-      prompt('Copy this link to share with players:', url);
-    }
+    navigator.clipboard?.writeText(url).then(() => {
+      const btn = document.querySelector('button[onclick="shareRoom()"]');
+      if (btn) { const t = btn.textContent; btn.textContent = '✓ Link copied!'; setTimeout(() => btn.textContent = t, 2000); }
+    }).catch(() => {});
   };
   doShare();
 }

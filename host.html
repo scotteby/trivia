@@ -620,7 +620,8 @@ async function startGame() {
   showIngame();
 }
 
-const CLIP_DURATION = 10; // seconds music clip plays before countdown starts
+const CLIP_DURATION = 10;       // seconds music clip plays before countdown starts
+const CLIP_START_DELAY = 2;    // seconds to wait after question appears before playing clip
 
 function waveformHTML(color = '#7c3aed') {
   const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
@@ -695,11 +696,15 @@ function showIngame() {
   `);
 
   renderIngameSidebar();
-  if (isMusic) playClip(q.preview_url);
+  if (isMusic) {
+    state.clipStartTimeout = setTimeout(() => playClip(q.preview_url), CLIP_START_DELAY * 1000);
+  }
   startIngameTimer(timerDuration, isMusic);
 }
 
 function stopClip() {
+  clearTimeout(state.clipStartTimeout);
+  state.clipStartTimeout = null;
   clearTimeout(state.clipTimeout);
   state.clipTimeout = null;
   if (state.audio) {
