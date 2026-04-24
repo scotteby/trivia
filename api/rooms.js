@@ -75,17 +75,24 @@ async function getItunesPreview(artist, song) {
     const query = encodeURIComponent(`${artist} ${song}`);
     const { data } = await httpsReq({
       hostname: 'itunes.apple.com',
-      path: `/search?term=${query}&media=music&entity=song&limit=10`,
+      path: `/search?term=${query}&attribute=mixedTerm&media=music&entity=song&limit=10`,
       method: 'GET',
       headers: { 'User-Agent': 'TriviaApp/1.0' },
     }, null);
 
     if (!Array.isArray(data?.results)) return null;
-    const artistLower = artist.toLowerCase();
-    const match =
-      data.results.find(r => r.previewUrl && r.artistName.toLowerCase().includes(artistLower.split(' ')[0])) ||
-      data.results.find(r => r.previewUrl);
-    return match?.previewUrl || null;
+    const withPreviews = data.results.filter(r => r.previewUrl);
+    if (!withPreviews.length) return null;
+    const artistFirst = artist.toLowerCase().split(' ')[0];
+    const songFirst = song.toLowerCase().split(' ')[0];
+    const scored = withPreviews.map(r => {
+      let score = 0;
+      if (r.artistName?.toLowerCase().includes(artistFirst)) score += 2;
+      if (r.trackName?.toLowerCase().includes(songFirst)) score += 2;
+      return { url: r.previewUrl, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0].score > 0 ? scored[0].url : null;
   } catch {
     return null;
   }
