@@ -109,11 +109,14 @@ async function getRecentQuestions() {
 }
 
 // ─── Question generation ─────────────────────────────────────
-async function generateQuestions(categories, total, difficulty = 'mixed') {
+async function generateQuestions(categories, total, difficulty = 'mixed', customMusicCats = []) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Missing ANTHROPIC_API_KEY env var');
 
-  const musicCats   = categories.filter(isMusicCat);
-  const generalCats = categories.filter(c => !isMusicCat(c));
+  const customMusicSet = new Set(customMusicCats.map(s => s.toLowerCase()));
+  const isMusicCatEx = c => isMusicCat(c) || customMusicSet.has(c.toLowerCase().trim());
+
+  const musicCats   = categories.filter(isMusicCatEx);
+  const generalCats = categories.filter(c => !isMusicCatEx(c));
 
   let fmt = '';
   if (musicCats.length > 0 && generalCats.length > 0) {
@@ -223,14 +226,15 @@ module.exports = async function handler(req, res) {
     let cfg = {};
     try { cfg = JSON.parse(raw || '{}'); } catch { /* use defaults */ }
 
-    const rounds     = cfg.rounds     || 3;
-    const timer      = cfg.timer      || 15;
-    const preset     = cfg.preset     || 'mixed';
-    const difficulty = cfg.difficulty || 'mixed';
-    const categories = Array.isArray(cfg.categories) && cfg.categories.length > 0
+    const rounds          = cfg.rounds     || 3;
+    const timer           = cfg.timer      || 15;
+    const preset          = cfg.preset     || 'mixed';
+    const difficulty      = cfg.difficulty || 'mixed';
+    const categories      = Array.isArray(cfg.categories) && cfg.categories.length > 0
       ? cfg.categories
       : (PRESETS[preset] || PRESETS.mixed).categories;
-    const total      = rounds * 5;
+    const customMusicCats = Array.isArray(cfg.customMusicCats) ? cfg.customMusicCats : [];
+    const total           = rounds * 5;
 
     try {
       const catLabel = cfg.categories ? cfg.categories.join(',') : preset;
@@ -239,7 +243,7 @@ module.exports = async function handler(req, res) {
       // questionsOnly mode: generate fresh questions without creating a room
       // (used by "Play again" to keep the same room code)
       if (req.query?.questionsOnly === 'true') {
-        const rawQuestions = await generateQuestions(categories, total, difficulty);
+        const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats);
         const questions = await enrichWithPreviews(rawQuestions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
@@ -247,7 +251,7 @@ module.exports = async function handler(req, res) {
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),
-        generateQuestions(categories, total, difficulty),
+        generateQuestions(categories, total, difficulty, customMusicCats),
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
 

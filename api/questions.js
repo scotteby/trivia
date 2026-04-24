@@ -243,8 +243,12 @@ module.exports = async function handler(req, res) {
     const difficulty = ['easy', 'mixed', 'hard'].includes(req.query.difficulty) ? req.query.difficulty : 'mixed';
     const difficultyLine = difficultyInstructions[difficulty];
 
-    const musicCats   = cats.filter(isMusicCat);
-    const generalCats = cats.filter(c => !isMusicCat(c));
+    const customMusicRaw = (req.query.customMusicCats || '').replace(/\+/g, ' ');
+    const customMusicSet = new Set(customMusicRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+    const isMusicCatEx = c => isMusicCat(c) || customMusicSet.has(c.toLowerCase().trim());
+
+    const musicCats   = cats.filter(isMusicCatEx);
+    const generalCats = cats.filter(c => !isMusicCatEx(c));
     const hasMusicCats = musicCats.length > 0;
 
     const explainField = explain

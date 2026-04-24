@@ -97,6 +97,10 @@ hr { border: none; border-top: 1px solid #1e1e35; margin: 14px 0; }
 .podium-bar { border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
 @keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+/* Custom categories */
+.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #e8e8f0; cursor: pointer; border-bottom: 1px solid #1e1e35; transition: background .1s; }
+.custom-suggestion:hover { background: #1e1e35; }
+.custom-suggestion:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -129,6 +133,7 @@ let state = {
   revealed: false,
   audio: null,
   clipTimeout: null,
+  customCats: [],
 };
 
 const PRESETS = {
@@ -185,6 +190,12 @@ const AVATAR_COLORS = [
   ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
 ];
 
+const CUSTOM_CATS_KEY = 'trivia-custom-cats';
+const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Potter', 'Lord of the Rings', 'Marvel movies', 'Seinfeld', 'The Office', 'Friends', 'Disney', 'Star Wars', 'Game of Thrones', '90s commercials', 'Christmas movies', 'Halloween trivia', 'Super Bowl history', 'World Cup soccer', 'NBA legends', 'Beatles songs', 'Elvis Presley'];
+const MUSIC_SUGGESTIONS = new Set(['Taylor Swift', 'Beatles songs', 'Elvis Presley', 'Beyoncé', 'Michael Jackson']);
+let _hostCustomInput = '';
+let _hostCustomMusicFlag = false;
+
 function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
 
 function avatarHTML(name, idx, size = 32) {
@@ -198,6 +209,82 @@ function getTimeLeft() {
   const timer = state.room.config?.timer || 15;
   const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
   return Math.max(0, timer - elapsed);
+}
+
+// ─── Custom categories ────────────────────────────────────────────────────────
+function loadCustomCats() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY) || '[]').filter(c => c.name && typeof c.music === 'boolean'); }
+  catch { return []; }
+}
+function saveCustomCats() {
+  localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(state.customCats));
+}
+function addCustomCatHost(name, music) {
+  const n = name.trim();
+  if (n.length < 2 || state.customCats.length >= 10) return;
+  if (state.customCats.find(c => c.name.toLowerCase() === n.toLowerCase())) return;
+  state.customCats.push({ name: n, music });
+  saveCustomCats();
+  _hostCustomInput = '';
+  _hostCustomMusicFlag = false;
+  document.getElementById('cat-picker').innerHTML = pickerHTML();
+  if (_hostCustomInput) onHostCustomInput(_hostCustomInput);
+}
+function removeCustomCatHost(name) {
+  state.customCats = state.customCats.filter(c => c.name !== name);
+  saveCustomCats();
+  document.getElementById('cat-picker').innerHTML = pickerHTML();
+  if (_hostCustomInput) onHostCustomInput(_hostCustomInput);
+}
+function onHostCustomInput(val) {
+  _hostCustomInput = val;
+  const len = val.trim().length;
+  const addBtn = document.getElementById('hostCustomAddBtn');
+  if (addBtn) { addBtn.style.opacity = len >= 2 ? '1' : '.4'; addBtn.style.pointerEvents = len >= 2 ? '' : 'none'; }
+  const toggleRow = document.getElementById('hostMusicToggleRow');
+  if (toggleRow) toggleRow.style.display = len >= 2 ? 'block' : 'none';
+  if (len >= 2 && MUSIC_SUGGESTIONS.has(val.trim())) { _hostCustomMusicFlag = true; updateMusicToggleUIHost(); }
+  updateMusicHintHost(val.trim());
+  const el = document.getElementById('hostCustomSuggestions');
+  if (!el) return;
+  if (len === 0) { el.style.display = 'none'; return; }
+  const lower = val.trim().toLowerCase();
+  const filtered = SUGGESTIONS.filter(s => s.toLowerCase().includes(lower) && !state.customCats.find(c => c.name.toLowerCase() === s.toLowerCase())).slice(0, 6);
+  if (!filtered.length) { el.style.display = 'none'; return; }
+  el.innerHTML = filtered.map(s => `<div class="custom-suggestion" onclick="selectSuggestionHost('${s.replace(/'/g,"\\'")}');">${s}</div>`).join('');
+  el.style.display = 'block';
+}
+function selectSuggestionHost(name) {
+  _hostCustomInput = name;
+  _hostCustomMusicFlag = MUSIC_SUGGESTIONS.has(name);
+  const input = document.getElementById('hostCustomInput');
+  if (input) input.value = name;
+  const el = document.getElementById('hostCustomSuggestions');
+  if (el) el.style.display = 'none';
+  const toggleRow = document.getElementById('hostMusicToggleRow');
+  if (toggleRow) toggleRow.style.display = 'block';
+  updateMusicToggleUIHost();
+  updateMusicHintHost(name);
+  const addBtn = document.getElementById('hostCustomAddBtn');
+  if (addBtn) { addBtn.style.opacity = '1'; addBtn.style.pointerEvents = ''; }
+}
+function tryAddCustomCatHost() {
+  addCustomCatHost(_hostCustomInput, _hostCustomMusicFlag);
+}
+function toggleMusicFlagHost() {
+  _hostCustomMusicFlag = !_hostCustomMusicFlag;
+  updateMusicToggleUIHost();
+  updateMusicHintHost(_hostCustomInput.trim());
+}
+function updateMusicToggleUIHost() {
+  const track = document.getElementById('hostMusicToggleTrack');
+  const thumb = document.getElementById('hostMusicToggleThumb');
+  if (track) track.style.background = _hostCustomMusicFlag ? '#378add' : '#2a2a48';
+  if (thumb) thumb.style.left = _hostCustomMusicFlag ? '23px' : '3px';
+}
+function updateMusicHintHost(name) {
+  const el = document.getElementById('hostMusicHint');
+  if (el) el.textContent = _hostCustomMusicFlag && name ? `iTunes will search for "${name}" clips` : '';
 }
 
 // ─── SETUP SCREEN ─────────────────────────────────────────────────────────────
@@ -401,6 +488,58 @@ function pickerHTML() {
         <div style="font-size:13px;font-weight:500;color:${c.color};">${c.name}</div>
         <div style="font-size:11px;color:#555;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
       </div>`).join('');
+
+    const customCards = state.customCats.map(c => {
+      const en = c.name.replace(/'/g, "\\'");
+      return `<div style="position:relative;">
+        <div onclick="applyCategory(${roundIdx},'${en}',event)"
+          style="background:${c.music ? '#0f1a2e' : '#16162a'};border:1px solid ${c.music ? '#378add44' : '#2a2a48'};border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;">
+          <div style="font-size:22px;margin-bottom:6px;">${c.music ? '🎵' : '💬'}</div>
+          <div style="font-size:13px;font-weight:500;color:${c.music ? '#60a5fa' : '#e8e8f0'};">${c.name}</div>
+          <div style="font-size:11px;color:#555;margin-top:3px;">${c.music ? 'Music clip' : 'Custom'}</div>
+        </div>
+        <button onclick="event.stopPropagation();removeCustomCatHost('${en}')"
+          style="position:absolute;top:6px;right:6px;background:#0f0f1a;border:1px solid #2a2a48;border-radius:50%;width:20px;height:20px;font-size:10px;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>`;
+    }).join('');
+
+    const addBtnActive = _hostCustomInput.trim().length >= 2;
+    const showToggle = _hostCustomInput.trim().length >= 2;
+    const hintText = _hostCustomMusicFlag && _hostCustomInput.trim() ? `iTunes will search for "${_hostCustomInput.trim()}" clips` : '';
+    const escapedVal = _hostCustomInput.replace(/"/g, '&quot;');
+
+    const customSection = `
+      <div style="margin-top:20px;">
+        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
+        ${state.customCats.length > 0
+          ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">${customCards}</div>`
+          : `<div style="font-size:12px;color:#444;margin-bottom:12px;">No custom categories yet — add one below</div>`}
+        ${state.customCats.length < 10 ? `
+          <div style="position:relative;">
+            <div style="display:flex;gap:8px;">
+              <input id="hostCustomInput" type="text" value="${escapedVal}" placeholder="Add a custom category…"
+                style="flex:1;background:#16162a;border:1px solid #2a2a48;border-radius:8px;padding:9px 12px;font-size:13px;color:#e8e8f0;outline:none;"
+                oninput="onHostCustomInput(this.value)" onkeydown="if(event.key==='Enter')tryAddCustomCatHost()" maxlength="50">
+              <button id="hostCustomAddBtn" onclick="tryAddCustomCatHost()"
+                style="background:#16162a;border:1px solid #7c3aed44;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
+            </div>
+            <div id="hostCustomSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:72px;background:#16162a;border:1px solid #2a2a48;border-radius:8px;z-index:10;overflow:hidden;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px #00000066;"></div>
+          </div>
+          <div id="hostMusicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
+            <div style="display:flex;align-items:center;gap:12px;background:#0a1a2e;border:1px solid #378add22;border-radius:8px;padding:10px 12px;">
+              <div style="flex:1;">
+                <div style="font-size:12px;color:#60a5fa;">🎵 Music category — find a clip and identify the artist or song</div>
+                <div id="hostMusicHint" style="font-size:11px;color:#378add88;margin-top:3px;">${hintText}</div>
+              </div>
+              <div onclick="toggleMusicFlagHost()" id="hostMusicToggleTrack"
+                style="width:44px;height:24px;border-radius:12px;position:relative;flex-shrink:0;cursor:pointer;transition:background .2s;background:${_hostCustomMusicFlag ? '#378add' : '#2a2a48'};">
+                <div id="hostMusicToggleThumb" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${_hostCustomMusicFlag ? '23px' : '3px'};transition:left .2s;"></div>
+              </div>
+            </div>
+          </div>
+        ` : `<div style="font-size:11px;color:#555;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`}
+      </div>`;
+
     return `
       <div style="padding:16px 20px;background:#0f0f1a;border-bottom:1px solid #2a2a48;display:flex;align-items:center;gap:12px;flex-shrink:0;">
         <button onclick="closePicker()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:13px;color:#888;cursor:pointer;">✕</button>
@@ -408,6 +547,7 @@ function pickerHTML() {
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${grid}</div>
+        ${customSection}
       </div>`;
   } else {
     const cat = CATEGORY_DATA.find(c => c.name === state.pickerCat);
@@ -467,12 +607,14 @@ async function createRoom() {
   setStatus('Generating questions…');
 
   try {
+    const customMusicCats = state.customCats.filter(c => c.music).map(c => c.name);
+    const basePayload = { rounds: state.rounds, timer: state.timer, difficulty: state.difficulty, ...(customMusicCats.length ? { customMusicCats } : {}) };
     const res = await fetch('/api/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state.customMode && state.customCategories.length === state.rounds
-        ? { rounds: state.rounds, timer: state.timer, difficulty: state.difficulty, categories: state.customCategories }
-        : { rounds: state.rounds, timer: state.timer, preset: state.preset, difficulty: state.difficulty })
+        ? { ...basePayload, categories: state.customCategories }
+        : { ...basePayload, preset: state.preset })
     });
     const data = await res.json();
     if (!res.ok) {
@@ -941,6 +1083,8 @@ async function playAgain() {
   const payload = { rounds: cfg.rounds || 3, timer: cfg.timer || 15, difficulty: cfg.difficulty || 'mixed' };
   if (Array.isArray(cfg.categories) && cfg.categories.length) payload.categories = cfg.categories;
   else payload.preset = cfg.preset || 'mixed';
+  const customMusicCats = state.customCats.filter(c => c.music).map(c => c.name);
+  if (customMusicCats.length) payload.customMusicCats = customMusicCats;
 
   let newQuestions = null;
   try {
@@ -985,6 +1129,7 @@ async function newGame() {
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
+state.customCats = loadCustomCats();
 showSetup();
 </script>
 </body>

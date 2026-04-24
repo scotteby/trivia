@@ -48,6 +48,10 @@ body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-syste
 .wave-bar { width: 4px; border-radius: 2px; background: #60a5fa; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
 @keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
 .wave-bar.stopped { animation: none; transform: scaleY(0.25); opacity: .4; }
+/* Custom categories */
+.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #e8e8f0; cursor: pointer; border-bottom: 1px solid #1e1e35; transition: background .1s; }
+.custom-suggestion:hover { background: #1e1e35; }
+.custom-suggestion:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -57,6 +61,12 @@ const root = document.getElementById('root');
 function setHTML(h) { root.innerHTML = h; }
 
 const CLIP_DURATION = 10;
+
+const CUSTOM_CATS_KEY = 'trivia-custom-cats';
+const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Potter', 'Lord of the Rings', 'Marvel movies', 'Seinfeld', 'The Office', 'Friends', 'Disney', 'Star Wars', 'Game of Thrones', '90s commercials', 'Christmas movies', 'Halloween trivia', 'Super Bowl history', 'World Cup soccer', 'NBA legends', 'Beatles songs', 'Elvis Presley'];
+const MUSIC_SUGGESTIONS = new Set(['Taylor Swift', 'Beatles songs', 'Elvis Presley', 'Beyoncé', 'Michael Jackson']);
+let _customInput = '';
+let _customMusicFlag = false;
 
 const CATEGORY_DATA = [
   { name: 'General Knowledge', icon: '🧠', color: '#a78bfa', border: '#7c3aed', bg: '#1a1535', music: false, subs: null },
@@ -100,6 +110,7 @@ let state = {
   audio: null,
   fetching: false,
   totalAnswered: 0,
+  customCats: [],
 };
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
@@ -131,6 +142,88 @@ function waveformHTML() {
   ).join('');
 }
 
+// ─── Custom categories ────────────────────────────────────────────────────────
+function loadCustomCats() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_CATS_KEY) || '[]').filter(c => c.name && typeof c.music === 'boolean'); }
+  catch { return []; }
+}
+function saveCustomCats() {
+  localStorage.setItem(CUSTOM_CATS_KEY, JSON.stringify(state.customCats));
+}
+function addCustomCat(name, music) {
+  const n = name.trim();
+  if (n.length < 2 || state.customCats.length >= 10) return;
+  if (state.customCats.find(c => c.name.toLowerCase() === n.toLowerCase())) return;
+  state.customCats.push({ name: n, music });
+  saveCustomCats();
+  if (!state.categories.includes(n)) state.categories.push(n);
+  _customInput = '';
+  _customMusicFlag = false;
+  renderSetup();
+}
+function removeCustomCat(name) {
+  state.customCats = state.customCats.filter(c => c.name !== name);
+  state.categories = state.categories.filter(c => c !== name);
+  saveCustomCats();
+  renderSetup();
+}
+function toggleCustomCatSel(name) {
+  state.categories = state.categories.includes(name)
+    ? state.categories.filter(c => c !== name)
+    : [...state.categories, name];
+  renderSetup();
+}
+function onCustomInput(val) {
+  _customInput = val;
+  const len = val.trim().length;
+  const addBtn = document.getElementById('customAddBtn');
+  if (addBtn) { addBtn.style.opacity = len >= 2 ? '1' : '.4'; addBtn.style.pointerEvents = len >= 2 ? '' : 'none'; }
+  const toggleRow = document.getElementById('musicToggleRow');
+  if (toggleRow) toggleRow.style.display = len >= 2 ? 'block' : 'none';
+  if (len >= 2 && MUSIC_SUGGESTIONS.has(val.trim())) { _customMusicFlag = true; updateMusicToggleUI(); }
+  updateMusicHint(val.trim());
+  const el = document.getElementById('customSuggestions');
+  if (!el) return;
+  if (len === 0) { el.style.display = 'none'; return; }
+  const lower = val.trim().toLowerCase();
+  const filtered = SUGGESTIONS.filter(s => s.toLowerCase().includes(lower) && !state.customCats.find(c => c.name.toLowerCase() === s.toLowerCase())).slice(0, 6);
+  if (!filtered.length) { el.style.display = 'none'; return; }
+  el.innerHTML = filtered.map(s => `<div class="custom-suggestion" onclick="selectSuggestion('${s.replace(/'/g,"\\'")}');">${s}</div>`).join('');
+  el.style.display = 'block';
+}
+function selectSuggestion(name) {
+  _customInput = name;
+  _customMusicFlag = MUSIC_SUGGESTIONS.has(name);
+  const input = document.getElementById('customCatInput');
+  if (input) input.value = name;
+  const el = document.getElementById('customSuggestions');
+  if (el) el.style.display = 'none';
+  const toggleRow = document.getElementById('musicToggleRow');
+  if (toggleRow) toggleRow.style.display = 'block';
+  updateMusicToggleUI();
+  updateMusicHint(name);
+  const addBtn = document.getElementById('customAddBtn');
+  if (addBtn) { addBtn.style.opacity = '1'; addBtn.style.pointerEvents = ''; }
+}
+function tryAddCustomCat() {
+  addCustomCat(_customInput, _customMusicFlag);
+}
+function toggleMusicFlag() {
+  _customMusicFlag = !_customMusicFlag;
+  updateMusicToggleUI();
+  updateMusicHint(_customInput.trim());
+}
+function updateMusicToggleUI() {
+  const track = document.getElementById('musicToggleTrack');
+  const thumb = document.getElementById('musicToggleThumb');
+  if (track) track.style.background = _customMusicFlag ? '#378add' : '#2a2a48';
+  if (thumb) thumb.style.left = _customMusicFlag ? '23px' : '3px';
+}
+function updateMusicHint(name) {
+  const el = document.getElementById('musicHint');
+  if (el) el.textContent = _customMusicFlag && name ? `iTunes will search for "${name}" clips` : '';
+}
+
 // ─── SETUP ───────────────────────────────────────────────────────────────────
 function showSetup() {
   state.view = 'setup';
@@ -140,6 +233,56 @@ function showSetup() {
 function getSelectedSubs(cat) {
   if (!cat.subs) return [];
   return cat.subs.filter(s => state.categories.includes(s));
+}
+
+function buildCustomSection() {
+  const chips = state.customCats.map(c => {
+    const sel = state.categories.includes(c.name);
+    const en = c.name.replace(/'/g, "\\'");
+    return `<div onclick="toggleCustomCatSel('${en}');event.stopPropagation();"
+      style="display:flex;align-items:center;gap:4px;background:${c.music ? '#0a1a2e' : '#1e1e35'};border:1px solid ${c.music ? (sel ? '#378add' : '#378add55') : (sel ? '#7c3aed' : '#2a2a48')};border-radius:20px;padding:5px 10px 5px 8px;cursor:pointer;transition:border-color .15s;">
+      ${c.music ? '<span style="font-size:10px;">🎵</span>' : ''}
+      <span style="font-size:12px;color:${c.music ? (sel ? '#60a5fa' : '#3c6d9e') : (sel ? '#c4b5fd' : '#666')};">${c.name}</span>
+      ${sel ? '<span style="font-size:10px;color:#7c3aed;margin-left:2px;">✓</span>' : ''}
+      <button onclick="event.stopPropagation();removeCustomCat('${en}')"
+        style="background:none;border:none;color:#555;cursor:pointer;font-size:12px;padding:0 0 0 4px;line-height:1;flex-shrink:0;">✕</button>
+    </div>`;
+  }).join('');
+
+  const addBtnActive = _customInput.trim().length >= 2;
+  const showToggle = _customInput.trim().length >= 2;
+  const hintText = _customMusicFlag && _customInput.trim() ? `iTunes will search for "${_customInput.trim()}" clips` : '';
+  const escapedVal = _customInput.replace(/"/g, '&quot;');
+
+  const inputSection = state.customCats.length < 10 ? `
+    <div style="position:relative;">
+      <div style="display:flex;gap:8px;">
+        <input id="customCatInput" type="text" value="${escapedVal}" placeholder="Type a category… e.g. Taylor Swift"
+          style="flex:1;background:#16162a;border:1px solid #2a2a48;border-radius:8px;padding:9px 12px;font-size:13px;color:#e8e8f0;outline:none;"
+          oninput="onCustomInput(this.value)" onkeydown="if(event.key==='Enter')tryAddCustomCat()" maxlength="50">
+        <button id="customAddBtn" onclick="tryAddCustomCat()"
+          style="background:#16162a;border:1px solid #7c3aed44;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
+      </div>
+      <div id="customSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:68px;background:#16162a;border:1px solid #2a2a48;border-radius:8px;z-index:10;overflow:hidden;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px #00000066;"></div>
+    </div>
+    <div id="musicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
+      <div style="display:flex;align-items:center;gap:12px;background:#0a1a2e;border:1px solid #378add22;border-radius:8px;padding:10px 12px;">
+        <div style="flex:1;">
+          <div style="font-size:12px;color:#60a5fa;">🎵 Music category — find a clip and identify the artist or song</div>
+          <div id="musicHint" style="font-size:11px;color:#378add88;margin-top:3px;">${hintText}</div>
+        </div>
+        <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#378add' : '#2a2a48'};">
+          <div class="toggle-thumb" id="musicToggleThumb" style="left:${_customMusicFlag ? '23px' : '3px'};"></div>
+        </div>
+      </div>
+    </div>` : `<div style="font-size:11px;color:#555;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
+
+  return `
+    <div style="margin-bottom:20px;">
+      <div class="sub-label" style="margin-bottom:8px;">Custom categories</div>
+      ${chips ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">${chips}</div>` : ''}
+      ${inputSection}
+    </div>`;
 }
 
 function renderSetup() {
@@ -221,6 +364,8 @@ function renderSetup() {
         <button class="btn-outline" style="font-size:12px;padding:7px;" onclick="clearAll()">Clear</button>
       </div>
 
+      ${buildCustomSection()}
+
       <div class="card" style="margin-bottom:12px;">
         <div class="sub-label">How many questions?</div>
         <div style="display:flex;gap:8px;">${countBtns}</div>
@@ -269,6 +414,8 @@ function renderSetup() {
       </button>
     </div>
   `);
+  // Restore live input state (suggestions, toggle) without re-render
+  if (_customInput) onCustomInput(_customInput);
 }
 
 function toggleExpand(name) {
@@ -304,9 +451,10 @@ function toggleDirectCat(name) {
 }
 
 function selectAll() {
-  state.categories = CATEGORY_DATA.flatMap(c =>
-    c.subs ? c.subs : [c.name]
-  );
+  state.categories = [
+    ...CATEGORY_DATA.flatMap(c => c.subs ? c.subs : [c.name]),
+    ...state.customCats.map(c => c.name),
+  ];
   renderSetup();
 }
 
@@ -332,6 +480,8 @@ async function fetchQuestions() {
     const avoid = state.questions.map(q => q.q).join('||');
     params.set('avoid', avoid);
   }
+  const customMusicCats = state.customCats.filter(c => c.music && state.categories.includes(c.name)).map(c => c.name);
+  if (customMusicCats.length) params.set('customMusicCats', customMusicCats.join(','));
   const res = await fetch(`/api/questions?${params}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to load questions');
@@ -660,6 +810,7 @@ async function practiceAgain() {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+state.customCats = loadCustomCats();
 showSetup();
 </script>
 </body>
