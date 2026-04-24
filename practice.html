@@ -164,8 +164,10 @@ function renderSetup() {
 
     const rowStyle = `background:${c.bg};${hasAnySel ? `border-color:${c.border};` : ''}`;
 
+    const allSubsSel = hasSubs && c.subs.every(s => state.categories.includes(s));
     const subPills = expanded && hasSubs ? `
       <div class="cat-subs">
+        <div class="sub-pill${allSubsSel ? ' sel' : ''}" onclick="event.stopPropagation();toggleAllSubs('${c.name}')">All ${c.name.toLowerCase()}</div>
         ${c.subs.map(s => {
           const isSel = state.categories.includes(s);
           return `<div class="sub-pill${isSel ? ' sel' : ''}" onclick="event.stopPropagation();toggleSub('${s.replace(/'/g, "\\'")}','${c.name}')">${s}</div>`;
@@ -263,6 +265,19 @@ function toggleSub(sub, parentCat) {
   state.categories = state.categories.includes(sub)
     ? state.categories.filter(c => c !== sub)
     : [...state.categories, sub];
+  renderSetup();
+}
+
+function toggleAllSubs(catName) {
+  const cat = CATEGORY_DATA.find(c => c.name === catName);
+  if (!cat?.subs) return;
+  const allSelected = cat.subs.every(s => state.categories.includes(s));
+  if (allSelected) {
+    state.categories = state.categories.filter(c => !cat.subs.includes(c));
+  } else {
+    const toAdd = cat.subs.filter(s => !state.categories.includes(s));
+    state.categories = [...state.categories, ...toAdd];
+  }
   renderSetup();
 }
 
