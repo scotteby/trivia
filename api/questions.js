@@ -45,7 +45,7 @@ async function getItunesPreview(artist, song) {
       const query = encodeURIComponent(`${artist} ${song}`);
       const req = https.request({
         hostname: 'itunes.apple.com',
-        path: `/search?term=${query}&attribute=mixedTerm&media=music&entity=song&limit=10`,
+        path: `/search?term=${query}&media=music&entity=song&limit=10`,
         method: 'GET',
         headers: { 'User-Agent': 'TriviaApp/1.0' },
       }, res => {
@@ -66,7 +66,7 @@ async function getItunesPreview(artist, song) {
               return { url: r.previewUrl, score };
             });
             scored.sort((a, b) => b.score - a.score);
-            resolve(scored[0].score > 0 ? scored[0].url : null);
+            resolve(scored[0].url);
           } catch { resolve(null); }
         });
       });

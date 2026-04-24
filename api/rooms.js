@@ -75,7 +75,7 @@ async function getItunesPreview(artist, song) {
     const query = encodeURIComponent(`${artist} ${song}`);
     const { data } = await httpsReq({
       hostname: 'itunes.apple.com',
-      path: `/search?term=${query}&attribute=mixedTerm&media=music&entity=song&limit=10`,
+      path: `/search?term=${query}&media=music&entity=song&limit=10`,
       method: 'GET',
       headers: { 'User-Agent': 'TriviaApp/1.0' },
     }, null);
