@@ -229,7 +229,7 @@ function showSetup() {
     </div>`
   ).join('');
 
-  const timerBtns = [5, 10, 15, 20].map(t =>
+  const timerBtns = [5, 10, 20, 30].map(t =>
     `<div class="rt-btn${state.timer === t ? ' sel' : ''}" onclick="setTimer(${t})" style="padding:8px 12px;">${t}s</div>`
   ).join('');
 
