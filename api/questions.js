@@ -112,23 +112,29 @@ async function getSpotifyToken() {
   });
 }
 
-async function spotifySearch(token, query, offset) {
+async function spotifySearch(token, query) {
   return new Promise(resolve => {
     const q = encodeURIComponent(query);
     const req = https.request({
       hostname: 'api.spotify.com',
-      path: `/v1/search?q=${q}&type=track&limit=50&offset=${offset}`,
+      path: `/v1/search?q=${q}&type=track&limit=50&market=US`,
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
     }, res => {
       let raw = '';
       res.on('data', c => raw += c);
       res.on('end', () => {
-        try { resolve(JSON.parse(raw)?.tracks?.items || []); }
-        catch { resolve([]); }
+        try {
+          const data = JSON.parse(raw);
+          if (res.statusCode !== 200) {
+            console.log(`[spotify] search HTTP ${res.statusCode}:`, data.error?.message || raw.slice(0, 120));
+            return resolve([]);
+          }
+          resolve(data?.tracks?.items || []);
+        } catch { resolve([]); }
       });
     });
-    req.on('error', () => resolve([]));
+    req.on('error', e => { console.log('[spotify] search error:', e.message); resolve([]); });
     req.end();
   });
 }
@@ -138,30 +144,20 @@ async function getSpotifyPreview(artist, song) {
     const token = await getSpotifyToken();
     if (!token) return getItunesPreview(artist, song);
 
-    const query = `${artist} ${song}`;
-    const offset = Math.floor(Math.random() * 100);
-
-    let tracks = await spotifySearch(token, query, offset);
-    let withPreviews = tracks.filter(t => t.preview_url);
-    console.log(`[spotify] "${query}" offset=${offset} total=${tracks.length} withPreviews=${withPreviews.length}`);
-
-    // Retry at offset 0 if random offset returned nothing
-    if (withPreviews.length === 0 && offset > 0) {
-      tracks = await spotifySearch(token, query, 0);
-      withPreviews = tracks.filter(t => t.preview_url);
-      console.log(`[spotify] retry offset=0 total=${tracks.length} withPreviews=${withPreviews.length}`);
-    }
+    const tracks = await spotifySearch(token, `${artist} ${song}`);
+    const withPreviews = tracks.filter(t => t.preview_url);
+    console.log(`[spotify] "${artist} ${song}" total=${tracks.length} withPreviews=${withPreviews.length}`);
 
     if (withPreviews.length === 0) return getItunesPreview(artist, song);
 
-    // Prefer tracks where artist name matches, otherwise use full pool
+    // Prefer tracks where artist name matches, pick randomly from that pool
     const artistLower = artist.toLowerCase();
     const matching = withPreviews.filter(t =>
       t.artists.some(a => a.name.toLowerCase().includes(artistLower.split(' ')[0]))
     );
     const pool = matching.length > 0 ? matching : withPreviews;
     const chosen = pool[Math.floor(Math.random() * pool.length)];
-    console.log(`[spotify] chosen: "${chosen.name}" preview=${chosen.preview_url}`);
+    console.log(`[spotify] chosen: "${chosen.name}" by ${chosen.artists[0]?.name}`);
     return chosen.preview_url;
   } catch (e) {
     console.log('[spotify] getSpotifyPreview error:', e.message);
