@@ -121,8 +121,13 @@ module.exports = async function handler(req, res) {
     const explain = req.query.explain === 'true';
     const avoidRaw = (req.query.avoid || '').replace(/\+/g, ' ');
     const avoidList = avoidRaw ? avoidRaw.split('||').map(s => s.trim()).filter(Boolean) : [];
-    const avoidBlock = avoidList.length > 0
-      ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidList.map(q => `- ${q}`).join('\n')}\n`
+    const avoidSongs = avoidList.filter(s => s.includes(' - '));
+    const avoidQuestions = avoidList.filter(s => !s.includes(' - '));
+    const avoidQBlock = avoidQuestions.length > 0
+      ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidQuestions.map(q => `- ${q}`).join('\n')}\n`
+      : '';
+    const avoidSongBlock = avoidSongs.length > 0
+      ? `Do NOT use any of these artist-song combinations:\n${avoidSongs.map(s => `- ${s}`).join('\n')}`
       : '';
 
     const difficultyInstructions = {
@@ -163,7 +168,7 @@ module.exports = async function handler(req, res) {
 {"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
 Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"
 Music constraint (follow strictly): ${getMusicConstraint(genreMusicCats[0] || 'music')}
-Session seed (ignore): ${Date.now()}-${Math.random()}`);
+Session seed (ignore): ${Date.now()}-${Math.random()}${avoidSongBlock ? '\n' + avoidSongBlock : ''}`);
     }
     if (artistTypeCats.length > 0) {
       fmtParts.push(`For artist categories (${artistTypeCats.join(', ')}): the category IS the artist — NEVER ask "Who is this artist?". Only use: "What is this song called?", "What year was this released?". Wrong answer options must be other songs or years by the same artist.
@@ -178,7 +183,7 @@ Session seed (ignore): ${Date.now()}-${Math.random()}`);
           role: 'user',
           content: `Generate exactly ${totalCount} practice trivia questions: ${perCat} per category, in this order: ${cats.map(c => `"${c}"`).join(', ')}.
 ${fmtParts.join('\n\n')}
-${difficultyLine}${avoidBlock}
+${difficultyLine}${avoidQBlock}
 Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });

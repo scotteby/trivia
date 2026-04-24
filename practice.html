@@ -104,6 +104,7 @@ let state = {
   questions: [],
   currentIdx: 0,
   answers: [],
+  askedSongs: [],
   hasAnswered: false,
   timerInterval: null,
   clipPhaseTimeout: null,
@@ -518,10 +519,11 @@ async function fetchQuestions() {
     difficulty: state.difficulty,
     explain: state.explainEnabled ? 'true' : 'false',
   });
-  if (state.questions.length > 0) {
-    const avoid = state.questions.map(q => q.q).join('||');
-    params.set('avoid', avoid);
-  }
+  const avoidItems = [
+    ...state.questions.map(q => q.q),
+    ...state.askedSongs,
+  ];
+  if (avoidItems.length) params.set('avoid', avoidItems.join('||'));
   const customMusicCats = state.customCats.filter(c => c.music && state.categories.includes(c.name));
   if (customMusicCats.length) {
     params.set('customMusicCats', customMusicCats.map(c => c.name).join(','));
@@ -547,6 +549,7 @@ async function startPractice() {
   state.questions = [];
   state.currentIdx = 0;
   state.answers = [];
+  state.askedSongs = [];
   state.hasAnswered = false;
   state.totalAnswered = 0;
 
@@ -691,6 +694,7 @@ function submitAnswer(idx) {
   revealMusicInfo(q);
 
   state.answers.push({ cat: q.cat, correct, q: q.q, yourAnswer: q.opts[idx], correctAnswer: q.opts[q.ans] });
+  if (q.artist && q.song) state.askedSongs.push(`${q.artist} - ${q.song}`);
   state.totalAnswered++;
 
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
@@ -714,6 +718,7 @@ function timeUp() {
   const correctEl = document.getElementById('opt' + q.ans);
   if (correctEl) correctEl.classList.add('correct');
   state.answers.push({ cat: q.cat, correct: false, q: q.q, yourAnswer: null, correctAnswer: q.opts[q.ans] });
+  if (q.artist && q.song) state.askedSongs.push(`${q.artist} - ${q.song}`);
   state.totalAnswered++;
   showFeedback(false, q, true);
 }
@@ -845,6 +850,7 @@ async function practiceAgain() {
   state.questions = [];
   state.currentIdx = 0;
   state.answers = [];
+  state.askedSongs = [];
   state.hasAnswered = false;
   state.totalAnswered = 0;
   showLoading();
