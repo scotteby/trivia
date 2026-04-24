@@ -117,7 +117,7 @@ async function spotifySearch(token, query) {
     const q = encodeURIComponent(query);
     const req = https.request({
       hostname: 'api.spotify.com',
-      path: `/v1/search?q=${q}&type=track&limit=50&market=US`,
+      path: `/v1/search?q=${q}&type=track&limit=20&offset=0&market=US`,
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
     }, res => {
