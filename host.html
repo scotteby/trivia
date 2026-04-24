@@ -966,7 +966,7 @@ async function playAgain() {
   showLobby();
 }
 
-function newGame() {
+async function newGame() {
   if (!confirm('End this game and start a new one?')) return;
   stopClip();
   clearInterval(state.timerInterval);
@@ -974,7 +974,7 @@ function newGame() {
   if (state.subscription) state.subscription.unsubscribe();
   // Mark room finished so players see the game ended
   if (state.room) {
-    sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id).catch(() => {});
+    await sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id);
   }
   state.room = null;
   state.players = [];
