@@ -376,6 +376,9 @@ function showLobby() {
 
   setHTML(`
     <div class="fade-in">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="newGame()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:12px;color:#555;cursor:pointer;">✕ New game</button>
+      </div>
       <div style="text-align:center;margin-bottom:28px;">
         <div style="font-size:13px;color:#555;margin-bottom:6px;">Players join at</div>
         <div style="font-size:15px;color:#7c3aed;margin-bottom:16px;">${joinUrl}</div>
@@ -469,7 +472,7 @@ function showIngame() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:13px;color:#7c3aed;font-weight:500;">Trivia Night</div>
+        <button onclick="newGame()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:5px 10px;font-size:12px;color:#555;cursor:pointer;">✕ New game</button>
         <div style="font-size:12px;color:#555;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}</div>
         <div style="background:#1e1e35;border:1px solid #2a2a48;border-radius:20px;padding:4px 14px;font-size:13px;color:#a78bfa;font-weight:500;">Join: <span style="color:#fff;letter-spacing:.1em;">${room.room_code}</span></div>
       </div>
@@ -757,6 +760,24 @@ async function playAgain() {
   state.revealed = false;
 
   showLobby();
+}
+
+function newGame() {
+  if (!confirm('End this game and start a new one?')) return;
+  stopClip();
+  clearInterval(state.timerInterval);
+  clearInterval(state.autoAdvanceTimeout);
+  if (state.subscription) state.subscription.unsubscribe();
+  // Mark room finished so players see the game ended
+  if (state.room) {
+    sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id).catch(() => {});
+  }
+  state.room = null;
+  state.players = [];
+  state.revealed = false;
+  state.autoAdvanceTimeout = null;
+  state.subscription = null;
+  showSetup();
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
