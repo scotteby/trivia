@@ -37,6 +37,7 @@ function parseQuestions(json) {
   return JSON.parse(text);
 }
 
+// ─── iTunes fallback ──────────────────────────────────────────────────────────
 async function getItunesPreview(artist, song) {
   return new Promise(resolve => {
     try {
@@ -67,10 +68,102 @@ async function getItunesPreview(artist, song) {
   });
 }
 
+// ─── Spotify ──────────────────────────────────────────────────────────────────
+let _spotifyToken = null;
+let _spotifyTokenExpiry = 0;
+
+async function getSpotifyToken() {
+  if (_spotifyToken && Date.now() < _spotifyTokenExpiry) return _spotifyToken;
+  const id = process.env.SPOTIFY_CLIENT_ID;
+  const secret = process.env.SPOTIFY_CLIENT_SECRET;
+  if (!id || !secret) return null;
+  const creds = Buffer.from(`${id}:${secret}`).toString('base64');
+  const body = 'grant_type=client_credentials';
+  return new Promise(resolve => {
+    const req = https.request({
+      hostname: 'accounts.spotify.com',
+      path: '/api/token',
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${creds}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, res => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(raw);
+          if (!data.access_token) return resolve(null);
+          _spotifyToken = data.access_token;
+          _spotifyTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+          resolve(_spotifyToken);
+        } catch { resolve(null); }
+      });
+    });
+    req.on('error', () => resolve(null));
+    req.write(body);
+    req.end();
+  });
+}
+
+async function spotifySearch(token, query, offset) {
+  return new Promise(resolve => {
+    const q = encodeURIComponent(query);
+    const req = https.request({
+      hostname: 'api.spotify.com',
+      path: `/v1/search?q=${q}&type=track&limit=50&offset=${offset}`,
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+    }, res => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(raw)?.tracks?.items || []); }
+        catch { resolve([]); }
+      });
+    });
+    req.on('error', () => resolve([]));
+    req.end();
+  });
+}
+
+async function getSpotifyPreview(artist, song) {
+  try {
+    const token = await getSpotifyToken();
+    if (!token) return getItunesPreview(artist, song);
+
+    const query = `${artist} ${song}`;
+    const offset = Math.floor(Math.random() * 100);
+
+    let tracks = await spotifySearch(token, query, offset);
+    let withPreviews = tracks.filter(t => t.preview_url);
+
+    // Retry at offset 0 if random offset returned nothing
+    if (withPreviews.length === 0 && offset > 0) {
+      tracks = await spotifySearch(token, query, 0);
+      withPreviews = tracks.filter(t => t.preview_url);
+    }
+
+    if (withPreviews.length === 0) return getItunesPreview(artist, song);
+
+    // Prefer tracks where artist name matches, otherwise use full pool
+    const artistLower = artist.toLowerCase();
+    const matching = withPreviews.filter(t =>
+      t.artists.some(a => a.name.toLowerCase().includes(artistLower.split(' ')[0]))
+    );
+    const pool = matching.length > 0 ? matching : withPreviews;
+    return pool[Math.floor(Math.random() * pool.length)].preview_url;
+  } catch {
+    return getItunesPreview(artist, song);
+  }
+}
+
 async function enrichWithPreviews(questions) {
   await Promise.all(questions.map(async q => {
     if (q.type === 'music' && q.artist && q.song) {
-      q.preview_url = await getItunesPreview(q.artist, q.song);
+      q.preview_url = await getSpotifyPreview(q.artist, q.song);
     }
   }));
   return questions;
