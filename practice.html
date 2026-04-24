@@ -28,7 +28,8 @@ body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-syste
 .timer-ok { color: #7c3aed; border-color: #7c3aed44; background: #1e1e35; }
 .timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
 .timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
-.timer-music { color: #60a5fa; border-color: #378add44; background: #0a1a2e; }
+.timer-music { color: #60a5fa; border-color: #378add44; background: #0a1a2e; animation: musicPulse 1.4s ease-in-out infinite; }
+@keyframes musicPulse { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
 .toggle-track { width: 44px; height: 24px; border-radius: 12px; position: relative; flex-shrink: 0; cursor: pointer; transition: background .2s; }
 .toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; transition: left .2s; }
@@ -369,11 +370,12 @@ function showQuestion() {
 
   const musicBanner = isMusic ? `
     <div class="music-banner">
-      <div style="display:flex;align-items:center;gap:3px;" id="waveform">${hasClip ? waveformHTML() : '<div style="font-size:18px;opacity:.5;">♪</div>'}</div>
-      <div>
-        <div style="font-size:13px;font-weight:500;color:#60a5fa;">${q.artist || ''}</div>
-        <div style="font-size:11px;color:#378add;margin-top:1px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>
-        ${!hasClip ? `<div style="font-size:10px;color:#555;margin-top:2px;">No preview available</div>` : ''}
+      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">${hasClip ? waveformHTML() : '<div style="font-size:22px;opacity:.4;">♪</div>'}</div>
+      <div id="musicInfo">
+        ${hasClip
+          ? `<div style="font-size:13px;font-weight:500;color:#60a5fa;">Playing audio clip…</div>
+             <div style="font-size:11px;color:#378add;margin-top:2px;">Listen and pick your answer</div>`
+          : `<div style="font-size:13px;color:#555;">No preview available</div>`}
       </div>
     </div>` : '';
 
@@ -447,16 +449,23 @@ function startPracticeTimer(duration) {
   }, 1000);
 }
 
+function revealMusicInfo(q) {
+  const el = document.getElementById('musicInfo');
+  if (!el || !q.artist) return;
+  el.innerHTML = `<div style="font-size:13px;font-weight:500;color:#60a5fa;">${q.artist}</div>
+    <div style="font-size:11px;color:#378add;margin-top:2px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>`;
+}
+
 function submitAnswer(idx) {
   if (state.hasAnswered) return;
   clearInterval(state.timerInterval);
   clearTimeout(state.clipPhaseTimeout);
   state.clipPhaseTimeout = null;
-  stopClip();
   state.hasAnswered = true;
 
   const q = state.questions[state.currentIdx];
   const correct = idx === q.ans;
+  revealMusicInfo(q);
 
   state.answers.push({ cat: q.cat, correct, q: q.q, yourAnswer: q.opts[idx], correctAnswer: q.opts[q.ans] });
   state.totalAnswered++;
@@ -476,8 +485,8 @@ function timeUp() {
   state.hasAnswered = true;
   clearTimeout(state.clipPhaseTimeout);
   state.clipPhaseTimeout = null;
-  stopClip();
   const q = state.questions[state.currentIdx];
+  revealMusicInfo(q);
   document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
   const correctEl = document.getElementById('opt' + q.ans);
   if (correctEl) correctEl.classList.add('correct');
