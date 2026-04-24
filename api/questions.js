@@ -87,13 +87,14 @@ async function getItunesPreview(artist, song) {
 }
 
 // ─── iTunes: fetch raw results for one search term ───────────────────────────
-function fetchItunesTracks(term, offset) {
+function fetchItunesTracks(term, offset, attribute = null) {
   const query = encodeURIComponent(term);
+  const attrParam = attribute ? `&attribute=${attribute}` : '';
   return new Promise(resolve => {
     try {
       const req = https.request({
         hostname: 'itunes.apple.com',
-        path: `/search?term=${query}&media=music&entity=song&limit=50&offset=${offset}`,
+        path: `/search?term=${query}&media=music&entity=song&limit=50&offset=${offset}${attrParam}`,
         method: 'GET',
         headers: { 'User-Agent': 'TriviaApp/1.0' },
       }, res => {
@@ -114,32 +115,58 @@ function fetchItunesTracks(term, offset) {
 }
 
 // ─── iTunes: search by category, retry on low results, filter used tracks ────
-// usedTracks: Set of "artistName|trackName" strings already used this session
-async function searchItunesTracks(category, usedTracks = new Set()) {
-  const terms = CAT_SEARCH_TERMS[category.toLowerCase().trim()] || CAT_SEARCH_TERMS['music'];
-  // Shuffle terms so each call starts from a different one
-  const shuffled = [...terms].sort(() => Math.random() - 0.5);
+// musicType: 'genre' | 'artist' | 'soundtrack'
+async function searchItunesTracks(category, usedTracks = new Set(), musicType = 'genre') {
+  let terms, attribute = null;
 
-  for (const term of shuffled) {
-    const offset = Math.floor(Math.random() * 151);
-    const results = await fetchItunesTracks(term, offset);
-    const fresh = results.filter(
-      r => !usedTracks.has(`${r.artistName}|${r.trackName}`)
-    );
-    if (fresh.length >= 5) return fresh;
-    // Too few results with previews — try next term
+  if (musicType === 'artist') {
+    terms = [category];        // search for the artist by name
+    attribute = 'artistTerm';
+  } else if (musicType === 'soundtrack') {
+    terms = [category];        // search for the album/soundtrack by name
+    attribute = 'albumTerm';
+  } else {
+    terms = CAT_SEARCH_TERMS[category.toLowerCase().trim()] || CAT_SEARCH_TERMS['music'];
+  }
+
+  // Shuffle genre terms for variety; artist/soundtrack have only one term
+  const ordered = musicType === 'genre' ? [...terms].sort(() => Math.random() - 0.5) : terms;
+
+  for (const term of ordered) {
+    // Use a smaller offset for artist/soundtrack so we don't skip past all tracks
+    const offset = musicType === 'genre'
+      ? Math.floor(Math.random() * 151)
+      : Math.floor(Math.random() * 10);
+    const results = await fetchItunesTracks(term, offset, attribute);
+    const fresh = results.filter(r => !usedTracks.has(`${r.artistName}|${r.trackName}`));
+    if (musicType === 'genre') {
+      if (fresh.length >= 5) return fresh;
+    } else {
+      if (fresh.length > 0) return fresh; // accept any results for artist/soundtrack
+    }
   }
   return [];
 }
 
 // ─── Generate one music question around a specific iTunes track ───────────────
-async function generateMusicQuestion(track, category, explain) {
+// musicType: 'genre' | 'artist' | 'soundtrack'
+async function generateMusicQuestion(track, category, explain, musicType = 'genre') {
   const artist = track.artistName;
   const song = track.trackName;
   const year = track.releaseDate ? new Date(track.releaseDate).getFullYear() : null;
+  const album = track.collectionName || null;
 
-  const questionTypes = ['artist', 'song'];
-  if (year) questionTypes.push('year');
+  // Artist categories: asking "Who is this artist?" gives away the answer since
+  // the category name IS the artist. Prefer song/year/album instead.
+  let questionTypes;
+  if (musicType === 'artist') {
+    questionTypes = ['song'];
+    if (year) questionTypes.push('year');
+    if (album) questionTypes.push('album');
+  } else {
+    questionTypes = ['artist', 'song'];
+    if (year) questionTypes.push('year');
+  }
   const qType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
 
   let qText, correctAnswer;
@@ -149,25 +176,49 @@ async function generateMusicQuestion(track, category, explain) {
   } else if (qType === 'song') {
     qText = 'What is this song called?';
     correctAnswer = song;
-  } else {
+  } else if (qType === 'year') {
     qText = 'What year was this released?';
     correctAnswer = String(year);
+  } else {
+    qText = 'What album is this song from?';
+    correctAnswer = album;
   }
 
   const explainInstruction = explain
     ? ' Include an "explanation" field: one concise sentence explaining why the answer is correct.'
     : '';
 
+  // Type-specific context and distractor instructions
+  let contextLine = '';
+  let distractorGuide = '';
+
+  if (musicType === 'artist') {
+    contextLine = `This is a question about a song by ${artist}.`;
+    distractorGuide = `Write 3 plausible but wrong distractors drawn specifically from ${artist}'s catalog:
+- "What is this song called?" → other real ${artist} song titles from their discography
+- "What year was this released?" → other years when ${artist} released music (within ~5 years)
+- "What album is this song from?" → other real ${artist} album names`;
+  } else if (musicType === 'soundtrack') {
+    contextLine = `This track is from the "${category}" soundtrack.`;
+    distractorGuide = `Write 3 plausible but wrong distractors relevant to "${category}":
+- "What is this song called?" → other plausible song names from the ${category} soundtrack or similar musicals/films
+- "What year was this released?" → nearby years within 4 years
+- "Who is this artist?" → other artists associated with soundtracks`;
+  } else {
+    distractorGuide = `Write 3 plausible but wrong distractors:
+- "Who is this artist?" → other real artists from a similar era/genre
+- "What is this song called?" → other plausible song titles (real or believable)
+- "What year was this released?" → nearby years within 4 years of ${year}`;
+  }
+
+  const albumLine = qType === 'album' ? `\nAlbum: "${album}"` : '';
   const prompt = `You are writing one music trivia question for a pub quiz.
-Track: "${song}" by ${artist}${year ? ` (${year})` : ''}
-Category: ${category}
+${contextLine}
+Track: "${song}" by ${artist}${year ? ` (${year})` : ''}${albumLine}
 Question: "${qText}"
 Correct answer: "${correctAnswer}"
 
-Write 3 plausible but wrong distractors:
-- "Who is this artist?" → other real artists from a similar era/genre
-- "What is this song called?" → other plausible song titles (real or believable)
-- "What year was this released?" → nearby years within 4 years of ${year}
+${distractorGuide}
 
 Return ONLY a JSON object, no markdown, no extra text.${explainInstruction}
 Randomise the correct answer's position among the 4 opts and set "ans" to its 0-based index.
@@ -175,7 +226,7 @@ Format: {"type":"music","artist":"${artist}","song":"${song}","year":${year ?? n
 
   const json = await callAnthropic({
     model: 'claude-sonnet-4-6',
-    max_tokens: 300,
+    max_tokens: 350,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -188,27 +239,28 @@ Format: {"type":"music","artist":"${artist}","song":"${song}","year":${year ?? n
 }
 
 // ─── Generate music questions for multiple categories ─────────────────────────
-// Tracks used tracks across all categories to avoid duplicates within a session
-async function generateMusicQuestions(musicCats, perCat, explain) {
+// customCatsMeta: { [catName]: { musicType: 'genre'|'artist'|'soundtrack' } }
+async function generateMusicQuestions(musicCats, perCat, explain, customCatsMeta = {}) {
   const usedTracks = new Set();
   const trackAssignments = [];
 
   // Pick tracks sequentially so usedTracks stays consistent
   for (const cat of musicCats) {
     try {
-      const results = await searchItunesTracks(cat, usedTracks);
+      const musicType = customCatsMeta[cat]?.musicType || 'genre';
+      const results = await searchItunesTracks(cat, usedTracks, musicType);
       const chosen = results.slice(0, perCat);
       for (const track of chosen) {
         usedTracks.add(`${track.artistName}|${track.trackName}`);
-        trackAssignments.push({ track, cat });
+        trackAssignments.push({ track, cat, musicType });
       }
     } catch { /* skip this cat */ }
   }
 
   // Generate all questions in parallel now that tracks are locked in
   const questions = await Promise.all(
-    trackAssignments.map(({ track, cat }) =>
-      generateMusicQuestion(track, cat, explain).catch(() => null)
+    trackAssignments.map(({ track, cat, musicType }) =>
+      generateMusicQuestion(track, cat, explain, musicType).catch(() => null)
     )
   );
   return questions.filter(Boolean);
@@ -247,6 +299,9 @@ module.exports = async function handler(req, res) {
     const customMusicSet = new Set(customMusicRaw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
     const isMusicCatEx = c => isMusicCat(c) || customMusicSet.has(c.toLowerCase().trim());
 
+    let customCatsMeta = {};
+    try { if (req.query.customCatsMeta) customCatsMeta = JSON.parse(req.query.customCatsMeta); } catch {}
+
     const musicCats   = cats.filter(isMusicCatEx);
     const generalCats = cats.filter(c => !isMusicCatEx(c));
     const hasMusicCats = musicCats.length > 0;
@@ -279,7 +334,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
       // Music questions: search iTunes first, then have Claude write around the track
       let musicQuestions = [];
       if (hasMusicCats) {
-        musicQuestions = await generateMusicQuestions(musicCats, perCat, explain);
+        musicQuestions = await generateMusicQuestions(musicCats, perCat, explain, customCatsMeta);
       }
 
       // Interleave general and music questions for variety

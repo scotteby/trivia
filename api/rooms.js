@@ -109,7 +109,7 @@ async function getRecentQuestions() {
 }
 
 // ─── Question generation ─────────────────────────────────────
-async function generateQuestions(categories, total, difficulty = 'mixed', customMusicCats = []) {
+async function generateQuestions(categories, total, difficulty = 'mixed', customMusicCats = [], customCatsMeta = {}) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Missing ANTHROPIC_API_KEY env var');
 
   const customMusicSet = new Set(customMusicCats.map(s => s.toLowerCase()));
@@ -118,20 +118,28 @@ async function generateQuestions(categories, total, difficulty = 'mixed', custom
   const musicCats   = categories.filter(isMusicCatEx);
   const generalCats = categories.filter(c => !isMusicCatEx(c));
 
+  const artistTypeCats = musicCats.filter(c => customCatsMeta[c]?.musicType === 'artist');
+  const genreMusicCats = musicCats.filter(c => customCatsMeta[c]?.musicType !== 'artist');
+
   let fmt = '';
+  const musicFmt = `{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
+  const artistCatRules = artistTypeCats.length > 0
+    ? `\nFor ARTIST categories (${artistTypeCats.join(', ')}): the category IS the artist — never ask "Who is this artist?". Only use question types: "What is this song?", "What year was this released?", "What album is this from?". Wrong answer options must be other songs, years, or albums by the SAME artist.`
+    : '';
+
   if (musicCats.length > 0 && generalCats.length > 0) {
     fmt = `
 For MUSIC categories (${musicCats.join(', ')}), use this format — "artist" and "song" are required:
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
-Alternate "q" randomly between "Who is this artist?" and "What is this song?".
+${musicFmt}
+For genre/era music categories, alternate "q" randomly between "Who is this artist?" and "What is this song?".${artistCatRules}
 
 For all other categories (${generalCats.join(', ')}):
 {"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
   } else if (musicCats.length > 0) {
     fmt = `
 All questions are music questions:
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
-Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
+${musicFmt}
+For genre/era music categories, alternate "q" randomly between "Who is this artist?" and "What is this song?".${artistCatRules}`;
   } else {
     fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
   }
@@ -234,6 +242,7 @@ module.exports = async function handler(req, res) {
       ? cfg.categories
       : (PRESETS[preset] || PRESETS.mixed).categories;
     const customMusicCats = Array.isArray(cfg.customMusicCats) ? cfg.customMusicCats : [];
+    const customCatsMeta  = (cfg.customCatsMeta && typeof cfg.customCatsMeta === 'object') ? cfg.customCatsMeta : {};
     const total           = rounds * 5;
 
     try {
@@ -243,7 +252,7 @@ module.exports = async function handler(req, res) {
       // questionsOnly mode: generate fresh questions without creating a room
       // (used by "Play again" to keep the same room code)
       if (req.query?.questionsOnly === 'true') {
-        const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats);
+        const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta);
         const questions = await enrichWithPreviews(rawQuestions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
@@ -251,7 +260,7 @@ module.exports = async function handler(req, res) {
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),
-        generateQuestions(categories, total, difficulty, customMusicCats),
+        generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta),
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
 

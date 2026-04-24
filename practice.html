@@ -67,6 +67,7 @@ const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Po
 const MUSIC_SUGGESTIONS = new Set(['Taylor Swift', 'Beatles songs', 'Elvis Presley', 'Beyoncé', 'Michael Jackson']);
 let _customInput = '';
 let _customMusicFlag = false;
+let _customMusicType = 'genre'; // 'genre' | 'artist' | 'soundtrack'
 
 const CATEGORY_DATA = [
   { name: 'General Knowledge', icon: '🧠', color: '#a78bfa', border: '#7c3aed', bg: '#1a1535', music: false, subs: null },
@@ -154,11 +155,12 @@ function addCustomCat(name, music) {
   const n = name.trim();
   if (n.length < 2 || state.customCats.length >= 10) return;
   if (state.customCats.find(c => c.name.toLowerCase() === n.toLowerCase())) return;
-  state.customCats.push({ name: n, music });
+  state.customCats.push({ name: n, music, musicType: music ? _customMusicType : null });
   saveCustomCats();
   if (!state.categories.includes(n)) state.categories.push(n);
   _customInput = '';
   _customMusicFlag = false;
+  _customMusicType = 'genre';
   renderSetup();
 }
 function removeCustomCat(name) {
@@ -210,8 +212,22 @@ function tryAddCustomCat() {
 }
 function toggleMusicFlag() {
   _customMusicFlag = !_customMusicFlag;
+  if (!_customMusicFlag) _customMusicType = 'genre';
   updateMusicToggleUI();
   updateMusicHint(_customInput.trim());
+  const typeRow = document.getElementById('musicTypeRow');
+  if (typeRow) typeRow.style.display = _customMusicFlag ? 'block' : 'none';
+}
+function setCustomMusicType(t) {
+  _customMusicType = t;
+  ['artist', 'genre', 'soundtrack'].forEach(type => {
+    const el = document.getElementById('customType_' + type);
+    if (!el) return;
+    const sel = type === t;
+    el.style.background = sel ? '#1a1535' : '#16162a';
+    el.style.borderColor = sel ? '#7c3aed' : '#2a2a48';
+    el.querySelector('.type-label').style.color = sel ? '#c4b5fd' : '#888';
+  });
 }
 function updateMusicToggleUI() {
   const track = document.getElementById('musicToggleTrack');
@@ -236,12 +252,15 @@ function getSelectedSubs(cat) {
 }
 
 function buildCustomSection() {
+  const TYPE_ICONS = { artist: '🎤', genre: '🎵', soundtrack: '🎬' };
+
   const chips = state.customCats.map(c => {
     const sel = state.categories.includes(c.name);
     const en = c.name.replace(/'/g, "\\'");
+    const icon = c.music ? (TYPE_ICONS[c.musicType] || '🎵') : '';
     return `<div onclick="toggleCustomCatSel('${en}');event.stopPropagation();"
       style="display:flex;align-items:center;gap:4px;background:${c.music ? '#0a1a2e' : '#1e1e35'};border:1px solid ${c.music ? (sel ? '#378add' : '#378add55') : (sel ? '#7c3aed' : '#2a2a48')};border-radius:20px;padding:5px 10px 5px 8px;cursor:pointer;transition:border-color .15s;">
-      ${c.music ? '<span style="font-size:10px;">🎵</span>' : ''}
+      ${icon ? `<span style="font-size:10px;">${icon}</span>` : ''}
       <span style="font-size:12px;color:${c.music ? (sel ? '#60a5fa' : '#3c6d9e') : (sel ? '#c4b5fd' : '#666')};">${c.name}</span>
       ${sel ? '<span style="font-size:10px;color:#7c3aed;margin-left:2px;">✓</span>' : ''}
       <button onclick="event.stopPropagation();removeCustomCat('${en}')"
@@ -253,6 +272,26 @@ function buildCustomSection() {
   const showToggle = _customInput.trim().length >= 2;
   const hintText = _customMusicFlag && _customInput.trim() ? `iTunes will search for "${_customInput.trim()}" clips` : '';
   const escapedVal = _customInput.replace(/"/g, '&quot;');
+
+  const typeSelector = `
+    <div id="musicTypeRow" style="display:${_customMusicFlag ? 'block' : 'none'};margin-top:10px;padding-top:10px;border-top:1px solid #378add22;">
+      <div style="font-size:11px;color:#555;margin-bottom:6px;">Category type:</div>
+      <div style="display:flex;gap:6px;">
+        ${[
+          { type: 'artist',     icon: '🎤', label: 'Artist',     ex: 'e.g. Taylor Swift' },
+          { type: 'genre',      icon: '🎵', label: 'Genre',      ex: 'e.g. 80s pop'      },
+          { type: 'soundtrack', icon: '🎬', label: 'Soundtrack', ex: 'e.g. Grease'       },
+        ].map(({ type, icon, label, ex }) => {
+          const sel = _customMusicType === type;
+          return `<div id="customType_${type}" onclick="setCustomMusicType('${type}')"
+            style="flex:1;background:${sel ? '#1a1535' : '#16162a'};border:1px solid ${sel ? '#7c3aed' : '#2a2a48'};border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;">
+            <div style="font-size:16px;">${icon}</div>
+            <div class="type-label" style="font-size:12px;color:${sel ? '#c4b5fd' : '#888'};margin-top:2px;">${label}</div>
+            <div style="font-size:10px;color:#444;margin-top:1px;">${ex}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
 
   const inputSection = state.customCats.length < 10 ? `
     <div style="position:relative;">
@@ -266,14 +305,17 @@ function buildCustomSection() {
       <div id="customSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:68px;background:#16162a;border:1px solid #2a2a48;border-radius:8px;z-index:10;overflow:hidden;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px #00000066;"></div>
     </div>
     <div id="musicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
-      <div style="display:flex;align-items:center;gap:12px;background:#0a1a2e;border:1px solid #378add22;border-radius:8px;padding:10px 12px;">
-        <div style="flex:1;">
-          <div style="font-size:12px;color:#60a5fa;">🎵 Music category — find a clip and identify the artist or song</div>
-          <div id="musicHint" style="font-size:11px;color:#378add88;margin-top:3px;">${hintText}</div>
+      <div style="background:#0a1a2e;border:1px solid #378add22;border-radius:8px;padding:10px 12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="font-size:12px;color:#60a5fa;">🎵 Music category — find a clip and identify the artist or song</div>
+            <div id="musicHint" style="font-size:11px;color:#378add88;margin-top:3px;">${hintText}</div>
+          </div>
+          <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#378add' : '#2a2a48'};">
+            <div class="toggle-thumb" id="musicToggleThumb" style="left:${_customMusicFlag ? '23px' : '3px'};"></div>
+          </div>
         </div>
-        <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#378add' : '#2a2a48'};">
-          <div class="toggle-thumb" id="musicToggleThumb" style="left:${_customMusicFlag ? '23px' : '3px'};"></div>
-        </div>
+        ${typeSelector}
       </div>
     </div>` : `<div style="font-size:11px;color:#555;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
 
@@ -480,8 +522,13 @@ async function fetchQuestions() {
     const avoid = state.questions.map(q => q.q).join('||');
     params.set('avoid', avoid);
   }
-  const customMusicCats = state.customCats.filter(c => c.music && state.categories.includes(c.name)).map(c => c.name);
-  if (customMusicCats.length) params.set('customMusicCats', customMusicCats.join(','));
+  const customMusicCats = state.customCats.filter(c => c.music && state.categories.includes(c.name));
+  if (customMusicCats.length) {
+    params.set('customMusicCats', customMusicCats.map(c => c.name).join(','));
+    const meta = {};
+    customMusicCats.forEach(c => { meta[c.name] = { musicType: c.musicType || 'genre' }; });
+    params.set('customCatsMeta', JSON.stringify(meta));
+  }
   const res = await fetch(`/api/questions?${params}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to load questions');

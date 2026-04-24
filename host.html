@@ -195,6 +195,7 @@ const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Po
 const MUSIC_SUGGESTIONS = new Set(['Taylor Swift', 'Beatles songs', 'Elvis Presley', 'Beyoncé', 'Michael Jackson']);
 let _hostCustomInput = '';
 let _hostCustomMusicFlag = false;
+let _hostCustomMusicType = 'genre';
 
 function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
 
@@ -223,10 +224,11 @@ function addCustomCatHost(name, music) {
   const n = name.trim();
   if (n.length < 2 || state.customCats.length >= 10) return;
   if (state.customCats.find(c => c.name.toLowerCase() === n.toLowerCase())) return;
-  state.customCats.push({ name: n, music });
+  state.customCats.push({ name: n, music, musicType: music ? _hostCustomMusicType : null });
   saveCustomCats();
   _hostCustomInput = '';
   _hostCustomMusicFlag = false;
+  _hostCustomMusicType = 'genre';
   document.getElementById('cat-picker').innerHTML = pickerHTML();
   if (_hostCustomInput) onHostCustomInput(_hostCustomInput);
 }
@@ -273,8 +275,11 @@ function tryAddCustomCatHost() {
 }
 function toggleMusicFlagHost() {
   _hostCustomMusicFlag = !_hostCustomMusicFlag;
+  if (!_hostCustomMusicFlag) _hostCustomMusicType = 'genre';
   updateMusicToggleUIHost();
   updateMusicHintHost(_hostCustomInput.trim());
+  const typeRow = document.getElementById('hostMusicTypeRow');
+  if (typeRow) typeRow.style.display = _hostCustomMusicFlag ? 'block' : 'none';
 }
 function updateMusicToggleUIHost() {
   const track = document.getElementById('hostMusicToggleTrack');
@@ -285,6 +290,17 @@ function updateMusicToggleUIHost() {
 function updateMusicHintHost(name) {
   const el = document.getElementById('hostMusicHint');
   if (el) el.textContent = _hostCustomMusicFlag && name ? `iTunes will search for "${name}" clips` : '';
+}
+function setHostCustomMusicType(t) {
+  _hostCustomMusicType = t;
+  ['artist', 'genre', 'soundtrack'].forEach(type => {
+    const el = document.getElementById('hostCustomType_' + type);
+    if (!el) return;
+    const sel = type === t;
+    el.style.background = sel ? '#1a1535' : '#16162a';
+    el.style.borderColor = sel ? '#7c3aed' : '#2a2a48';
+    el.querySelector('.type-label').style.color = sel ? '#c4b5fd' : '#888';
+  });
 }
 
 // ─── SETUP SCREEN ─────────────────────────────────────────────────────────────
@@ -489,12 +505,14 @@ function pickerHTML() {
         <div style="font-size:11px;color:#555;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
       </div>`).join('');
 
+    const TYPE_ICONS_HOST = { artist: '🎤', genre: '🎵', soundtrack: '🎬' };
     const customCards = state.customCats.map(c => {
       const en = c.name.replace(/'/g, "\\'");
+      const icon = c.music ? (TYPE_ICONS_HOST[c.musicType] || '🎵') : '💬';
       return `<div style="position:relative;">
         <div onclick="applyCategory(${roundIdx},'${en}',event)"
           style="background:${c.music ? '#0f1a2e' : '#16162a'};border:1px solid ${c.music ? '#378add44' : '#2a2a48'};border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;">
-          <div style="font-size:22px;margin-bottom:6px;">${c.music ? '🎵' : '💬'}</div>
+          <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
           <div style="font-size:13px;font-weight:500;color:${c.music ? '#60a5fa' : '#e8e8f0'};">${c.name}</div>
           <div style="font-size:11px;color:#555;margin-top:3px;">${c.music ? 'Music clip' : 'Custom'}</div>
         </div>
@@ -534,6 +552,17 @@ function pickerHTML() {
               <div onclick="toggleMusicFlagHost()" id="hostMusicToggleTrack"
                 style="width:44px;height:24px;border-radius:12px;position:relative;flex-shrink:0;cursor:pointer;transition:background .2s;background:${_hostCustomMusicFlag ? '#378add' : '#2a2a48'};">
                 <div id="hostMusicToggleThumb" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${_hostCustomMusicFlag ? '23px' : '3px'};transition:left .2s;"></div>
+              </div>
+            </div>
+            <div id="hostMusicTypeRow" style="display:${_hostCustomMusicFlag ? 'block' : 'none'};margin-top:6px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+                ${[['artist','🎤','Artist','e.g. Taylor Swift'],['genre','🎵','Genre','e.g. 80s pop'],['soundtrack','🎬','Soundtrack','e.g. Grease']].map(([type,icon,label,ex]) => `
+                  <div id="hostCustomType_${type}" onclick="setHostCustomMusicType('${type}')"
+                    style="background:${_hostCustomMusicType===type?'#1a1535':'#16162a'};border:1px solid ${_hostCustomMusicType===type?'#7c3aed':'#2a2a48'};border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;">
+                    <div style="font-size:16px;">${icon}</div>
+                    <div class="type-label" style="font-size:11px;font-weight:500;color:${_hostCustomMusicType===type?'#c4b5fd':'#888'};margin-top:2px;">${label}</div>
+                    <div style="font-size:10px;color:#555;margin-top:1px;">${ex}</div>
+                  </div>`).join('')}
               </div>
             </div>
           </div>
@@ -607,8 +636,11 @@ async function createRoom() {
   setStatus('Generating questions…');
 
   try {
-    const customMusicCats = state.customCats.filter(c => c.music).map(c => c.name);
-    const basePayload = { rounds: state.rounds, timer: state.timer, difficulty: state.difficulty, ...(customMusicCats.length ? { customMusicCats } : {}) };
+    const customMusicCatObjs = state.customCats.filter(c => c.music);
+    const customMusicCats = customMusicCatObjs.map(c => c.name);
+    const customCatsMeta = {};
+    customMusicCatObjs.forEach(c => { customCatsMeta[c.name] = { musicType: c.musicType || 'genre' }; });
+    const basePayload = { rounds: state.rounds, timer: state.timer, difficulty: state.difficulty, ...(customMusicCats.length ? { customMusicCats, customCatsMeta } : {}) };
     const res = await fetch('/api/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1083,8 +1115,14 @@ async function playAgain() {
   const payload = { rounds: cfg.rounds || 3, timer: cfg.timer || 15, difficulty: cfg.difficulty || 'mixed' };
   if (Array.isArray(cfg.categories) && cfg.categories.length) payload.categories = cfg.categories;
   else payload.preset = cfg.preset || 'mixed';
-  const customMusicCats = state.customCats.filter(c => c.music).map(c => c.name);
-  if (customMusicCats.length) payload.customMusicCats = customMusicCats;
+  const customMusicCatObjs = state.customCats.filter(c => c.music);
+  const customMusicCats = customMusicCatObjs.map(c => c.name);
+  if (customMusicCats.length) {
+    payload.customMusicCats = customMusicCats;
+    const customCatsMeta = {};
+    customMusicCatObjs.forEach(c => { customCatsMeta[c.name] = { musicType: c.musicType || 'genre' }; });
+    payload.customCatsMeta = customCatsMeta;
+  }
 
   let newQuestions = null;
   try {
