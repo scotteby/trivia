@@ -56,6 +56,7 @@ let state = {
   localScore: 0,
   subscription: null,
   timerInterval: null,
+  roundLeaderboardTimeout: null,
   hasAnswered: false,
   selectedAnswer: null,
   audio: null,
@@ -239,14 +240,22 @@ function subscribeAsPlayer() {
       if (updated.status === 'active') {
         if (prev.status === 'lobby' || prev.status !== 'active') {
           // Game just started
+          clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
           showIngame();
         } else if (updated.current_question_index !== prev.current_question_index) {
-          // Next question
+          clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
-          showIngame();
+          const newIdx = updated.current_question_index;
+          const crossedRound = newIdx > 0 && newIdx % 5 === 0;
+          if (crossedRound) {
+            const completedRound = Math.floor(newIdx / 5);
+            showRoundLeaderboard(completedRound, showIngame);
+          } else {
+            showIngame();
+          }
         }
       }
     })
@@ -300,8 +309,11 @@ function showIngame() {
 
       ${musicBanner}
 
+      <div style="background:#1e1e35;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+        <span style="font-size:11px;color:#a78bfa;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+      </div>
+
       <div class="card" style="margin-bottom:14px;">
-        <div style="font-size:11px;color:#555;margin-bottom:6px;">${q.cat}</div>
         <div style="font-size:16px;font-weight:500;color:#e8e8f0;line-height:1.5;">${q.q}</div>
       </div>
 
@@ -458,6 +470,61 @@ function revealPlayerAnswer(idx, correct, pts) {
       statusEl.style.color = '#fca5a5';
       statusEl.textContent = `Wrong — the answer was: ${q.opts[q.ans]}`;
     }
+  }
+}
+
+// ─── ROUND LEADERBOARD ────────────────────────────────────────────────────────
+async function showRoundLeaderboard(completedRound, nextFn) {
+  clearInterval(state.timerInterval);
+  stopClip();
+  state.view = 'roundleaderboard';
+
+  const totalRounds = state.room.config?.rounds || 3;
+  const isLastRound = completedRound >= totalRounds;
+
+  const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
+  const sorted = allPlayers || [];
+  const myRank = sorted.findIndex(p => p.id === state.player?.id) + 1;
+
+  const lbRows = sorted.map((p, i) => {
+    const [bg, fg] = avatarColor(p.name);
+    const isMe = p.id === state.player?.id;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#1a1535;' : ''}margin-bottom:4px;">
+      <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#555'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
+      <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+      <div style="flex:1;font-size:14px;color:${isMe ? '#c4b5fd' : '#aaa'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
+      <div style="font-size:14px;color:#a78bfa;font-weight:600;">${p.score}</div>
+    </div>`;
+  }).join('');
+
+  let secs = 5;
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
+        <div style="font-size:11px;color:#7c3aed;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
+        <div style="font-size:22px;font-weight:500;color:#e8e8f0;">${isLastRound ? 'Final scores' : 'Leaderboard'}</div>
+        ${myRank > 0 ? `<div style="font-size:13px;color:#555;margin-top:4px;">You're #${myRank} with ${state.localScore} pts</div>` : ''}
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">${lbRows}</div>
+
+      <div style="background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#555;">
+        ${isLastRound ? 'Waiting for final results…' : `Next round in <span id="rlCountdown" style="color:#a78bfa;font-weight:500;">${secs}s</span>`}
+      </div>
+    </div>
+  `);
+
+  if (!isLastRound) {
+    state.roundLeaderboardTimeout = setInterval(() => {
+      secs--;
+      const el = document.getElementById('rlCountdown');
+      if (el) el.textContent = secs + 's';
+      if (secs <= 0) {
+        clearInterval(state.roundLeaderboardTimeout);
+        state.roundLeaderboardTimeout = null;
+        nextFn();
+      }
+    }, 1000);
   }
 }
 

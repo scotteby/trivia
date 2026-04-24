@@ -115,9 +115,12 @@ let state = {
   rounds: 3,
   timer: 15,
   preset: 'mixed',
+  difficulty: 'mixed',
+  autoAdvance: true,
   room: null,
   players: [],
   timerInterval: null,
+  autoAdvanceTimeout: null,
   subscription: null,
   revealed: false,
   audio: null,
@@ -185,6 +188,17 @@ function showSetup() {
     `<div class="rt-btn${state.timer === t ? ' sel' : ''}" onclick="setTimer(${t})" style="padding:8px 12px;">${t}s</div>`
   ).join('');
 
+  const difficultyOpts = [
+    { key: 'easy',  label: 'Easy',  sub: 'well-known facts' },
+    { key: 'mixed', label: 'Mixed', sub: 'balanced' },
+    { key: 'hard',  label: 'Hard',  sub: 'obscure details' },
+  ];
+  const diffBtns = difficultyOpts.map(d =>
+    `<div class="rt-btn${state.difficulty === d.key ? ' sel' : ''}" onclick="setDifficulty('${d.key}')" style="flex:1;text-align:center;">
+      ${d.label}<div style="font-size:10px;color:${state.difficulty===d.key?'#7c3aed':'#555'};">${d.sub}</div>
+    </div>`
+  ).join('');
+
   const presetName = PRESETS[state.preset]?.name || 'Mixed bag';
   const total = state.rounds * 5;
 
@@ -230,9 +244,26 @@ function showSetup() {
         <div style="font-size:11px;color:#555;margin-top:8px;">Longer timers give players more time to think</div>
       </div>
 
+      <!-- Difficulty selector -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="sub-label">Difficulty</div>
+        <div style="display:flex;gap:8px;">${diffBtns}</div>
+      </div>
+
+      <!-- Auto-advance toggle -->
+      <div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="setAutoAdvance(${!state.autoAdvance})">
+        <div>
+          <div style="font-size:13px;color:#e8e8f0;font-weight:500;">Auto-advance questions</div>
+          <div style="font-size:11px;color:#555;margin-top:2px;">Move to next question automatically when timer ends or all players answer</div>
+        </div>
+        <div style="width:44px;height:24px;border-radius:12px;background:${state.autoAdvance ? '#7c3aed' : '#2a2a48'};position:relative;flex-shrink:0;transition:background .2s;">
+          <div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${state.autoAdvance ? '23px' : '3px'};transition:left .2s;"></div>
+        </div>
+      </div>
+
       <!-- Summary + create -->
       <div style="background:#16162a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="font-size:13px;color:#aaa;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ~${state.rounds*10} min</div>
+        <div style="font-size:13px;color:#aaa;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ${state.difficulty} · ~${state.rounds*10} min</div>
         <div style="font-size:11px;color:#7c3aed;">ready</div>
       </div>
       <button class="btn-primary" id="createBtn" onclick="createRoom()">Create room and get code</button>
@@ -244,7 +275,9 @@ function showSetup() {
 function selectPreset(key) { state.preset = key; showSetup(); }
 function setRounds(r) { state.rounds = r; showSetup(); }
 function setTimer(t) { state.timer = t; showSetup(); }
-function quickStart() { state.preset = 'mixed'; state.rounds = 3; state.timer = 15; createRoom(); }
+function setDifficulty(d) { state.difficulty = d; showSetup(); }
+function setAutoAdvance(v) { state.autoAdvance = v; showSetup(); }
+function quickStart() { state.preset = 'mixed'; state.rounds = 3; state.timer = 15; state.difficulty = 'mixed'; createRoom(); }
 
 async function createRoom() {
   if (window.location.protocol === 'file:') {
@@ -260,7 +293,7 @@ async function createRoom() {
     const res = await fetch('/api/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rounds: state.rounds, timer: state.timer, preset: state.preset })
+      body: JSON.stringify({ rounds: state.rounds, timer: state.timer, preset: state.preset, difficulty: state.difficulty })
     });
     const data = await res.json();
     if (!res.ok) {
@@ -416,6 +449,7 @@ function waveformHTML(color = '#7c3aed') {
 
 function showIngame() {
   state.view = 'ingame';
+  state.revealed = false;
   const room = state.room;
   const qi = room.current_question_index;
   const q = room.questions[qi];
@@ -532,7 +566,9 @@ function renderIngameSidebar() {
   const rsEl = document.getElementById('responseStatus');
   if (rcEl) rcEl.textContent = `${answered} / ${total}`;
   if (rbEl) rbEl.style.width = pct + '%';
-  if (rsEl) rsEl.textContent = answered === total && total > 0 ? 'All players answered!' : `${answered} of ${total} answered`;
+  const allAnswered = answered === total && total > 0;
+  if (rsEl) rsEl.textContent = allAnswered ? 'All players answered!' : `${answered} of ${total} answered`;
+  if (allAnswered && !state.revealed) revealAnswer();
 }
 
 function startIngameTimer(duration, isMusic = false) {
@@ -564,18 +600,19 @@ function startIngameTimer(duration, isMusic = false) {
 }
 
 function revealAnswer() {
+  if (state.revealed) return;
   clearInterval(state.timerInterval);
   state.revealed = true;
+  stopClip();
   const qi = state.room.current_question_index;
   const q = state.room.questions[qi];
   const totalQ = state.room.questions.length;
+  const isLast = qi + 1 >= totalQ;
 
   // Highlight correct/wrong
   q.opts.forEach((_, i) => {
     const el = document.getElementById('opt' + i);
-    if (el) {
-      el.classList.add(i === q.ans ? 'correct' : 'wrong');
-    }
+    if (el) el.classList.add(i === q.ans ? 'correct' : 'wrong');
   });
 
   // Correct count
@@ -588,14 +625,31 @@ function revealAnswer() {
   if (btnArea) {
     const btn = btnArea.querySelector('button');
     if (btn) {
-      btn.textContent = qi + 1 < totalQ ? 'Next question →' : 'Show results →';
-      btn.onclick = advanceQuestion;
+      btn.onclick = () => { clearTimeout(state.autoAdvanceTimeout); advanceQuestion(); };
+      if (state.autoAdvance) {
+        let secs = 3;
+        const label = isLast ? 'Show results' : 'Next question';
+        btn.textContent = `${label} (${secs}s)`;
+        state.autoAdvanceTimeout = setInterval(() => {
+          secs--;
+          if (secs <= 0) {
+            clearInterval(state.autoAdvanceTimeout);
+            advanceQuestion();
+          } else {
+            btn.textContent = `${label} (${secs}s)`;
+          }
+        }, 1000);
+      } else {
+        btn.textContent = isLast ? 'Show results →' : 'Next question →';
+      }
     }
   }
 }
 
 async function advanceQuestion() {
   clearInterval(state.timerInterval);
+  clearInterval(state.autoAdvanceTimeout);
+  state.autoAdvanceTimeout = null;
   const qi = state.room.current_question_index;
   const totalQ = state.room.questions.length;
 

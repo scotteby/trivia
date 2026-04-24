@@ -91,8 +91,22 @@ async function getItunesPreview(artist, song) {
 // ─── Delay helper ────────────────────────────────────────────
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
+// ─── Fetch recently used question texts to avoid repeats ─────
+async function getRecentQuestions() {
+  try {
+    const res = await sbReq('/game_rooms?select=questions&order=created_at.desc&limit=8');
+    if (!Array.isArray(res.data)) return [];
+    return res.data.flatMap(row => {
+      const qs = Array.isArray(row.questions) ? row.questions : [];
+      return qs.map(q => q.q).filter(Boolean);
+    });
+  } catch {
+    return [];
+  }
+}
+
 // ─── Question generation ─────────────────────────────────────
-async function generateQuestions(categories, total) {
+async function generateQuestions(categories, total, difficulty = 'mixed') {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error('Missing ANTHROPIC_API_KEY env var');
 
   const musicCats   = categories.filter(isMusicCat);
@@ -116,6 +130,18 @@ Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
     fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
   }
 
+  const difficultyInstructions = {
+    easy:  'Difficulty: EASY — use well-known mainstream facts that most adults would recognise. Avoid niche or obscure details.',
+    mixed: 'Difficulty: MIXED — balance roughly half straightforward questions with half that require a bit more knowledge.',
+    hard:  'Difficulty: HARD — use specific, less-obvious facts. Avoid questions with obvious answers. Distractors should be plausible.',
+  };
+  const difficultyLine = difficultyInstructions[difficulty] || difficultyInstructions.mixed;
+
+  const recentQs = await getRecentQuestions();
+  const avoidBlock = recentQs.length > 0
+    ? `\nDo NOT repeat any of these recently used questions:\n${recentQs.map(q => `- ${q}`).join('\n')}\n`
+    : '';
+
   const body = JSON.stringify({
     model: 'claude-sonnet-4-6',
     max_tokens: 3000,
@@ -123,7 +149,8 @@ Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
       role: 'user',
       content: `Generate exactly ${total} pub quiz questions spread evenly across: ${categories.join(', ')}.
 ${fmt}
-Rules: "ans" is the 0-based index of the correct answer. For music, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
+${difficultyLine}${avoidBlock}
+Rules: "ans" is the 0-based index of the correct answer. For music, use only widely-known popular songs. Every question must be unique — no duplicates within this set. Return ONLY a valid JSON array, no markdown, no extra text.`,
     }],
   });
 
@@ -192,18 +219,19 @@ module.exports = async function handler(req, res) {
     let cfg = {};
     try { cfg = JSON.parse(raw || '{}'); } catch { /* use defaults */ }
 
-    const rounds     = cfg.rounds || 3;
-    const timer      = cfg.timer  || 15;
-    const preset     = cfg.preset || 'mixed';
+    const rounds     = cfg.rounds     || 3;
+    const timer      = cfg.timer      || 15;
+    const preset     = cfg.preset     || 'mixed';
+    const difficulty = cfg.difficulty || 'mixed';
     const categories = (PRESETS[preset] || PRESETS.mixed).categories;
     const total      = rounds * 5;
 
     try {
-      console.log(`[rooms] Creating room: preset=${preset} rounds=${rounds} timer=${timer}`);
+      console.log(`[rooms] Creating room: preset=${preset} rounds=${rounds} timer=${timer} difficulty=${difficulty}`);
 
       const [roomCode, rawQuestions] = await Promise.all([
         getUniqueCode(),
-        generateQuestions(categories, total),
+        generateQuestions(categories, total, difficulty),
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
 
@@ -215,7 +243,7 @@ module.exports = async function handler(req, res) {
         room_code: roomCode,
         status: 'lobby',
         current_question_index: 0,
-        config: { rounds, timer, preset, categories },
+        config: { rounds, timer, preset, difficulty, categories },
         questions,
       });
 
