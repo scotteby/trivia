@@ -88,7 +88,7 @@ module.exports = async function handler(req, res) {
   // ─── Practice mode ──────────────────────────────────────────────────────────
   if (req.query?.practice === 'true') {
     const cats = (req.query.categories || 'General Knowledge')
-      .split(',').map(c => c.trim()).filter(Boolean);
+      .split(',').map(c => c.trim().replace(/\+/g, ' ')).filter(Boolean);
     const count = Math.min(Math.max(parseInt(req.query.count) || 10, 1), 20);
     const explain = req.query.explain === 'true';
 
@@ -131,13 +131,7 @@ Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder que
         }],
       });
       let questions = parseQuestions(json);
-      console.log(`[practice] cats received:`, cats);
-      console.log(`[practice] musicCats=${musicCats.join(',') || 'none'} hasMusicCats=${hasMusicCats}`);
-      console.log(`[practice] generated ${questions.length} questions, types:`, questions.map(q => q.type));
-      if (hasMusicCats) {
-        questions = await enrichWithPreviews(questions);
-        console.log(`[practice] after enrichment, preview_urls:`, questions.map(q => q.preview_url || null));
-      }
+      if (hasMusicCats) questions = await enrichWithPreviews(questions);
       return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
