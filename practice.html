@@ -339,8 +339,14 @@ async function fetchQuestions() {
   state.fetching = false;
 }
 
+function unlockAudio() {
+  // Called during a user gesture so subsequent audio.play() works after async gaps
+  try { const a = new Audio(); a.play().catch(() => {}); } catch {}
+}
+
 async function startPractice() {
   if (!state.categories.length) return;
+  unlockAudio();
   state.questions = [];
   state.currentIdx = 0;
   state.answers = [];
@@ -638,6 +644,7 @@ function showResults() {
 }
 
 async function practiceAgain() {
+  unlockAudio();
   state.questions = [];
   state.currentIdx = 0;
   state.answers = [];
