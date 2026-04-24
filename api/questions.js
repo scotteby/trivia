@@ -3,23 +3,25 @@ const https = require('https');
 const MUSIC_CATS = new Set([
   'music', '80s hits', '80s music', '90s pop', '90s music', 'current hits',
   '60s & 70s classics', '2000s bangers', 'classic rock', 'hip hop', 'r&b & soul', 'country',
+  'music — all eras',
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
-// iTunes search terms per music category — multiple options picked at random
+// iTunes search terms per music category — shuffled and retried on low preview counts
 const CAT_SEARCH_TERMS = {
-  'music':              ['pop hits', 'top 40 hits', 'greatest hits', 'classic pop'],
-  '80s hits':           ['80s pop', '1980s hits', 'eighties pop', '80s greatest hits'],
-  '80s music':          ['80s pop', '1980s hits', 'eighties hits'],
-  '90s pop':            ['90s pop', '1990s pop hits', 'nineties pop'],
-  '90s music':          ['90s music', '1990s hits', 'nineties songs'],
-  'current hits':       ['pop 2023', 'pop 2024', 'top hits 2023', 'top hits 2024'],
-  '60s & 70s classics': ['1960s hits', '1970s hits', 'classic oldies', 'sixties pop'],
-  '2000s bangers':      ['2000s pop', 'early 2000s hits', 'noughties pop'],
-  'classic rock':       ['classic rock', 'rock classics', 'hard rock classics'],
-  'hip hop':            ['hip hop', 'rap classics', 'hip hop hits'],
-  'r&b & soul':         ['r&b soul', 'soul music', 'rhythm and blues'],
-  'country':            ['country hits', 'country music', 'country songs'],
+  'music':              ['greatest hits', 'classic songs', 'pop hits', 'top songs ever'],
+  'music — all eras':   ['greatest hits', 'classic songs', 'pop hits', 'top songs ever'],
+  '80s hits':           ['80s pop hits', '80s rock', '80s dance music', '1980s top songs'],
+  '80s music':          ['80s pop hits', '80s rock', '80s dance music', '1980s top songs'],
+  '90s pop':            ['90s pop', '90s hits', '1990s pop music', '90s dance pop'],
+  '90s music':          ['90s pop', '90s hits', '1990s pop music', '90s dance pop'],
+  'current hits':       ['2023 pop hits', '2024 top songs', 'current pop', 'recent hits'],
+  '60s & 70s classics': ['60s pop classics', '70s rock hits', '1960s music', '1970s hits'],
+  '2000s bangers':      ['2000s pop', '2000s hits', 'early 2000s music', 'y2k pop'],
+  'classic rock':       ['classic rock hits', '70s rock', '80s rock anthems', 'rock classics'],
+  'hip hop':            ['90s hip hop', '2000s rap hits', 'classic hip hop', 'rap hits'],
+  'r&b & soul':         ['soul music', 'classic r&b', '90s r&b', 'modern r&b hits'],
+  'country':            ['country hits', 'country pop', 'classic country', 'modern country'],
 };
 
 function callAnthropic(body) {
@@ -84,17 +86,14 @@ async function getItunesPreview(artist, song) {
   });
 }
 
-// ─── iTunes: search for tracks by category with randomised offset ─────────────
-async function searchItunesTracks(category) {
-  const terms = CAT_SEARCH_TERMS[category.toLowerCase().trim()] || CAT_SEARCH_TERMS['music'];
-  const term = terms[Math.floor(Math.random() * terms.length)];
-  const offset = Math.floor(Math.random() * 100);
+// ─── iTunes: fetch raw results for one search term ───────────────────────────
+function fetchItunesTracks(term, offset) {
   const query = encodeURIComponent(term);
   return new Promise(resolve => {
     try {
       const req = https.request({
         hostname: 'itunes.apple.com',
-        path: `/search?term=${query}&media=music&entity=song&limit=25&offset=${offset}`,
+        path: `/search?term=${query}&media=music&entity=song&limit=50&offset=${offset}`,
         method: 'GET',
         headers: { 'User-Agent': 'TriviaApp/1.0' },
       }, res => {
@@ -102,11 +101,9 @@ async function searchItunesTracks(category) {
         res.on('data', c => raw += c);
         res.on('end', () => {
           try {
-            const data = JSON.parse(raw);
-            const results = (data?.results || []).filter(
+            resolve((JSON.parse(raw)?.results || []).filter(
               r => r.previewUrl && r.artistName && r.trackName
-            );
-            resolve(results);
+            ));
           } catch { resolve([]); }
         });
       });
@@ -114,6 +111,25 @@ async function searchItunesTracks(category) {
       req.end();
     } catch { resolve([]); }
   });
+}
+
+// ─── iTunes: search by category, retry on low results, filter used tracks ────
+// usedTracks: Set of "artistName|trackName" strings already used this session
+async function searchItunesTracks(category, usedTracks = new Set()) {
+  const terms = CAT_SEARCH_TERMS[category.toLowerCase().trim()] || CAT_SEARCH_TERMS['music'];
+  // Shuffle terms so each call starts from a different one
+  const shuffled = [...terms].sort(() => Math.random() - 0.5);
+
+  for (const term of shuffled) {
+    const offset = Math.floor(Math.random() * 151);
+    const results = await fetchItunesTracks(term, offset);
+    const fresh = results.filter(
+      r => !usedTracks.has(`${r.artistName}|${r.trackName}`)
+    );
+    if (fresh.length >= 5) return fresh;
+    // Too few results with previews — try next term
+  }
+  return [];
 }
 
 // ─── Generate one music question around a specific iTunes track ───────────────
@@ -172,19 +188,30 @@ Format: {"type":"music","artist":"${artist}","song":"${song}","year":${year ?? n
 }
 
 // ─── Generate music questions for multiple categories ─────────────────────────
+// Tracks used tracks across all categories to avoid duplicates within a session
 async function generateMusicQuestions(musicCats, perCat, explain) {
-  const results = await Promise.all(musicCats.map(async cat => {
+  const usedTracks = new Set();
+  const trackAssignments = [];
+
+  // Pick tracks sequentially so usedTracks stays consistent
+  for (const cat of musicCats) {
     try {
-      const tracks = await searchItunesTracks(cat);
-      if (tracks.length === 0) return [];
-      const shuffled = [...tracks].sort(() => Math.random() - 0.5);
-      const chosen = shuffled.slice(0, perCat);
-      return Promise.all(chosen.map(track =>
-        generateMusicQuestion(track, cat, explain).catch(() => null)
-      ));
-    } catch { return []; }
-  }));
-  return results.flat().filter(Boolean);
+      const results = await searchItunesTracks(cat, usedTracks);
+      const chosen = results.slice(0, perCat);
+      for (const track of chosen) {
+        usedTracks.add(`${track.artistName}|${track.trackName}`);
+        trackAssignments.push({ track, cat });
+      }
+    } catch { /* skip this cat */ }
+  }
+
+  // Generate all questions in parallel now that tracks are locked in
+  const questions = await Promise.all(
+    trackAssignments.map(({ track, cat }) =>
+      generateMusicQuestion(track, cat, explain).catch(() => null)
+    )
+  );
+  return questions.filter(Boolean);
 }
 
 module.exports = async function handler(req, res) {
@@ -288,7 +315,7 @@ Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSO
         }],
       }),
       (async () => {
-        const tracks = await searchItunesTracks('music');
+        const tracks = await searchItunesTracks('music', new Set());
         if (tracks.length === 0) return null;
         const track = tracks[Math.floor(Math.random() * tracks.length)];
         return generateMusicQuestion(track, 'Music', false).catch(() => null);
