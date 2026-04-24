@@ -85,6 +85,25 @@ async function enrichWithPreviews(questions) {
   }));
 }
 
+function getMusicConstraint(category) {
+  const decades = ['1965-1972','1973-1979','1980-1985','1986-1989','1990-1994','1995-1999','2000-2004','2005-2009','2010-2015','2016-2021'];
+  const tiers = [
+    'Avoid the 20 most famous songs. Pick album tracks or deep cuts true fans would know.',
+    'Pick songs that reached #1 on the charts but are now slightly forgotten.',
+    'Focus on one-hit wonders or artists who peaked quickly.',
+    'Pick songs from the middle of artists careers, not their most famous hits.',
+    'Focus on songs that were massive hits in their era but rarely appear in trivia today.',
+  ];
+  const regions = ['UK artists','Australian or Canadian artists','American artists outside New York or LA','Motown artists','artists who got their start in the 80s but peaked in the 90s'];
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const constraints = [
+    `Focus on songs from ${pick(decades)}.`,
+    pick(tiers),
+    `Focus on ${pick(regions)}.`,
+  ];
+  return pick(constraints);
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -142,7 +161,9 @@ module.exports = async function handler(req, res) {
     if (genreMusicCats.length > 0) {
       fmtParts.push(`For music categories (${genreMusicCats.join(', ')}):
 {"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
-Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"`);
+Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"
+Music constraint (follow strictly): ${getMusicConstraint(genreMusicCats[0] || 'music')}
+Session seed (ignore): ${Date.now()}-${Math.random()}`);
     }
     if (artistTypeCats.length > 0) {
       fmtParts.push(`For artist categories (${artistTypeCats.join(', ')}): the category IS the artist — NEVER ask "Who is this artist?". Only use: "What is this song called?", "What year was this released?". Wrong answer options must be other songs or years by the same artist.
@@ -190,6 +211,8 @@ Mix categories: Science, History, Geography, Pop Culture, Sports.
 For the music question:
 {"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
 Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"
+Music constraint (follow strictly): ${getMusicConstraint('music')}
+Session seed (ignore): ${Date.now()}-${Math.random()}
 
 Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array of exactly 5 questions, no markdown, no extra text.`,
       }],
