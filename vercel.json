@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/rooms", "destination": "/api/rooms" },
+    { "source": "/api/questions", "destination": "/api/questions" }
+  ]
+}

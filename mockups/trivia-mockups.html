@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trivia Night SaaS — UI Mockup Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a14;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #e8e8f0;
+    padding: 40px 24px;
+  }
+
+  .page-title {
+    font-size: 13px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .page-subtitle {
+    font-size: 28px;
+    font-weight: 500;
+    color: #a78bfa;
+    margin-bottom: 8px;
+  }
+  .page-desc {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #1e1e35;
+  }
+
+  .section {
+    margin-bottom: 64px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    color: #7c3aed;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #e8e8f0;
+    margin-bottom: 4px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+
+  .screen-wrap {
+    background: #13131f;
+    border: 1px solid #1e1e35;
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .col-label {
+    font-size: 11px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  /* Device frames */
+  .phone {
+    background: #0f0f1a;
+    border-radius: 28px;
+    padding: 24px 18px;
+    border: 1px solid #2a2a48;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  .desktop {
+    background: #0f0f1a;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid #2a2a48;
+  }
+
+  .tv {
+    background: #0f0f1a;
+    border-radius: 12px;
+    padding: 28px;
+    border: 2px solid #1e1e35;
+  }
+
+  /* Common components */
+  .card {
+    background: #16162a;
+    border: 1px solid #2a2a48;
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+
+  .card.featured {
+    border-color: #7c3aed66;
+    background: #1a1535;
+  }
+
+  .card.music {
+    border-color: #378add44;
+    background: #0f1a2e;
+  }
+
+  .btn-primary {
+    background: #7c3aed;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid #2a2a48;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #888;
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+
+  .btn-green {
+    background: transparent;
+    border: 1px solid #22c55e44;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #86efac;
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+
+  .badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .badge-purple { background: #2d1a4e; color: #c4b5fd; }
+  .badge-green { background: #1a2d1e; color: #86efac; }
+  .badge-blue { background: #0c2d4e; color: #60a5fa; }
+  .badge-amber { background: #2d2000; color: #fcd34d; }
+  .badge-dark { background: #1e1e35; color: #666; border: 1px solid #2a2a48; }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #1e1e35;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: #666;
+    margin: 2px;
+  }
+
+  .tag-purple { background: #2d1a4e; color: #a78bfa; }
+  .tag-blue { background: #0c2d4e; color: #60a5fa; }
+  .tag-green { background: #1a2d1e; color: #86efac; }
+  .tag-amber { background: #2d2000; color: #fcd34d; }
+
+  .option-btn {
+    background: #16162a;
+    border: 1px solid #2a2a48;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #c8c8e0;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .option-btn.selected { border-color: #7c3aed88; color: #c4b5fd; background: #1e1535; }
+  .option-btn.correct { border-color: #22c55e; color: #86efac; background: #0f2d1f; }
+  .option-btn.wrong { border-color: #ef4444; color: #fca5a5; background: #2d0f0f; }
+
+  .timer { border-radius: 20px; padding: 3px 12px; font-size: 13px; font-weight: 500; display: inline-block; }
+  .timer-ok { background: #1e1e35; border: 1px solid #2a2a48; color: #7c3aed; }
+  .timer-warn { background: #1e1e35; border: 1px solid #f59e0b44; color: #f59e0b; }
+  .timer-danger { background: #1e1e35; border: 1px solid #ef444444; color: #ef4444; }
+
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+
+  .player-chip {
+    background: #1e1e35;
+    border: 1px solid #2a2a48;
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .divider-line { flex: 1; border-top: 1px solid #1e1e35; }
+  .divider-text { font-size: 11px; color: #333; }
+
+  .waveform {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 24px;
+  }
+  .wave-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: #7c3aed;
+    animation: wave 1s ease-in-out infinite;
+  }
+  @keyframes wave {
+    0%,100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+  }
+
+  .progress-track { height: 4px; background: #1e1e35; border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+  .progress-fill { height: 100%; background: #7c3aed; border-radius: 4px; }
+
+  .rooms-toggle {
+    display: flex;
+    gap: 8px;
+  }
+  .rt-btn {
+    background: #16162a;
+    border: 1px solid #2a2a48;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+  }
+  .rt-btn.sel {
+    background: #2d1a4e;
+    border-color: #7c3aed;
+    color: #c4b5fd;
+  }
+
+  .cat-chip {
+    display: inline-block;
+    background: #1e1e35;
+    border: 1px solid #2a2a48;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #c8c8e0;
+    margin: 3px;
+  }
+  .cat-chip.sel { background: #2d1a4e; border-color: #7c3aed88; color: #c4b5fd; }
+  .cat-chip.music { background: #1a2240; border-color: #378add44; color: #93c5fd; }
+  .cat-chip.music.sel { background: #0c2d4e; border-color: #378add; color: #93c5fd; }
+
+  hr { border: none; border-top: 1px solid #1e1e35; margin: 20px 0; }
+
+  .sub-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<div class="page-title">UI Reference</div>
+<div class="page-subtitle">Trivia Night SaaS</div>
+<div class="page-desc">Complete screen mockups for all views. Use this as visual reference when building in Claude Code. Dark theme colors, layouts, and component patterns are all reproduced here.</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 1: HOME SCREEN -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 1</div>
+  <div class="section-title">Home screen</div>
+  <div class="section-desc">Three clear paths: solo, host, join. Global leaderboard at bottom. Upsell banner after solo game.</div>
+
+  <div class="screen-wrap">
+    <div class="two-col">
+
+      <div>
+        <div class="col-label">Mobile</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="text-align:center; margin-bottom: 20px;">
+              <div style="font-size: 24px; font-weight: 500; color: #a78bfa; margin-bottom: 4px;">Trivia Night</div>
+              <div style="font-size: 12px; color: #555;">Thursday, April 23</div>
+            </div>
+
+            <div class="card featured" style="margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="flex: 1;">
+                  <div style="font-size: 14px; font-weight: 500; color: #e8e8f0;">Daily challenge</div>
+                  <div style="font-size: 11px; color: #7c3aed;">5 questions · resets midnight</div>
+                </div>
+                <span class="badge badge-purple">7 day streak</span>
+              </div>
+              <div style="background: #0f0f1a; border-radius: 8px; padding: 7px 12px; display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="font-size: 11px; color: #555;">Today's best</div>
+                <div style="font-size: 12px; color: #a78bfa; font-weight: 500;">62 / 75 pts</div>
+              </div>
+              <div class="btn-primary" style="font-size: 13px; padding: 9px;">Play today's quiz</div>
+            </div>
+
+            <div class="card" style="margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="flex: 1;">
+                  <div style="font-size: 14px; font-weight: 500; color: #e8e8f0;">Host a game</div>
+                  <div style="font-size: 11px; color: #555;">Multiplayer · up to 75 players</div>
+                </div>
+                <span class="badge badge-green">Pro</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0; margin-bottom: 10px;">Join a game</div>
+              <div style="background: #0f0f1a; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 12px; font-size: 15px; color: #e8e8f0; text-align: center; letter-spacing: 0.15em; font-weight: 500; margin-bottom: 8px;">PIZZA</div>
+              <div class="btn-primary" style="font-size: 13px; padding: 9px;">Join room</div>
+            </div>
+
+            <div style="margin-top: 14px; text-align: center;">
+              <div style="font-size: 11px; color: #555; margin-bottom: 6px;">Global leaderboard today</div>
+              <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;">
+                <span class="badge badge-dark">1. Jake M. <span style="color:#a78bfa;">75</span></span>
+                <span class="badge badge-dark">2. Sara R. <span style="color:#a78bfa;">70</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">Desktop</div>
+        <div class="desktop">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="font-size: 20px; font-weight: 500; color: #a78bfa;">Trivia Night</div>
+            <div style="font-size: 12px; color: #555;">Thursday, April 23</div>
+            <span class="badge badge-dark">Sign in</span>
+          </div>
+
+          <div class="three-col" style="margin-bottom: 16px;">
+            <div class="card featured">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0; margin-bottom: 4px;">Daily challenge</div>
+              <div style="font-size: 11px; color: #555; margin-bottom: 12px;">Solo · 5 questions · free</div>
+              <div class="btn-primary" style="font-size: 12px; padding: 8px;">Play now</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0; margin-bottom: 4px;">Host a game</div>
+              <div style="font-size: 11px; color: #555; margin-bottom: 12px;">Multiplayer · up to 75 players</div>
+              <div class="btn-green" style="font-size: 12px; padding: 8px;">Start game</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0; margin-bottom: 4px;">Join a game</div>
+              <div style="font-size: 11px; color: #555; margin-bottom: 8px;">Enter room code</div>
+              <div style="background: #0f0f1a; border: 1px solid #2a2a48; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #555; text-align: center; letter-spacing: 0.1em; margin-bottom: 6px;">Enter code...</div>
+              <div class="btn-outline" style="font-size: 12px; padding: 7px;">Join room</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-size: 11px; color: #555; margin-bottom: 10px;">Global leaderboard — today</div>
+            <div class="three-col">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 12px; color: #7c3aed; width: 14px;">1</div>
+                <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2d1a4e;color:#c4b5fd;">JM</div>
+                <div style="font-size: 12px; color: #aaa; flex:1;">Jake M.</div>
+                <div style="font-size: 12px; color: #a78bfa; font-weight: 500;">75</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 12px; color: #555; width: 14px;">2</div>
+                <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1a2d1e;color:#86efac;">SR</div>
+                <div style="font-size: 12px; color: #aaa; flex:1;">Sara R.</div>
+                <div style="font-size: 12px; color: #a78bfa; font-weight: 500;">70</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 12px; color: #555; width: 14px;">3</div>
+                <div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2d1a1a;color:#fca5a5;">TK</div>
+                <div style="font-size: 12px; color: #aaa; flex:1;">Tom K.</div>
+                <div style="font-size: 12px; color: #a78bfa; font-weight: 500;">65</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px; background: #0f0f1a; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border: 1px solid #1e1e35;">
+            <div style="flex: 1;">
+              <div style="font-size: 13px; color: #e8e8f0; font-weight: 500; margin-bottom: 3px;">You scored 62 / 75 — nice!</div>
+              <div style="font-size: 11px; color: #555;">Think your friends can beat that? Host a game night free for 30 days.</div>
+            </div>
+            <div class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 12px; white-space: nowrap;">Host free</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 2: GAME SETUP -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 2</div>
+  <div class="section-title">Host game setup</div>
+  <div class="section-desc">Three tiers: Quick start (one tap), Pick a vibe (presets), Custom (full builder). Rounds and timer controls at top.</div>
+
+  <div class="screen-wrap">
+    <div class="desktop">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+        <div>
+          <div style="font-size: 18px; font-weight: 500; color: #e8e8f0;">Start a game</div>
+          <div style="font-size: 12px; color: #555; margin-top: 2px;">How do you want to set it up?</div>
+        </div>
+        <div class="rooms-toggle">
+          <div class="rt-btn sel">3 rounds<div style="font-size:10px;color:#7c3aed;">~30 min</div></div>
+          <div class="rt-btn">2<div style="font-size:10px;color:#555;">~20</div></div>
+          <div class="rt-btn">4<div style="font-size:10px;color:#555;">~40</div></div>
+        </div>
+      </div>
+
+      <!-- Quick start -->
+      <div style="background: #1a1535; border: 1px solid #7c3aed66; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 6px;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #5b21b6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px;">⚡</div>
+        <div style="flex: 1;">
+          <div style="font-size: 15px; font-weight: 500; color: #fff;">Quick start</div>
+          <div style="font-size: 12px; color: #c4b5fd; margin-top: 2px;">AI picks everything · room code in 5 seconds</div>
+        </div>
+        <span class="badge badge-purple">One tap</span>
+      </div>
+      <div style="font-size: 11px; color: #444; text-align: center; margin-bottom: 16px;">AI mixes categories, music, and difficulty for a balanced game</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">or pick a vibe</div><div class="divider-line"></div></div>
+
+      <div style="font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;">Preset game nights</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+
+        <div class="card featured">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Mixed bag</div>
+              <div style="font-size: 11px; color: #555;">Something for everyone</div>
+            </div>
+            <div style="width: 18px; height: 18px; border-radius: 50%; background: #7c3aed; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff;">✓</div>
+          </div>
+          <div><span class="tag tag-purple">General</span><span class="tag tag-purple">History</span><span class="tag tag-purple">90s music</span><span class="tag tag-purple">Sports</span><span class="tag tag-purple">Pop culture</span></div>
+        </div>
+
+        <div class="card music">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 13px; font-weight: 500; color: #93c5fd;">Music night</div>
+              <div style="font-size: 11px; color: #378add;">All music rounds</div>
+            </div>
+          </div>
+          <div><span class="tag tag-blue">80s hits</span><span class="tag tag-blue">90s pop</span><span class="tag tag-blue">Current hits</span></div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Sports bar</div>
+              <div style="font-size: 11px; color: #555;">Heavy on sports</div>
+            </div>
+          </div>
+          <div><span class="tag tag-green">Sports</span><span class="tag tag-green">General</span><span class="tag tag-green">Pop culture</span></div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Brainiac</div>
+              <div style="font-size: 11px; color: #555;">Hard mode</div>
+            </div>
+          </div>
+          <div><span class="tag tag-amber">Science</span><span class="tag tag-amber">History</span><span class="tag tag-amber">Geography</span></div>
+        </div>
+
+        <div class="card music" style="grid-column: span 2; display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1;">
+            <div style="font-size: 13px; font-weight: 500; color: #93c5fd;">Music + general mix</div>
+            <div style="margin-top: 4px;"><span class="tag tag-blue">General</span><span class="tag tag-blue">90s music</span><span class="tag tag-blue">Pop culture</span></div>
+          </div>
+          <span class="badge badge-blue">Most popular</span>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">or build your own</div><div class="divider-line"></div></div>
+
+      <div style="background: #16162a; border: 1px dashed #2a2a48; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px;">
+        <div style="width: 38px; height: 38px; border-radius: 50%; background: #1e1e35; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #444;">+</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 500; color: #888;">Custom game</div>
+          <div style="font-size: 11px; color: #555; margin-top: 2px;">Pick every round and category yourself</div>
+        </div>
+        <div style="font-size: 12px; color: #555;">Build →</div>
+      </div>
+
+      <div style="background: #16162a; border: 1px solid #2a2a48; border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="font-size: 12px; color: #aaa; font-weight: 500;">Mixed bag · 3 rounds · 15 questions</div>
+        <div style="font-size: 11px; color: #7c3aed;">ready to go</div>
+      </div>
+      <div class="btn-primary">Create room and get code</div>
+      <div style="font-size: 11px; color: #444; text-align: center; margin-top: 8px;">Questions are generated fresh when game starts</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 3: CUSTOM ROUND BUILDER -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 3</div>
+  <div class="section-title">Custom round builder</div>
+  <div class="section-desc">Host picks each round's category. Music rounds expand to show subcategories and question types. Live preview panel on right.</div>
+
+  <div class="screen-wrap">
+    <div class="desktop">
+      <div class="two-col">
+        <div>
+          <div class="sub-label">Rounds</div>
+          <div class="card" style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Round 1</div>
+              <span class="badge badge-green">General knowledge</span>
+            </div>
+            <div style="font-size: 11px; color: #555;">5 questions · done</div>
+          </div>
+
+          <div class="card featured" style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Round 2 <span style="color:#7c3aed;font-size:11px;">· editing</span></div>
+              <span class="badge badge-purple">pick a category</span>
+            </div>
+
+            <div class="sub-label">General</div>
+            <div style="margin-bottom: 10px;">
+              <span class="cat-chip">General knowledge</span><span class="cat-chip">History</span><span class="cat-chip">Science</span><span class="cat-chip">Sports</span><span class="cat-chip">Movies & TV</span><span class="cat-chip">Food & drink</span><span class="cat-chip">Geography</span><span class="cat-chip">Pop culture</span>
+            </div>
+
+            <div class="sub-label">🎵 Music</div>
+            <div style="margin-bottom: 10px;">
+              <span class="cat-chip music">Music — all eras</span>
+              <span class="cat-chip music sel">90s pop</span>
+              <span class="cat-chip music">80s hits</span>
+              <span class="cat-chip music">2000s bangers</span>
+              <span class="cat-chip music">Current hits</span>
+              <span class="cat-chip music">Classic rock</span>
+              <span class="cat-chip music">Hip hop</span>
+              <span class="cat-chip music">Country</span>
+              <span class="cat-chip music">60s & 70s</span>
+              <span class="cat-chip music">R&B & soul</span>
+            </div>
+
+            <div style="background: #0c2d4e; border: 1px solid #378add44; border-radius: 10px; padding: 10px 12px;">
+              <div style="font-size: 12px; color: #60a5fa; font-weight: 500; margin-bottom: 8px;">90s pop — question types</div>
+              <div>
+                <span style="display:inline-block;background:#0f1a2e;border:1px solid #378add;border-radius:20px;padding:4px 10px;font-size:11px;color:#93c5fd;margin:2px;">Name the artist ✓</span>
+                <span style="display:inline-block;background:#0f1a2e;border:1px solid #378add;border-radius:20px;padding:4px 10px;font-size:11px;color:#93c5fd;margin:2px;">Name the song ✓</span>
+                <span style="display:inline-block;background:#0f1a2e;border:1px solid #1e3a5f;border-radius:20px;padding:4px 10px;font-size:11px;color:#60a5fa;margin:2px;">Name the year</span>
+                <span style="display:inline-block;background:#0f1a2e;border:1px solid #1e3a5f;border-radius:20px;padding:4px 10px;font-size:11px;color:#60a5fa;margin:2px;">Name the album</span>
+              </div>
+              <div style="font-size: 11px; color: #378add; margin-top: 8px; opacity: 0.7;">Clip plays for 10 seconds · players answer on their phones</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <div style="font-size: 13px; font-weight: 500; color: #e8e8f0;">Round 3</div>
+              <span class="badge badge-green">Sports</span>
+            </div>
+            <div style="font-size: 11px; color: #555;">5 questions · done</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sub-label">Game preview</div>
+          <div class="card" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+              <div style="font-size: 13px; color: #e8e8f0; font-weight: 500;">Tonight's game</div>
+              <div style="font-size: 12px; color: #555;">15 questions total</div>
+            </div>
+            <div style="border-bottom: 1px solid #1e1e35; padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+              <div class="avatar" style="width:22px;height:22px;font-size:10px;background:#2d1a4e;color:#c4b5fd;">1</div>
+              <div style="flex:1;font-size:12px;color:#aaa;">General knowledge</div>
+              <div style="font-size:11px;color:#555;">5 q's</div>
+            </div>
+            <div style="border-bottom: 1px solid #1e1e35; padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+              <div class="avatar" style="width:22px;height:22px;font-size:10px;background:#0c2d4e;color:#93c5fd;">2</div>
+              <div style="flex:1;">
+                <div style="font-size:12px;color:#aaa;">90s pop music</div>
+                <div style="font-size:10px;color:#378add;">name the artist · name the song</div>
+              </div>
+              <div style="font-size:11px;color:#555;">5 q's</div>
+            </div>
+            <div style="padding: 8px 0; display: flex; align-items: center; gap: 10px;">
+              <div class="avatar" style="width:22px;height:22px;font-size:10px;background:#1a2d1e;color:#86efac;">3</div>
+              <div style="flex:1;font-size:12px;color:#aaa;">Sports</div>
+              <div style="font-size:11px;color:#555;">5 q's</div>
+            </div>
+            <hr>
+            <div style="background:#0f0f1a;border-radius:8px;padding:10px 12px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:#555;">Estimated time</span><span style="color:#aaa;">~30 minutes</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="color:#555;">Max score</span><span style="color:#aaa;">225 pts</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:#555;">Questions</span><span style="color:#7c3aed;">AI-generated · unique every time</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 12px;">
+            <div class="sub-label">Timer per question</div>
+            <div style="display: flex; gap: 6px;">
+              <div class="rt-btn" style="font-size:12px;padding:6px 10px;">10s</div>
+              <div class="rt-btn sel" style="font-size:12px;padding:6px 10px;">15s</div>
+              <div class="rt-btn" style="font-size:12px;padding:6px 10px;">20s</div>
+              <div class="rt-btn" style="font-size:12px;padding:6px 10px;">30s</div>
+            </div>
+            <div style="font-size:11px;color:#555;margin-top:8px;">Music questions always get +10s automatically</div>
+          </div>
+
+          <div class="btn-primary" style="margin-bottom: 6px;">Create room and get code</div>
+          <div style="font-size:11px;color:#444;text-align:center;">Questions generated fresh when game starts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 4: HOST LOBBY -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 4</div>
+  <div class="section-title">Host lobby</div>
+  <div class="section-desc">After room is created. Room code displayed large for TV. Players populate in real time. Start button enabled at 2+ players.</div>
+
+  <div class="screen-wrap">
+    <div class="two-col">
+      <div>
+        <div class="col-label">Host / TV view</div>
+        <div class="tv">
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="font-size: 13px; color: #555; margin-bottom: 8px;">Players join at</div>
+            <div style="font-size: 15px; color: #7c3aed; margin-bottom: 16px;">trivia.yourdomain.com</div>
+            <div style="font-size: 14px; color: #555; margin-bottom: 8px;">Room code</div>
+            <div style="font-size: 72px; font-weight: 500; color: #fff; letter-spacing: 0.15em; line-height: 1;">PIZZA</div>
+            <div style="font-size: 13px; color: #444; margin-top: 8px;">Type this code on your phone</div>
+          </div>
+
+          <div style="background: #16162a; border: 1px solid #2a2a48; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div style="font-size: 13px; color: #888;">Players in lobby</div>
+              <div style="font-size: 24px; font-weight: 500; color: #a78bfa;">8</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2d1a4e;color:#c4b5fd;">JM</div><div style="font-size:12px;color:#c8c8e0;">Jake M.</div></div>
+              <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1a2d1e;color:#86efac;">SR</div><div style="font-size:12px;color:#c8c8e0;">Sara R.</div></div>
+              <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2d1a1a;color:#fca5a5;">TK</div><div style="font-size:12px;color:#c8c8e0;">Tom K.</div></div>
+              <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1a2240;color:#93c5fd;">AL</div><div style="font-size:12px;color:#c8c8e0;">Amy L.</div></div>
+            </div>
+          </div>
+          <div class="btn-primary" style="font-size: 16px; padding: 14px;">Start game (8 players)</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">Player lobby (phone)</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="text-align: center; margin-bottom: 18px;">
+              <div style="font-size: 22px; font-weight: 500; color: #a78bfa; margin-bottom: 4px;">Trivia Night</div>
+              <div style="font-size: 12px; color: #555;">Room PIZZA</div>
+            </div>
+
+            <div class="card" style="text-align:center; margin-bottom: 14px;">
+              <div style="font-size: 11px; color: #555; margin-bottom: 6px;">You're in!</div>
+              <div style="font-size: 28px; font-weight: 500; color: #a78bfa;">8</div>
+              <div style="font-size: 12px; color: #555;">players in lobby</div>
+            </div>
+
+            <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#2d1a4e;color:#c4b5fd;">JM</div><div style="font-size:12px;color:#c8c8e0;">Jake M.</div></div>
+            <div class="player-chip"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1a2d1e;color:#86efac;">SR</div><div style="font-size:12px;color:#c8c8e0;">Sara R.</div></div>
+            <div class="player-chip" style="border-color:#7c3aed44;"><div class="avatar" style="width:24px;height:24px;font-size:10px;background:#1a2240;color:#93c5fd;">YO</div><div style="font-size:12px;color:#c8c8e0;">You</div><div style="margin-left:auto;font-size:10px;color:#7c3aed;">you</div></div>
+
+            <div style="font-size:11px;color:#555;text-align:center;margin-top:12px;">Waiting for host to start...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 5: HOST TV IN-GAME -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 5</div>
+  <div class="section-title">Host / TV in-game screen</div>
+  <div class="section-desc">Shown on bar TV via HDMI or Chromecast. Large fonts readable from across the room. Live leaderboard and response counter on right.</div>
+
+  <div class="screen-wrap">
+    <div class="tv">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="font-size: 13px; color: #7c3aed; font-weight: 500;">Trivia Night</div>
+        <div style="font-size: 12px; color: #555;">Round 2 · Question 3 of 5</div>
+        <div style="background: #1e1e35; border: 1px solid #2a2a48; border-radius: 20px; padding: 4px 14px; font-size: 13px; color: #a78bfa; font-weight: 500;">
+          Join: <span style="color:#fff;letter-spacing:0.1em;">PIZZA</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 300px; gap: 20px;">
+        <div>
+          <div class="card" style="margin-bottom: 14px;">
+            <div style="font-size: 11px; color: #555; margin-bottom: 8px;">90s pop music · name the artist</div>
+            <div style="font-size: 20px; font-weight: 500; color: #e8e8f0; line-height: 1.4; margin-bottom: 12px;">Which element has the chemical symbol "Au"?</div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="waveform">
+                <div class="wave-bar" style="height:8px;animation-delay:0s;"></div>
+                <div class="wave-bar" style="height:16px;animation-delay:0.15s;"></div>
+                <div class="wave-bar" style="height:12px;animation-delay:0.3s;"></div>
+                <div class="wave-bar" style="height:20px;animation-delay:0.45s;"></div>
+                <div class="wave-bar" style="height:10px;animation-delay:0.6s;"></div>
+                <div class="wave-bar" style="height:18px;animation-delay:0.75s;"></div>
+              </div>
+              <div style="font-size:12px;color:#7c3aed;">Playing 10s clip...</div>
+              <div style="margin-left: auto;"><span class="timer timer-warn">8s</span></div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+            <div class="option-btn">A &nbsp; Taylor Swift</div>
+            <div class="option-btn">B &nbsp; Olivia Rodrigo</div>
+            <div class="option-btn">C &nbsp; Billie Eilish</div>
+            <div class="option-btn">D &nbsp; Dua Lipa</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size:12px;color:#555;">Clip plays automatically · players answer on phones</div>
+            <div class="btn-outline" style="width:auto;padding:7px 16px;font-size:12px;">Next question →</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sub-label">Live leaderboard</div>
+          <div class="lb-row" style="background:#1e1e35;">
+            <div style="font-size:13px;color:#666;width:16px;">1</div>
+            <div class="avatar" style="background:#2d1a4e;color:#c4b5fd;">JM</div>
+            <div style="flex:1;font-size:13px;color:#e8e8f0;">Jake M.</div>
+            <div style="font-size:13px;color:#a78bfa;font-weight:500;">45</div>
+          </div>
+          <div class="lb-row">
+            <div style="font-size:13px;color:#666;width:16px;">2</div>
+            <div class="avatar" style="background:#1a2d1e;color:#86efac;">SR</div>
+            <div style="flex:1;font-size:13px;color:#e8e8f0;">Sara R.</div>
+            <div style="font-size:13px;color:#a78bfa;font-weight:500;">40</div>
+          </div>
+          <div class="lb-row">
+            <div style="font-size:13px;color:#666;width:16px;">3</div>
+            <div class="avatar" style="background:#2d1a1a;color:#fca5a5;">TK</div>
+            <div style="flex:1;font-size:13px;color:#e8e8f0;">Tom K.</div>
+            <div style="font-size:13px;color:#a78bfa;font-weight:500;">35</div>
+          </div>
+
+          <hr>
+          <div class="sub-label">Responses</div>
+          <div class="card" style="text-align:center;">
+            <div style="font-size:28px;font-weight:500;color:#a78bfa;">11 / 14</div>
+            <div style="font-size:12px;color:#555;margin-top:4px;">players answered</div>
+            <div style="background:#2a2a48;border-radius:4px;height:4px;margin-top:10px;overflow:hidden;">
+              <div style="background:#7c3aed;height:100%;width:78%;border-radius:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 6: PLAYER IN-GAME -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 6</div>
+  <div class="section-title">Player in-game screens (phone)</div>
+  <div class="section-desc">Three states: clip playing, answer selected, reveal. Music round shown with animated waveform.</div>
+
+  <div class="screen-wrap">
+    <div class="three-col">
+
+      <div>
+        <div class="col-label">Clip playing</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:12px;color:#7c3aed;">Music round</div>
+              <span class="timer timer-warn">12s</span>
+              <div style="font-size:12px;color:#555;">35 pts</div>
+            </div>
+            <div class="card" style="text-align:center;margin-bottom:14px;">
+              <div class="waveform" style="justify-content:center;margin-bottom:8px;">
+                <div class="wave-bar" style="height:10px;animation-delay:0s;"></div>
+                <div class="wave-bar" style="height:20px;animation-delay:0.15s;"></div>
+                <div class="wave-bar" style="height:14px;animation-delay:0.3s;"></div>
+                <div class="wave-bar" style="height:24px;animation-delay:0.45s;"></div>
+                <div class="wave-bar" style="height:12px;animation-delay:0.6s;"></div>
+                <div class="wave-bar" style="height:18px;animation-delay:0.75s;"></div>
+                <div class="wave-bar" style="height:8px;animation-delay:0.9s;"></div>
+              </div>
+              <div style="font-size:12px;color:#7c3aed;">Clip playing...</div>
+            </div>
+            <div style="font-size:13px;font-weight:500;color:#e8e8f0;margin-bottom:10px;">Who is this artist?</div>
+            <div class="option-btn">A &nbsp; Taylor Swift</div>
+            <div class="option-btn">B &nbsp; Olivia Rodrigo</div>
+            <div class="option-btn">C &nbsp; Billie Eilish</div>
+            <div class="option-btn">D &nbsp; Dua Lipa</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">Answer selected</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:12px;color:#7c3aed;">Music round</div>
+              <span class="timer timer-warn">8s</span>
+              <div style="font-size:12px;color:#555;">35 pts</div>
+            </div>
+            <div class="card" style="text-align:center;margin-bottom:14px;">
+              <div class="waveform" style="justify-content:center;margin-bottom:6px;">
+                <div class="wave-bar" style="height:8px;animation-delay:0s;"></div>
+                <div class="wave-bar" style="height:14px;animation-delay:0.15s;"></div>
+                <div class="wave-bar" style="height:10px;animation-delay:0.3s;"></div>
+                <div class="wave-bar" style="height:18px;animation-delay:0.45s;"></div>
+                <div class="wave-bar" style="height:8px;animation-delay:0.6s;"></div>
+              </div>
+              <div style="font-size:11px;color:#555;">Still playing...</div>
+            </div>
+            <div style="font-size:13px;font-weight:500;color:#e8e8f0;margin-bottom:10px;">Who is this artist?</div>
+            <div class="option-btn">A &nbsp; Taylor Swift</div>
+            <div class="option-btn">B &nbsp; Olivia Rodrigo</div>
+            <div class="option-btn selected">C &nbsp; Billie Eilish</div>
+            <div class="option-btn">D &nbsp; Dua Lipa</div>
+            <div style="background:#1e1e35;border-radius:8px;padding:8px 12px;margin-top:8px;text-align:center;font-size:12px;color:#a78bfa;">Locked in — waiting for others...</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">Answer reveal</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:12px;color:#7c3aed;">Music round</div>
+              <span class="badge badge-green">correct!</span>
+            </div>
+            <div class="card" style="text-align:center;margin-bottom:14px;">
+              <div style="font-size:13px;font-weight:500;color:#e8e8f0;">Billie Eilish</div>
+              <div style="font-size:11px;color:#555;margin-top:2px;">"Birds of a Feather" · 2024</div>
+            </div>
+            <div style="font-size:13px;font-weight:500;color:#e8e8f0;margin-bottom:10px;">Who is this artist?</div>
+            <div class="option-btn">A &nbsp; Taylor Swift</div>
+            <div class="option-btn">B &nbsp; Olivia Rodrigo</div>
+            <div class="option-btn correct">C &nbsp; Billie Eilish</div>
+            <div class="option-btn">D &nbsp; Dua Lipa</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 12px;background:#1e1e35;border-radius:8px;">
+              <div style="font-size:12px;color:#555;">Points earned</div>
+              <div style="font-size:14px;font-weight:500;color:#a78bfa;">+13 pts</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 7: END OF GAME -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Screen 7</div>
+  <div class="section-title">End of game</div>
+  <div class="section-desc">Host sees full podium and leaderboard. Player sees their rank and score with share prompt.</div>
+
+  <div class="screen-wrap">
+    <div class="two-col">
+      <div>
+        <div class="col-label">Host / TV — results screen</div>
+        <div class="tv">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:14px;color:#555;margin-bottom:6px;">Game over · Mixed bag · 3 rounds</div>
+            <div style="font-size:22px;font-weight:500;color:#e8e8f0;">Final leaderboard</div>
+          </div>
+
+          <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px;margin-bottom:20px;">
+            <div style="text-align:center;">
+              <div class="avatar" style="margin:0 auto 6px;background:#1a2d1e;color:#86efac;width:40px;height:40px;font-size:14px;">SR</div>
+              <div style="font-size:12px;color:#aaa;">Sara R.</div>
+              <div style="background:#16162a;border:1px solid #2a2a48;border-radius:8px;padding:12px 16px;margin-top:6px;height:70px;display:flex;align-items:center;justify-content:center;">
+                <div style="font-size:14px;color:#a78bfa;font-weight:500;">112</div>
+              </div>
+              <div style="font-size:13px;color:#aaa;margin-top:4px;">2nd</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:20px;margin-bottom:4px;">🏆</div>
+              <div class="avatar" style="margin:0 auto 6px;background:#2d1a4e;color:#c4b5fd;width:48px;height:48px;font-size:16px;">JM</div>
+              <div style="font-size:13px;color:#e8e8f0;font-weight:500;">Jake M.</div>
+              <div style="background:#2d1a4e;border:1px solid #7c3aed44;border-radius:8px;padding:16px;margin-top:6px;height:90px;display:flex;align-items:center;justify-content:center;">
+                <div style="font-size:20px;color:#a78bfa;font-weight:500;">135</div>
+              </div>
+              <div style="font-size:14px;color:#7c3aed;font-weight:500;margin-top:4px;">1st 🥇</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="avatar" style="margin:0 auto 6px;background:#2d1a1a;color:#fca5a5;width:40px;height:40px;font-size:14px;">TK</div>
+              <div style="font-size:12px;color:#aaa;">Tom K.</div>
+              <div style="background:#16162a;border:1px solid #2a2a48;border-radius:8px;padding:12px 16px;margin-top:6px;height:55px;display:flex;align-items:center;justify-content:center;">
+                <div style="font-size:13px;color:#a78bfa;font-weight:500;">98</div>
+              </div>
+              <div style="font-size:13px;color:#aaa;margin-top:4px;">3rd</div>
+            </div>
+          </div>
+
+          <div class="btn-primary">Play again</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="col-label">Player results (phone)</div>
+        <div style="background: #1a1a2e; border-radius: 20px; padding: 16px; display: flex; justify-content: center;">
+          <div class="phone">
+            <div style="text-align:center;margin-bottom:16px;">
+              <div style="font-size:28px;margin-bottom:6px;">⭐</div>
+              <div style="font-size:18px;font-weight:500;color:#e8e8f0;margin-bottom:4px;">Great work!</div>
+              <div style="font-size:12px;color:#555;">Room PIZZA · 3 rounds</div>
+            </div>
+
+            <div class="card" style="text-align:center;margin-bottom:12px;">
+              <div style="font-size:42px;font-weight:500;color:#a78bfa;line-height:1;">112</div>
+              <div style="font-size:13px;color:#555;margin-top:4px;">out of 225 points · 2nd place</div>
+            </div>
+
+            <div class="card" style="margin-bottom:12px;">
+              <div style="font-size:11px;color:#555;margin-bottom:8px;">Final standings</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e1e35;">
+                <div style="font-size:12px;color:#7c3aed;width:16px;">1</div>
+                <div style="flex:1;font-size:12px;color:#aaa;">Jake M.</div>
+                <div style="font-size:12px;color:#a78bfa;font-weight:500;">135</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e1e35;background:#1a1535;margin:0 -4px;padding:6px 4px;border-radius:4px;">
+                <div style="font-size:12px;color:#7c3aed;width:16px;">2</div>
+                <div style="flex:1;font-size:12px;color:#c4b5fd;font-weight:500;">You</div>
+                <div style="font-size:12px;color:#a78bfa;font-weight:500;">112</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+                <div style="font-size:12px;color:#555;width:16px;">3</div>
+                <div style="flex:1;font-size:12px;color:#aaa;">Tom K.</div>
+                <div style="font-size:12px;color:#a78bfa;font-weight:500;">98</div>
+              </div>
+            </div>
+
+            <div style="background:#0f0f1a;border:1px solid #1e1e35;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:12px;color:#e8e8f0;font-weight:500;margin-bottom:3px;">Want a rematch?</div>
+              <div style="font-size:11px;color:#555;margin-bottom:8px;">Share this room with someone new</div>
+              <div class="btn-primary" style="font-size:12px;padding:8px;">Share room</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- COLOR REFERENCE -->
+<!-- ============================================================ -->
+<div class="section">
+  <div class="section-label">Reference</div>
+  <div class="section-title">Color tokens</div>
+  <div class="section-desc">Use these exact values when building in Claude Code to match this design.</div>
+
+  <div class="screen-wrap">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#0f0f1a;border:1px solid #333;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Background</div><code style="font-size:11px;color:#555;">#0f0f1a</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#16162a;border:1px solid #333;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Cards</div><code style="font-size:11px;color:#555;">#16162a</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#2a2a48;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Borders</div><code style="font-size:11px;color:#555;">#2a2a48</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#7c3aed;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Primary purple</div><code style="font-size:11px;color:#555;">#7c3aed</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#a78bfa;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Purple light</div><code style="font-size:11px;color:#555;">#a78bfa</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#e8e8f0;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Text primary</div><code style="font-size:11px;color:#555;">#e8e8f0</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#22c55e;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Correct</div><code style="font-size:11px;color:#555;">#22c55e</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#ef4444;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Wrong</div><code style="font-size:11px;color:#555;">#ef4444</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#f59e0b;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Timer warning</div><code style="font-size:11px;color:#555;">#f59e0b</code></div>
+      <div class="card"><div style="width:24px;height:24px;border-radius:6px;background:#378add;margin-bottom:8px;"></div><div style="font-size:12px;color:#aaa;">Music blue</div><code style="font-size:11px;color:#555;">#378add</code></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

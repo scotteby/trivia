@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Join Game — Trivia Night</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+#app { max-width: 420px; margin: 0 auto; padding: 1.5rem 1rem; }
+.card { background: #16162a; border: 1px solid #2a2a48; border-radius: 12px; padding: 14px 16px; }
+.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+.badge-purple { background: #2d1a4e; color: #c4b5fd; }
+.badge-green { background: #1a2d1e; color: #86efac; }
+.btn-primary { background: #7c3aed; border: none; border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; min-height: 50px; }
+.btn-primary:hover:not(:disabled) { background: #6d28d9; }
+.btn-primary:disabled { opacity: .5; cursor: default; }
+.btn-outline { background: transparent; border: 1px solid #2a2a48; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #888; cursor: pointer; width: 100%; transition: border-color .2s; min-height: 44px; }
+.option-btn { background: #16162a; border: 2px solid #2a2a48; border-radius: 12px; padding: 16px 14px; font-size: 15px; color: #c8c8e0; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 54px; display: block; margin-bottom: 10px; }
+.option-btn:active:not([disabled]) { transform: scale(.97); }
+.option-btn[disabled] { cursor: default; }
+.option-btn.selected { border-color: #7c3aed; color: #c4b5fd; background: #1e1535; }
+.option-btn.correct { border-color: #22c55e; color: #86efac; background: #0f2d1f; }
+.option-btn.wrong { border-color: #ef4444; color: #fca5a5; background: #2d0f0f; }
+.player-chip { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid #2a2a48; }
+.timer-ok { color: #7c3aed; border-color: #7c3aed44; background: #1e1e35; }
+.timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
+.timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
+.fade-in { animation: fadeUp .3s ease forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+input { outline: none; }
+input:focus { border-color: #7c3aed !important; }
+.wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
+@keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+</style>
+</head>
+<body>
+<div id="app"><div id="root"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const root = document.getElementById('root');
+function setHTML(h) { root.innerHTML = h; }
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let state = {
+  view: 'join',
+  room: null,
+  player: null,
+  players: [],
+  answers: [],
+  localScore: 0,
+  subscription: null,
+  timerInterval: null,
+  hasAnswered: false,
+  selectedAnswer: null,
+  audio: null,
+  clipTimeout: null,
+};
+
+const AVATAR_COLORS = [
+  ['#2d1a4e','#c4b5fd'], ['#1a2d1e','#86efac'], ['#2d1a1a','#fca5a5'],
+  ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
+];
+function avatarColor(name) {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+// ─── JOIN SCREEN ─────────────────────────────────────────────────────────────
+function showJoin(prefill = '') {
+  state.view = 'join';
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:28px;margin-top:20px;">
+        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
+        <div style="font-size:13px;color:#555;">Join a multiplayer game</div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Room code</div>
+        <input id="codeInput" type="text" maxlength="5" placeholder="e.g. PIZZA"
+          value="${prefill}"
+          autocomplete="off" spellcheck="false"
+          style="background:#0f0f1a;border:1px solid #2a2a48;border-radius:10px;padding:14px 16px;font-size:22px;color:#e8e8f0;width:100%;text-align:center;letter-spacing:.2em;font-weight:600;text-transform:uppercase;margin-bottom:0;"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"
+          onkeydown="if(event.key==='Enter')document.getElementById('nameInput')?.focus()" />
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
+        <input id="nameInput" type="text" maxlength="20" placeholder="Enter your name"
+          style="background:#0f0f1a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;font-size:16px;color:#e8e8f0;width:100%;"
+          onkeydown="if(event.key==='Enter')joinGame()" />
+      </div>
+
+      <button class="btn-primary" id="joinBtn" onclick="joinGame()">Join room</button>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Back to home</a></div>
+      <div id="joinError" style="margin-top:10px;text-align:center;font-size:13px;color:#ef4444;min-height:20px;"></div>
+    </div>
+  `);
+  if (prefill) document.getElementById('nameInput')?.focus();
+  else document.getElementById('codeInput')?.focus();
+}
+
+async function joinGame() {
+  const code = (document.getElementById('codeInput')?.value || '').trim().toUpperCase();
+  const name = (document.getElementById('nameInput')?.value || '').trim();
+  const errEl = document.getElementById('joinError');
+  const btn = document.getElementById('joinBtn');
+
+  if (!code || code.length < 3) { if (errEl) errEl.textContent = 'Enter a valid room code.'; return; }
+  if (!name) { if (errEl) errEl.textContent = 'Enter your name.'; return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Joining...'; }
+  if (errEl) errEl.textContent = '';
+
+  try {
+    // Fetch room
+    const { data: rooms, error } = await sb.from('game_rooms').select('*').eq('room_code', code).maybeSingle();
+    if (error || !rooms) throw new Error('Room not found. Check the code and try again.');
+    if (rooms.status === 'finished') throw new Error('This game has already ended.');
+
+    state.room = rooms;
+
+    // Create player
+    const { data: playerData, error: playerError } = await sb.from('players').insert({
+      room_id: rooms.id,
+      name,
+      score: 0,
+      answers: [],
+    }).select().single();
+
+    if (playerError) throw new Error('Failed to join room.');
+    state.player = playerData;
+    state.answers = [];
+    state.localScore = 0;
+
+    // Cache for refresh recovery
+    localStorage.setItem('trivia_player_id', playerData.id);
+    localStorage.setItem('trivia_room_code', code);
+
+    subscribeAsPlayer();
+
+    if (rooms.status === 'active') {
+      showIngame();
+    } else {
+      showLobby();
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Join room'; }
+    if (errEl) errEl.textContent = e.message;
+  }
+}
+
+// ─── LOBBY SCREEN ─────────────────────────────────────────────────────────────
+function showLobby() {
+  state.view = 'lobby';
+  const room = state.room;
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:24px;margin-top:20px;">
+        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
+        <div style="font-size:13px;color:#555;">Room <strong style="color:#e8e8f0;letter-spacing:.05em;">${room.room_code}</strong></div>
+      </div>
+
+      <div class="card" style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:11px;color:#555;margin-bottom:8px;">You're in!</div>
+        <div style="font-size:42px;font-weight:500;color:#a78bfa;" id="lobbyCount">…</div>
+        <div style="font-size:12px;color:#555;">players in lobby</div>
+      </div>
+
+      <div id="lobbyList" style="margin-bottom:16px;"></div>
+
+      <div style="background:#1e1e35;border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:13px;color:#888;">Waiting for host to start…</div>
+        <div style="margin-top:8px;display:flex;justify-content:center;gap:4px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .0s infinite;"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+        </div>
+      </div>
+    </div>
+    <style>
+      @keyframes dot { 0%,80%,100%{opacity:.3;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+    </style>
+  `);
+  fetchLobbyPlayers();
+}
+
+async function fetchLobbyPlayers() {
+  const { data } = await sb.from('players').select('id,name').eq('room_id', state.room.id).order('joined_at');
+  if (data) {
+    state.players = data;
+    renderLobbyList();
+  }
+}
+
+function renderLobbyList() {
+  const countEl = document.getElementById('lobbyCount');
+  const listEl = document.getElementById('lobbyList');
+  if (countEl) countEl.textContent = state.players.length;
+  if (listEl) {
+    listEl.innerHTML = state.players.map(p => {
+      const isMe = p.id === state.player?.id;
+      const [bg, fg] = avatarColor(p.name);
+      const initials = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return `<div class="player-chip" style="${isMe ? 'border-color:#7c3aed44;' : ''}">
+        <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
+        <div style="flex:1;font-size:13px;color:${isMe ? '#c4b5fd' : '#c8c8e0'};">${p.name}</div>
+        ${isMe ? '<div style="font-size:10px;color:#7c3aed;">you</div>' : ''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ─── REALTIME SUBSCRIPTION ────────────────────────────────────────────────────
+function subscribeAsPlayer() {
+  if (state.subscription) state.subscription.unsubscribe();
+  const roomId = state.room.id;
+
+  state.subscription = sb.channel('player_room_' + roomId + '_' + Date.now())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` }, payload => {
+      const updated = payload.new;
+      const prev = state.room;
+      state.room = updated;
+
+      if (updated.status === 'finished') {
+        clearInterval(state.timerInterval);
+        showPlayerResults();
+        return;
+      }
+
+      if (updated.status === 'active') {
+        if (prev.status === 'lobby' || prev.status !== 'active') {
+          // Game just started
+          state.hasAnswered = false;
+          state.selectedAnswer = null;
+          showIngame();
+        } else if (updated.current_question_index !== prev.current_question_index) {
+          // Next question
+          state.hasAnswered = false;
+          state.selectedAnswer = null;
+          showIngame();
+        }
+      }
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, payload => {
+      if (payload.eventType === 'INSERT' && state.view === 'lobby') {
+        state.players = [...state.players.filter(p => p.id !== payload.new.id), { id: payload.new.id, name: payload.new.name }];
+        renderLobbyList();
+      }
+    })
+    .subscribe();
+}
+
+// ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
+const CLIP_DURATION = 10;
+
+function waveformHTML() {
+  const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
+  return heights.map((h, i) =>
+    `<div class="wave-bar" style="height:${h}px;animation-delay:${(i * 0.12).toFixed(2)}s;"></div>`
+  ).join('');
+}
+
+function showIngame() {
+  clearInterval(state.timerInterval);
+  stopClip();
+  state.view = 'ingame';
+  const room = state.room;
+  const qi = room.current_question_index;
+  const q = room.questions[qi];
+  const timerDuration = room.config?.timer || 15;
+  const questionsPerRound = 5;
+  const roundNum = Math.floor(qi / questionsPerRound) + 1;
+  const qInRound = (qi % questionsPerRound) + 1;
+  const isMusic = !!(q.preview_url);
+
+  const musicBanner = isMusic ? `
+    <div style="background:#1a1535;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
+        ${waveformHTML()}
+      </div>
+      <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Clip playing…</div>
+    </div>` : '';
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
+        <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
+        <div style="font-size:12px;color:#555;" id="scoreDisplay">${state.localScore} pts</div>
+      </div>
+
+      ${musicBanner}
+
+      <div class="card" style="margin-bottom:14px;">
+        <div style="font-size:11px;color:#555;margin-bottom:6px;">${q.cat}</div>
+        <div style="font-size:16px;font-weight:500;color:#e8e8f0;line-height:1.5;">${q.q}</div>
+      </div>
+
+      <div id="optionGrid">
+        ${q.opts.map((o, i) => `<button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">${String.fromCharCode(65+i)} &nbsp; ${o}</button>`).join('')}
+      </div>
+
+      <div id="statusMsg" style="background:#1e1e35;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#555;margin-top:4px;display:none;"></div>
+    </div>
+  `);
+
+  if (isMusic) playClip(q.preview_url);
+  startPlayerTimer(timerDuration, isMusic);
+}
+
+function stopClip() {
+  clearTimeout(state.clipTimeout);
+  state.clipTimeout = null;
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.src = '';
+    state.audio = null;
+  }
+}
+
+function playClip(url) {
+  stopClip();
+  if (!url) return;
+  state.audio = new Audio(url);
+  state.audio.volume = 1;
+  state.audio.play().catch(() => {});
+  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+}
+
+function startPlayerTimer(duration, isMusic = false) {
+  clearInterval(state.timerInterval);
+  const startTime = new Date(state.room.question_start_time).getTime();
+
+  state.timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const clipPhase = isMusic && elapsed < CLIP_DURATION;
+    const countdownElapsed = isMusic ? Math.max(0, elapsed - CLIP_DURATION) : elapsed;
+    const left = Math.max(0, duration - countdownElapsed);
+    const badge = document.getElementById('timerBadge');
+
+    if (clipPhase) {
+      if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
+    } else {
+      const clipStatus = document.getElementById('clipStatus');
+      if (clipStatus) clipStatus.style.display = 'none';
+      if (badge) {
+        badge.textContent = Math.ceil(left) + 's';
+        badge.className = 'timer-badge ' + (left > 8 ? 'timer-ok' : left > 4 ? 'timer-warn' : 'timer-danger');
+      }
+      if (left <= 0) {
+        clearInterval(state.timerInterval);
+        if (!state.hasAnswered) timeUp();
+      }
+    }
+  }, 100);
+}
+
+async function submitAnswer(idx) {
+  if (state.hasAnswered) return;
+  state.hasAnswered = true;
+  state.selectedAnswer = idx;
+  clearInterval(state.timerInterval);
+
+  const room = state.room;
+  const qi = room.current_question_index;
+  const q = room.questions[qi];
+  const timerDuration = room.config?.timer || 15;
+  const isMusic = !!(q.preview_url);
+  const startTime = new Date(room.question_start_time).getTime();
+  const totalElapsed = (Date.now() - startTime) / 1000;
+  // Speed bonus counts from when countdown started (after clip for music questions)
+  const elapsed = isMusic ? Math.max(0, totalElapsed - CLIP_DURATION) : totalElapsed;
+  const correct = idx === q.ans;
+
+  let pts = 0;
+  if (correct) {
+    const bonus = Math.round(5 * Math.max(0, (timerDuration - elapsed) / timerDuration));
+    pts = 10 + bonus;
+    state.localScore += pts;
+  }
+
+  const answerEntry = { question_index: qi, answer_index: idx, correct, pts, time_taken: elapsed };
+  state.answers = [...state.answers, answerEntry];
+
+  // Highlight selected option
+  const optEl = document.getElementById('opt' + idx);
+  if (optEl) {
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    optEl.classList.add('selected');
+  }
+
+  // Show waiting message
+  const statusEl = document.getElementById('statusMsg');
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = '#a78bfa';
+    statusEl.textContent = 'Locked in — waiting for others…';
+  }
+
+  // Update score display
+  const scoreEl = document.getElementById('scoreDisplay');
+  if (scoreEl) scoreEl.textContent = state.localScore + ' pts';
+
+  // Save to Supabase
+  try {
+    await sb.from('players').update({
+      score: state.localScore,
+      answers: state.answers,
+    }).eq('id', state.player.id);
+  } catch(e) {
+    console.warn('Failed to save answer:', e);
+  }
+
+  // Show reveal after brief delay
+  setTimeout(() => revealPlayerAnswer(idx, correct, pts), 600);
+}
+
+function timeUp() {
+  state.hasAnswered = true;
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const statusEl = document.getElementById('statusMsg');
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = '#888';
+    statusEl.textContent = "Time's up!";
+  }
+  // Still save a "no answer" entry so host can count responses
+  const qi = state.room.current_question_index;
+  state.answers = [...state.answers, { question_index: qi, answer_index: -1, correct: false, pts: 0, time_taken: state.room.config?.timer || 15 }];
+  sb.from('players').update({ answers: state.answers }).eq('id', state.player.id).catch(() => {});
+}
+
+function revealPlayerAnswer(idx, correct, pts) {
+  const q = state.room.questions[state.room.current_question_index];
+  q.opts.forEach((_, i) => {
+    const el = document.getElementById('opt' + i);
+    if (!el) return;
+    el.classList.remove('selected');
+    if (i === q.ans) el.classList.add('correct');
+    else if (i === idx && !correct) el.classList.add('wrong');
+  });
+
+  const statusEl = document.getElementById('statusMsg');
+  if (statusEl) {
+    if (correct) {
+      statusEl.style.color = '#86efac';
+      statusEl.textContent = `Correct! +${pts} pts`;
+    } else {
+      statusEl.style.color = '#fca5a5';
+      statusEl.textContent = `Wrong — the answer was: ${q.opts[q.ans]}`;
+    }
+  }
+}
+
+// ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
+async function showPlayerResults() {
+  clearInterval(state.timerInterval);
+  if (state.subscription) state.subscription.unsubscribe();
+  state.view = 'results';
+
+  // Fetch all players with scores
+  const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
+  const sorted = allPlayers || [];
+  const myRank = sorted.findIndex(p => p.id === state.player?.id) + 1;
+
+  const emoji = myRank === 1 ? '🏆' : myRank <= 3 ? '⭐' : '👍';
+  const msg = myRank === 1 ? 'You won!' : myRank <= 3 ? 'Great work!' : 'Good game!';
+  const maxScore = (state.room.questions?.length || 0) * 15;
+
+  const lbRows = sorted.map((p, i) => {
+    const [bg, fg] = avatarColor(p.name);
+    const isMe = p.id === state.player?.id;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px ${isMe?'8px':'0'};border-bottom:1px solid #1e1e35;${isMe?'background:#1a1535;border-radius:6px;margin:0 -4px;':''}">
+      <div style="font-size:12px;color:${i<3?'#7c3aed':'#555'};width:18px;">${i+1}</div>
+      <div class="avatar" style="width:26px;height:26px;font-size:9px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;font-size:13px;color:${isMe?'#c4b5fd':'#aaa'};font-weight:${isMe?500:400};">${isMe ? 'You ('+p.name+')' : p.name}</div>
+      <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
+    </div>`;
+  }).join('');
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
+        <div style="font-size:36px;margin-bottom:8px;">${emoji}</div>
+        <div style="font-size:22px;font-weight:500;color:#e8e8f0;margin-bottom:4px;">${msg}</div>
+        <div style="font-size:12px;color:#555;">Room ${state.room.room_code}</div>
+      </div>
+
+      <div class="card" style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:48px;font-weight:500;color:#a78bfa;line-height:1;">${state.localScore}</div>
+        <div style="font-size:13px;color:#555;margin-top:4px;">out of ${maxScore} points · ${myRank > 0 ? myRank + ordinal(myRank) + ' place' : 'unranked'}</div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:11px;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Final standings</div>
+        ${lbRows}
+      </div>
+
+      <div style="background:#0f0f1a;border:1px solid #1e1e35;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:13px;color:#e8e8f0;font-weight:500;margin-bottom:3px;">Want a rematch?</div>
+        <div style="font-size:12px;color:#555;margin-bottom:10px;">Rejoin with the same code or share with someone new</div>
+        <button class="btn-primary" style="font-size:13px;padding:10px;margin-bottom:8px;" onclick="rejoinRoom()">Rejoin room ${state.room?.room_code || ''}</button>
+        <button class="btn-outline" style="font-size:13px;padding:10px;" onclick="shareRoom()">Share join link</button>
+      </div>
+
+      <a href="index.html" style="display:block;text-align:center;font-size:12px;color:#555;text-decoration:none;padding:8px;">← Back to home</a>
+    </div>
+  `);
+}
+
+function rejoinRoom() {
+  const code = state.room?.room_code || '';
+  // Reset player state so they go through the join flow fresh
+  state.player = null;
+  state.answers = [];
+  state.localScore = 0;
+  state.hasAnswered = false;
+  state.selectedAnswer = null;
+  if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; }
+  showJoin(code);
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return s[(v-20)%10] || s[v] || s[0];
+}
+
+function shareRoom() {
+  const code = state.room?.room_code;
+  const url = `${window.location.origin}/join.html?code=${code}`;
+  if (navigator.share) {
+    navigator.share({ title: 'Join our Trivia Night!', text: `Join room ${code} at Trivia Night`, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => alert('Join link copied!'));
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+const urlCode = new URLSearchParams(window.location.search).get('code') || '';
+showJoin(urlCode.toUpperCase());
+</script>
+</body>
+</html>

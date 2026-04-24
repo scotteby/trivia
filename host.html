@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Host a Game — Trivia Night</title>
+<!--
+  SUPABASE SETUP REQUIRED — run this SQL in your Supabase SQL Editor:
+
+  CREATE TABLE game_rooms (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_code TEXT UNIQUE NOT NULL,
+    status TEXT DEFAULT 'lobby',
+    current_question_index INT DEFAULT 0,
+    question_start_time TIMESTAMPTZ,
+    config JSONB DEFAULT '{}',
+    questions JSONB DEFAULT '[]',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE players (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id UUID REFERENCES game_rooms(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    score INT DEFAULT 0,
+    answers JSONB DEFAULT '[]',
+    joined_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  ALTER TABLE game_rooms REPLICA IDENTITY FULL;
+  ALTER TABLE players REPLICA IDENTITY FULL;
+
+  -- Enable Realtime in Supabase Dashboard → Database → Replication
+  -- Add game_rooms and players tables to the supabase_realtime publication
+
+  -- Allow anon access (for development):
+  ALTER TABLE game_rooms DISABLE ROW LEVEL SECURITY;
+  ALTER TABLE players DISABLE ROW LEVEL SECURITY;
+-->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+#app { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+.card { background: #16162a; border: 1px solid #2a2a48; border-radius: 12px; padding: 14px 16px; }
+.card.featured { border-color: #7c3aed66; background: #1a1535; }
+.card.music { border-color: #378add44; background: #0f1a2e; }
+.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+.badge-purple { background: #2d1a4e; color: #c4b5fd; }
+.badge-blue { background: #0c2d4e; color: #60a5fa; }
+.badge-green { background: #1a2d1e; color: #86efac; }
+.tag { display: inline-block; background: #1e1e35; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #666; margin: 2px; }
+.tag-purple { background: #2d1a4e; color: #a78bfa; }
+.tag-blue { background: #0c2d4e; color: #60a5fa; }
+.tag-green { background: #1a2d1e; color: #86efac; }
+.tag-amber { background: #2d2000; color: #fcd34d; }
+.btn-primary { background: #7c3aed; border: none; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; }
+.btn-primary:hover:not(:disabled) { background: #6d28d9; }
+.btn-primary:disabled { opacity: .5; cursor: default; }
+.btn-outline { background: transparent; border: 1px solid #2a2a48; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #888; cursor: pointer; transition: border-color .2s, color .2s; }
+.btn-outline:hover { border-color: #7c3aed88; color: #c4b5fd; }
+.rt-btn { background: #16162a; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #888; text-align: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.rt-btn.sel { background: #2d1a4e; border-color: #7c3aed; color: #c4b5fd; }
+.divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; }
+.divider-line { flex: 1; border-top: 1px solid #1e1e35; }
+.divider-text { font-size: 11px; color: #333; }
+.fade-in { animation: fadeUp .35s ease forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.player-chip { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; }
+.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 500; display: inline-block; border: 1px solid #2a2a48; }
+.timer-ok { color: #7c3aed; border-color: #7c3aed44; background: #1e1e35; }
+.timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
+.timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
+.option-btn-host { background: #16162a; border: 1px solid #2a2a48; border-radius: 10px; padding: 14px 16px; font-size: 16px; color: #c8c8e0; text-align: left; line-height: 1.4; }
+.option-btn-host.correct { background: #0f2d1f; border-color: #22c55e; color: #86efac; }
+.option-btn-host.wrong { background: #2d0f0f; border-color: #ef4444; color: #fca5a5; }
+.sub-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+hr { border: none; border-top: 1px solid #1e1e35; margin: 14px 0; }
+
+/* Preset grid */
+.preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.preset-card { background: #16162a; border: 2px solid #2a2a48; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .2s, background .2s; }
+.preset-card:hover { border-color: #7c3aed44; }
+.preset-card.selected { border-color: #7c3aed; background: #1a1535; }
+.preset-card.music-card { border-color: #1e3a5f; background: #0f1a2e; }
+.preset-card.music-card:hover, .preset-card.music-card.selected { border-color: #378add; background: #0c2340; }
+
+/* In-game layout */
+.ingame-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+@media (max-width: 700px) { .ingame-layout { grid-template-columns: 1fr; } .ingame-sidebar { display: none; } }
+
+/* Podium */
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 20px; }
+.podium-slot { text-align: center; }
+.podium-bar { border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
+@keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+</style>
+</head>
+<body>
+<div id="app"><div id="root"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const root = document.getElementById('root');
+function setHTML(h) { root.innerHTML = h; }
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let state = {
+  view: 'setup',
+  rounds: 3,
+  timer: 15,
+  preset: 'mixed',
+  room: null,
+  players: [],
+  timerInterval: null,
+  subscription: null,
+  revealed: false,
+  audio: null,
+  clipTimeout: null,
+};
+
+const PRESETS = {
+  mixed:    { name: 'Mixed bag',           desc: 'Something for everyone',  tags: [['General','purple'],['History','purple'],['90s music','purple'],['Sports','purple'],['Pop culture','purple']] },
+  music:    { name: 'Music night',         desc: 'All music rounds',        tags: [['80s hits','blue'],['90s pop','blue'],['Current hits','blue']], isMusic: true },
+  sports:   { name: 'Sports bar',          desc: 'Heavy on sports',         tags: [['Sports','green'],['General','green'],['Pop culture','green']] },
+  brainiac: { name: 'Brainiac',            desc: 'Hard mode',               tags: [['Science','amber'],['History','amber'],['Geography','amber']] },
+  musicmix: { name: 'Music + general mix', desc: 'Most popular',            tags: [['General','blue'],['90s music','blue'],['Pop culture','blue']], isMusic: true, popular: true },
+};
+
+const AVATAR_COLORS = [
+  ['#2d1a4e','#c4b5fd'], ['#1a2d1e','#86efac'], ['#2d1a1a','#fca5a5'],
+  ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
+];
+
+function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
+
+function avatarHTML(name, idx, size = 32) {
+  const [bg, fg] = avatarColor(idx);
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.35}px;background:${bg};color:${fg};">${initials}</div>`;
+}
+
+function getTimeLeft() {
+  if (!state.room?.question_start_time) return state.room?.config?.timer || 15;
+  const timer = state.room.config?.timer || 15;
+  const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
+  return Math.max(0, timer - elapsed);
+}
+
+// ─── SETUP SCREEN ─────────────────────────────────────────────────────────────
+function showSetup() {
+  state.view = 'setup';
+  const presetCards = Object.entries(PRESETS).map(([key, p]) => {
+    const isSelected = state.preset === key;
+    const cardClass = p.isMusic ? `preset-card music-card${isSelected ? ' selected' : ''}` : `preset-card${isSelected ? ' selected' : ''}`;
+    const tags = p.tags.map(([t, c]) => `<span class="tag tag-${c}">${t}</span>`).join('');
+    const check = isSelected ? `<div style="width:18px;height:18px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0;">✓</div>` : '';
+    const popularBadge = p.popular ? `<span class="badge badge-blue" style="font-size:10px;">Most popular</span>` : '';
+    return `
+      <div class="${cardClass}" onclick="selectPreset('${key}')" style="${key === 'musicmix' ? 'grid-column:span 2;' : ''}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:500;color:${p.isMusic ? '#93c5fd' : '#e8e8f0'};">${p.name}</div>
+            <div style="font-size:11px;color:${p.isMusic ? '#378add' : '#555'};">${p.desc}</div>
+          </div>
+          ${check}${popularBadge}
+        </div>
+        <div>${tags}</div>
+      </div>
+    `;
+  }).join('');
+
+  const roundBtns = [2, 3, 4].map(r =>
+    `<div class="rt-btn${state.rounds === r ? ' sel' : ''}" onclick="setRounds(${r})">
+      ${r} rounds<div style="font-size:10px;color:${state.rounds===r?'#7c3aed':'#555'};">~${r*10} min</div>
+    </div>`
+  ).join('');
+
+  const timerBtns = [10, 15, 20, 30].map(t =>
+    `<div class="rt-btn${state.timer === t ? ' sel' : ''}" onclick="setTimer(${t})" style="padding:8px 12px;">${t}s</div>`
+  ).join('');
+
+  const presetName = PRESETS[state.preset]?.name || 'Mixed bag';
+  const total = state.rounds * 5;
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
+        <div>
+          <a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Home</a>
+          <div style="font-size:20px;font-weight:500;color:#e8e8f0;margin-top:4px;">Start a game</div>
+          <div style="font-size:12px;color:#555;margin-top:2px;">How do you want to set it up?</div>
+        </div>
+        <div style="display:flex;gap:8px;">${roundBtns}</div>
+      </div>
+
+      <!-- Quick start -->
+      <div style="background:#1a1535;border:1px solid #7c3aed66;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:6px;cursor:pointer;" onclick="quickStart()">
+        <div style="width:44px;height:44px;border-radius:10px;background:#5b21b6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">⚡</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:500;color:#fff;">Quick start</div>
+          <div style="font-size:12px;color:#c4b5fd;margin-top:2px;">AI picks everything · room code in ~10 seconds</div>
+        </div>
+        <span class="badge badge-purple">One tap</span>
+      </div>
+      <div style="font-size:11px;color:#444;text-align:center;margin-bottom:16px;">AI mixes categories and difficulty for a balanced game</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">or pick a vibe</div><div class="divider-line"></div></div>
+      <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Preset game nights</div>
+      <div class="preset-grid">${presetCards}</div>
+
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">or build your own</div><div class="divider-line"></div></div>
+      <div style="background:#16162a;border:1px dashed #2a2a48;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;opacity:.6;">
+        <div style="width:38px;height:38px;border-radius:50%;background:#1e1e35;display:flex;align-items:center;justify-content:center;font-size:20px;color:#444;">+</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:#888;">Custom game</div>
+          <div style="font-size:11px;color:#555;margin-top:2px;">Coming soon — pick every round and category yourself</div>
+        </div>
+      </div>
+
+      <!-- Timer selector -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="sub-label">Timer per question</div>
+        <div style="display:flex;gap:8px;">${timerBtns}</div>
+        <div style="font-size:11px;color:#555;margin-top:8px;">Longer timers give players more time to think</div>
+      </div>
+
+      <!-- Summary + create -->
+      <div style="background:#16162a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;color:#aaa;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ~${state.rounds*10} min</div>
+        <div style="font-size:11px;color:#7c3aed;">ready</div>
+      </div>
+      <button class="btn-primary" id="createBtn" onclick="createRoom()">Create room and get code</button>
+      <div style="font-size:11px;color:#444;text-align:center;margin-top:8px;">Questions are generated fresh when room is created</div>
+    </div>
+  `);
+}
+
+function selectPreset(key) { state.preset = key; showSetup(); }
+function setRounds(r) { state.rounds = r; showSetup(); }
+function setTimer(t) { state.timer = t; showSetup(); }
+function quickStart() { state.preset = 'mixed'; state.rounds = 3; state.timer = 15; createRoom(); }
+
+async function createRoom() {
+  if (window.location.protocol === 'file:') {
+    showDevError();
+    return;
+  }
+  const btn = document.getElementById('createBtn');
+  const setStatus = t => { if (btn) btn.textContent = t; };
+  if (btn) btn.disabled = true;
+  setStatus('Generating questions…');
+
+  try {
+    const res = await fetch('/api/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rounds: state.rounds, timer: state.timer, preset: state.preset })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      // Surface friendly message for known transient errors
+      if (data.error?.includes('529') || data.error?.includes('Overloaded')) {
+        throw new Error('The AI is a bit busy right now — please try again in a few seconds.');
+      }
+      throw new Error(data.error || 'Failed to create room');
+    }
+    state.room = data;
+    state.players = [];
+    subscribeToRoom();
+    showLobby();
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Create room and get code'; }
+    showSetupError(e.message);
+  }
+}
+
+function showSetupError(msg) {
+  const existing = document.getElementById('setupError');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'setupError';
+  el.style.cssText = 'background:#2d0f0f;border:1px solid #ef4444;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:13px;color:#fca5a5;';
+  el.textContent = 'Error: ' + msg;
+  document.getElementById('root').appendChild(el);
+}
+
+function showDevError() {
+  setHTML(`
+    <div style="max-width:480px;margin:60px auto;text-align:center;padding:0 1rem;">
+      <div style="font-size:32px;margin-bottom:12px;">🚫</div>
+      <div style="font-size:18px;font-weight:500;color:#e8e8f0;margin-bottom:8px;">Open via a local server</div>
+      <div style="font-size:14px;color:#888;margin-bottom:24px;line-height:1.6;">
+        This page is being opened as a <code style="background:#1e1e35;padding:2px 6px;border-radius:4px;color:#a78bfa;">file://</code> URL.<br>
+        The <code style="background:#1e1e35;padding:2px 6px;border-radius:4px;color:#a78bfa;">/api/rooms</code> serverless function won't work that way.
+      </div>
+      <div style="background:#16162a;border:1px solid #2a2a48;border-radius:12px;padding:20px;text-align:left;margin-bottom:20px;">
+        <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Run locally with Vercel CLI</div>
+        <div style="background:#0f0f1a;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#a78bfa;margin-bottom:8px;">npm i -g vercel</div>
+        <div style="background:#0f0f1a;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#a78bfa;margin-bottom:12px;">vercel dev</div>
+        <div style="font-size:12px;color:#555;">Then open <span style="color:#7c3aed;">http://localhost:3000/host.html</span></div>
+      </div>
+      <a href="index.html" style="font-size:13px;color:#555;text-decoration:none;">← Back to home</a>
+    </div>
+  `);
+}
+
+// ─── LOBBY SCREEN ─────────────────────────────────────────────────────────────
+function subscribeToRoom() {
+  if (state.subscription) state.subscription.unsubscribe();
+  const roomId = state.room.id;
+
+  // Load existing players
+  sb.from('players').select('*').eq('room_id', roomId).order('joined_at')
+    .then(({ data }) => { if (data) { state.players = data; renderLobbyPlayers(); } });
+
+  state.subscription = sb.channel('host_room_' + roomId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, payload => {
+      if (payload.eventType === 'INSERT') {
+        state.players = [...state.players.filter(p => p.id !== payload.new.id), payload.new];
+      } else if (payload.eventType === 'UPDATE') {
+        state.players = state.players.map(p => p.id === payload.new.id ? payload.new : p);
+        if (state.view === 'ingame' || state.view === 'reveal') {
+          renderIngameSidebar();
+        }
+      } else if (payload.eventType === 'DELETE') {
+        state.players = state.players.filter(p => p.id !== payload.old.id);
+      }
+      if (state.view === 'lobby') renderLobbyPlayers();
+    })
+    .subscribe();
+}
+
+function showLobby() {
+  state.view = 'lobby';
+  const room = state.room;
+  const joinUrl = `${window.location.origin}/join.html`;
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:13px;color:#555;margin-bottom:6px;">Players join at</div>
+        <div style="font-size:15px;color:#7c3aed;margin-bottom:16px;">${joinUrl}</div>
+        <div style="font-size:14px;color:#555;margin-bottom:10px;">Room code</div>
+        <div style="font-size:80px;font-weight:700;color:#fff;letter-spacing:.15em;line-height:1;">${room.room_code}</div>
+        <div style="font-size:12px;color:#444;margin-top:8px;">Type this code on your phone</div>
+        <button onclick="copyJoinLink('${joinUrl}?code=${room.room_code}')" style="margin-top:10px;background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 14px;font-size:12px;color:#888;cursor:pointer;">Copy join link</button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;color:#888;">Players in lobby</div>
+          <div style="font-size:28px;font-weight:500;color:#a78bfa;" id="playerCount">0</div>
+        </div>
+        <div id="playerList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
+      </div>
+
+      <button class="btn-primary" id="startBtn" style="font-size:16px;padding:14px;" onclick="startGame()" disabled>
+        Start game (waiting for players…)
+      </button>
+      <div style="font-size:11px;color:#444;text-align:center;margin-top:8px;">Need at least 1 player to start</div>
+    </div>
+  `);
+  renderLobbyPlayers();
+}
+
+function renderLobbyPlayers() {
+  const count = state.players.length;
+  const el = document.getElementById('playerCount');
+  const list = document.getElementById('playerList');
+  const btn = document.getElementById('startBtn');
+  if (el) el.textContent = count;
+  if (list) {
+    list.innerHTML = state.players.map((p, i) =>
+      `<div class="player-chip">${avatarHTML(p.name, i, 26)}<div style="font-size:13px;color:#c8c8e0;">${p.name}</div></div>`
+    ).join('');
+  }
+  if (btn) {
+    btn.disabled = count < 1;
+    btn.textContent = count >= 1 ? `Start game (${count} player${count>1?'s':''})` : 'Start game (waiting for players…)';
+  }
+}
+
+function copyJoinLink(url) {
+  navigator.clipboard.writeText(url).then(() => alert('Join link copied!'));
+}
+
+// ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
+async function startGame() {
+  const startTime = new Date().toISOString();
+  await sb.from('game_rooms').update({
+    status: 'active',
+    current_question_index: 0,
+    question_start_time: startTime,
+  }).eq('id', state.room.id);
+  state.room.status = 'active';
+  state.room.current_question_index = 0;
+  state.room.question_start_time = startTime;
+  state.revealed = false;
+  showIngame();
+}
+
+const CLIP_DURATION = 10; // seconds music clip plays before countdown starts
+
+function waveformHTML(color = '#7c3aed') {
+  const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
+  return `<div style="display:flex;align-items:center;gap:3px;height:28px;">
+    ${heights.map((h, i) => `<div class="wave-bar" style="height:${h}px;animation-delay:${(i * 0.12).toFixed(2)}s;background:${color};"></div>`).join('')}
+  </div>`;
+}
+
+function showIngame() {
+  state.view = 'ingame';
+  const room = state.room;
+  const qi = room.current_question_index;
+  const q = room.questions[qi];
+  const totalQ = room.questions.length;
+  const questionsPerRound = 5;
+  const roundNum = Math.floor(qi / questionsPerRound) + 1;
+  const qInRound = (qi % questionsPerRound) + 1;
+  const timerDuration = room.config?.timer || 15;
+  const isMusic = !!(q.preview_url);
+
+  const musicBanner = isMusic ? `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0 6px;">
+      ${waveformHTML()}
+      <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Playing 10s clip…</div>
+    </div>` : '';
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:13px;color:#7c3aed;font-weight:500;">Trivia Night</div>
+        <div style="font-size:12px;color:#555;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}</div>
+        <div style="background:#1e1e35;border:1px solid #2a2a48;border-radius:20px;padding:4px 14px;font-size:13px;color:#a78bfa;font-weight:500;">Join: <span style="color:#fff;letter-spacing:.1em;">${room.room_code}</span></div>
+      </div>
+
+      <div class="ingame-layout">
+        <div>
+          <div class="card" style="margin-bottom:14px;">
+            <div style="font-size:11px;color:#555;margin-bottom:8px;">${q.cat}</div>
+            ${musicBanner}
+            <div style="font-size:20px;font-weight:500;color:#e8e8f0;line-height:1.4;margin-bottom:14px;">${q.q}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:12px;color:#555;">${state.players.length} players</div>
+              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="optionGrid">
+            ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:12px;color:#555;" id="responseStatus">Waiting for answers...</div>
+            ${state.revealed
+              ? `<button class="btn-outline" onclick="advanceQuestion()" style="padding:8px 18px;">${qi + 1 < totalQ ? 'Next question →' : 'Show results →'}</button>`
+              : `<button class="btn-outline" onclick="revealAnswer()" style="padding:8px 18px;">Reveal answer</button>`
+            }
+          </div>
+        </div>
+
+        <div class="ingame-sidebar">
+          <div class="sub-label">Live leaderboard</div>
+          <div id="leaderboard"></div>
+          <hr>
+          <div class="sub-label">Responses</div>
+          <div class="card" style="text-align:center;" id="responseCard">
+            <div style="font-size:28px;font-weight:500;color:#a78bfa;" id="responseCount">0 / ${state.players.length}</div>
+            <div style="font-size:12px;color:#555;margin-top:4px;">players answered</div>
+            <div style="background:#2a2a48;border-radius:4px;height:4px;margin-top:10px;overflow:hidden;"><div id="responseBar" style="background:#7c3aed;height:100%;width:0%;border-radius:4px;transition:width .3s;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  renderIngameSidebar();
+  if (isMusic) playClip(q.preview_url);
+  startIngameTimer(timerDuration, isMusic);
+}
+
+function stopClip() {
+  clearTimeout(state.clipTimeout);
+  state.clipTimeout = null;
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.src = '';
+    state.audio = null;
+  }
+}
+
+function playClip(url) {
+  stopClip();
+  if (!url) return;
+  state.audio = new Audio(url);
+  state.audio.volume = 1;
+  state.audio.play().catch(() => {
+    const cs = document.getElementById('clipStatus');
+    if (cs) cs.textContent = 'Autoplay blocked — click to play';
+  });
+  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+}
+
+function renderIngameSidebar() {
+  const qi = state.room.current_question_index;
+  const sorted = [...state.players].sort((a, b) => b.score - a.score);
+  const top5 = sorted.slice(0, 5);
+  const lbEl = document.getElementById('leaderboard');
+  if (lbEl) {
+    lbEl.innerHTML = top5.map((p, i) => {
+      const [bg, fg] = avatarColor(state.players.indexOf(p));
+      return `
+        <div class="lb-row" style="${i===0?'background:#1e1e35;':''}">
+          <div style="font-size:13px;color:#666;width:16px;">${i+1}</div>
+          <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div style="flex:1;font-size:13px;color:#e8e8f0;">${p.name}</div>
+          <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
+        </div>
+      `;
+    }).join('');
+  }
+  // Response count
+  const answered = state.players.filter(p => p.answers?.some(a => a.question_index === qi)).length;
+  const total = state.players.length;
+  const pct = total > 0 ? Math.round(answered / total * 100) : 0;
+  const rcEl = document.getElementById('responseCount');
+  const rbEl = document.getElementById('responseBar');
+  const rsEl = document.getElementById('responseStatus');
+  if (rcEl) rcEl.textContent = `${answered} / ${total}`;
+  if (rbEl) rbEl.style.width = pct + '%';
+  if (rsEl) rsEl.textContent = answered === total && total > 0 ? 'All players answered!' : `${answered} of ${total} answered`;
+}
+
+function startIngameTimer(duration, isMusic = false) {
+  clearInterval(state.timerInterval);
+  const startTime = new Date(state.room.question_start_time).getTime();
+
+  state.timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const clipPhase = isMusic && elapsed < CLIP_DURATION;
+    const countdownElapsed = isMusic ? Math.max(0, elapsed - CLIP_DURATION) : elapsed;
+    const left = Math.max(0, duration - countdownElapsed);
+    const badge = document.getElementById('timerBadge');
+
+    if (clipPhase) {
+      if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
+    } else {
+      const clipStatus = document.getElementById('clipStatus');
+      if (clipStatus) clipStatus.textContent = '';
+      if (badge) {
+        badge.textContent = Math.ceil(left) + 's';
+        badge.className = 'timer-badge ' + (left > 8 ? 'timer-ok' : left > 4 ? 'timer-warn' : 'timer-danger');
+      }
+      if (left <= 0) {
+        clearInterval(state.timerInterval);
+        if (!state.revealed) revealAnswer();
+      }
+    }
+  }, 250);
+}
+
+function revealAnswer() {
+  clearInterval(state.timerInterval);
+  state.revealed = true;
+  const qi = state.room.current_question_index;
+  const q = state.room.questions[qi];
+  const totalQ = state.room.questions.length;
+
+  // Highlight correct/wrong
+  q.opts.forEach((_, i) => {
+    const el = document.getElementById('opt' + i);
+    if (el) {
+      el.classList.add(i === q.ans ? 'correct' : 'wrong');
+    }
+  });
+
+  // Correct count
+  const correctCount = state.players.filter(p => p.answers?.some(a => a.question_index === qi && a.correct)).length;
+  const rsEl = document.getElementById('responseStatus');
+  if (rsEl) rsEl.textContent = `${correctCount} of ${state.players.length} correct`;
+
+  // Update button
+  const btnArea = document.querySelector('.ingame-layout > div > div:last-child');
+  if (btnArea) {
+    const btn = btnArea.querySelector('button');
+    if (btn) {
+      btn.textContent = qi + 1 < totalQ ? 'Next question →' : 'Show results →';
+      btn.onclick = advanceQuestion;
+    }
+  }
+}
+
+async function advanceQuestion() {
+  clearInterval(state.timerInterval);
+  const qi = state.room.current_question_index;
+  const totalQ = state.room.questions.length;
+
+  if (qi + 1 >= totalQ) {
+    await sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id);
+    state.room.status = 'finished';
+    showResults();
+    return;
+  }
+
+  const newStart = new Date().toISOString();
+  const newIdx = qi + 1;
+  await sb.from('game_rooms').update({
+    current_question_index: newIdx,
+    question_start_time: newStart,
+  }).eq('id', state.room.id);
+  state.room.current_question_index = newIdx;
+  state.room.question_start_time = newStart;
+  state.revealed = false;
+  showIngame();
+}
+
+// ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
+function showResults() {
+  clearInterval(state.timerInterval);
+  if (state.subscription) state.subscription.unsubscribe();
+  state.view = 'results';
+
+  const sorted = [...state.players].sort((a, b) => b.score - a.score);
+
+  const podiumHTML = (() => {
+    const top3 = sorted.slice(0, 3);
+    if (top3.length === 0) return '<div style="text-align:center;color:#555;">No players</div>';
+    const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : [top3[0]];
+    const heights = [70, 90, 55];
+    const labels = top3.length >= 2 ? ['2nd', '1st 🥇', '3rd'] : ['1st 🥇'];
+    const bgColors = ['#1a2d1e', '#2d1a4e', '#2d1a1a'];
+    return `<div class="podium">${order.map((p, i) => {
+      const origIdx = sorted.indexOf(p);
+      const [bg, fg] = avatarColor(origIdx);
+      const h = top3.length >= 2 ? heights[i] : 90;
+      const label = top3.length >= 2 ? labels[i] : '1st 🥇';
+      const podBg = top3.length >= 2 ? bgColors[i] : '#2d1a4e';
+      return `<div class="podium-slot">
+        ${i === 1 || top3.length < 2 ? '<div style="font-size:20px;margin-bottom:4px;">🏆</div>' : ''}
+        <div class="avatar" style="margin:0 auto 6px;background:${bg};color:${fg};width:${i===1||top3.length<2?44:36}px;height:${i===1||top3.length<2?44:36}px;font-size:${i===1||top3.length<2?15:12}px;">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#e8e8f0':'#aaa'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
+        <div class="podium-bar" style="background:${podBg};border:1px solid #2a2a48;height:${h}px;width:80px;flex-direction:column;">
+          <div style="font-size:${i===1||top3.length<2?18:14}px;color:#a78bfa;font-weight:500;">${p.score}</div>
+        </div>
+        <div style="font-size:${i===1||top3.length<2?14:12}px;color:${i===1||top3.length<2?'#7c3aed':'#aaa'};font-weight:${i===1||top3.length<2?500:400};margin-top:4px;">${label}</div>
+      </div>`;
+    }).join('')}</div>`;
+  })();
+
+  const lbRows = sorted.map((p, i) => {
+    const [bg, fg] = avatarColor(i);
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1e1e35;">
+      <div style="font-size:13px;color:${i<3?'#7c3aed':'#555'};width:20px;">${i+1}</div>
+      <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div style="flex:1;font-size:13px;color:#e8e8f0;">${p.name}</div>
+      <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score} pts</div>
+    </div>`;
+  }).join('');
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:13px;color:#555;margin-bottom:6px;">Game over · ${PRESETS[state.room?.config?.preset]?.name || 'Trivia Night'}</div>
+        <div style="font-size:22px;font-weight:500;color:#e8e8f0;">Final leaderboard</div>
+      </div>
+
+      ${podiumHTML}
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="sub-label">All players</div>
+        ${lbRows || '<div style="color:#555;font-size:13px;">No players</div>'}
+      </div>
+
+      <button class="btn-primary" onclick="playAgain()">Play again</button>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Back to home</a></div>
+    </div>
+  `);
+}
+
+async function playAgain() {
+  stopClip();
+  clearInterval(state.timerInterval);
+  if (!state.room) { showSetup(); return; }
+
+  // Reset the existing room back to lobby — keeps the same code and questions
+  await sb.from('game_rooms').update({
+    status: 'lobby',
+    current_question_index: 0,
+    question_start_time: null,
+  }).eq('id', state.room.id);
+
+  // Clear all players so they re-join fresh
+  await sb.from('players').delete().eq('room_id', state.room.id);
+
+  state.room.status = 'lobby';
+  state.room.current_question_index = 0;
+  state.room.question_start_time = null;
+  state.players = [];
+  state.revealed = false;
+
+  showLobby();
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+showSetup();
+</script>
+</body>
+</html>
