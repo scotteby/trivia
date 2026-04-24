@@ -76,7 +76,10 @@ async function getSpotifyToken() {
   if (_spotifyToken && Date.now() < _spotifyTokenExpiry) return _spotifyToken;
   const id = process.env.SPOTIFY_CLIENT_ID;
   const secret = process.env.SPOTIFY_CLIENT_SECRET;
-  if (!id || !secret) return null;
+  if (!id || !secret) {
+    console.log('[spotify] missing credentials — SPOTIFY_CLIENT_ID:', !!id, 'SPOTIFY_CLIENT_SECRET:', !!secret);
+    return null;
+  }
   const creds = Buffer.from(`${id}:${secret}`).toString('base64');
   const body = 'grant_type=client_credentials';
   return new Promise(resolve => {
@@ -95,14 +98,15 @@ async function getSpotifyToken() {
       res.on('end', () => {
         try {
           const data = JSON.parse(raw);
+          console.log('[spotify] token response status:', res.statusCode, 'has_token:', !!data.access_token, data.error || '');
           if (!data.access_token) return resolve(null);
           _spotifyToken = data.access_token;
           _spotifyTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
           resolve(_spotifyToken);
-        } catch { resolve(null); }
+        } catch (e) { console.log('[spotify] token parse error:', e.message); resolve(null); }
       });
     });
-    req.on('error', () => resolve(null));
+    req.on('error', e => { console.log('[spotify] token request error:', e.message); resolve(null); });
     req.write(body);
     req.end();
   });
@@ -139,11 +143,13 @@ async function getSpotifyPreview(artist, song) {
 
     let tracks = await spotifySearch(token, query, offset);
     let withPreviews = tracks.filter(t => t.preview_url);
+    console.log(`[spotify] "${query}" offset=${offset} total=${tracks.length} withPreviews=${withPreviews.length}`);
 
     // Retry at offset 0 if random offset returned nothing
     if (withPreviews.length === 0 && offset > 0) {
       tracks = await spotifySearch(token, query, 0);
       withPreviews = tracks.filter(t => t.preview_url);
+      console.log(`[spotify] retry offset=0 total=${tracks.length} withPreviews=${withPreviews.length}`);
     }
 
     if (withPreviews.length === 0) return getItunesPreview(artist, song);
@@ -154,8 +160,11 @@ async function getSpotifyPreview(artist, song) {
       t.artists.some(a => a.name.toLowerCase().includes(artistLower.split(' ')[0]))
     );
     const pool = matching.length > 0 ? matching : withPreviews;
-    return pool[Math.floor(Math.random() * pool.length)].preview_url;
-  } catch {
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    console.log(`[spotify] chosen: "${chosen.name}" preview=${chosen.preview_url}`);
+    return chosen.preview_url;
+  } catch (e) {
+    console.log('[spotify] getSpotifyPreview error:', e.message);
     return getItunesPreview(artist, song);
   }
 }
