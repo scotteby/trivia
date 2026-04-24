@@ -113,7 +113,7 @@ function setHTML(h) { root.innerHTML = h; }
 let state = {
   view: 'setup',
   rounds: 3,
-  timer: 15,
+  timer: 10,
   preset: 'mixed',
   difficulty: 'mixed',
   autoAdvance: true,
@@ -229,7 +229,7 @@ function showSetup() {
     </div>`
   ).join('');
 
-  const timerBtns = [10, 15, 20, 30].map(t =>
+  const timerBtns = [5, 10, 15, 20].map(t =>
     `<div class="rt-btn${state.timer === t ? ' sel' : ''}" onclick="setTimer(${t})" style="padding:8px 12px;">${t}s</div>`
   ).join('');
 
