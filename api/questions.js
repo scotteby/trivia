@@ -131,6 +131,7 @@ Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder que
         }],
       });
       let questions = parseQuestions(json);
+      console.log(`[practice] cats received:`, cats);
       console.log(`[practice] musicCats=${musicCats.join(',') || 'none'} hasMusicCats=${hasMusicCats}`);
       console.log(`[practice] generated ${questions.length} questions, types:`, questions.map(q => q.type));
       if (hasMusicCats) {
