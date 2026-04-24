@@ -363,21 +363,23 @@ function showQuestion() {
   const total = state.count === 'endless' ? null : state.questions.length;
   const progress = total ? (state.currentIdx / total * 100) : null;
   const catData = findCatData(q.cat) || CATEGORY_DATA[0];
-  const isMusic = !!(q.preview_url);
+  const isMusic = q.type === 'music' && !!(q.artist || q.song);
+  const hasClip = isMusic && !!(q.preview_url);
   const timerDuration = state.timerEnabled ? state.timerSecs : null;
 
   const musicBanner = isMusic ? `
     <div class="music-banner">
-      <div style="display:flex;align-items:center;gap:3px;" id="waveform">${waveformHTML()}</div>
+      <div style="display:flex;align-items:center;gap:3px;" id="waveform">${hasClip ? waveformHTML() : '<div style="font-size:18px;opacity:.5;">♪</div>'}</div>
       <div>
         <div style="font-size:13px;font-weight:500;color:#60a5fa;">${q.artist || ''}</div>
-        <div style="font-size:11px;color:#378add;margin-top:1px;">${q.song || ''} ${q.year ? '· ' + q.year : ''}</div>
+        <div style="font-size:11px;color:#378add;margin-top:1px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>
+        ${!hasClip ? `<div style="font-size:10px;color:#555;margin-top:2px;">No preview available</div>` : ''}
       </div>
     </div>` : '';
 
   const timerHTML = timerDuration
-    ? `<span class="timer-badge ${isMusic ? 'timer-music' : 'timer-ok'}" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>`
-    : (isMusic ? `<span class="timer-badge timer-music" id="timerBadge">♫</span>` : `<div></div>`);
+    ? `<span class="timer-badge ${isMusic && hasClip ? 'timer-music' : 'timer-ok'}" id="timerBadge">${isMusic && hasClip ? '♫' : timerDuration + 's'}</span>`
+    : (isMusic && hasClip ? `<span class="timer-badge timer-music" id="timerBadge">♫</span>` : `<div></div>`);
 
   setHTML(`
     <div class="fade-in">
@@ -411,16 +413,14 @@ function showQuestion() {
     </div>
   `);
 
-  if (isMusic) {
+  if (hasClip) {
     playClip(q.preview_url);
     if (timerDuration) {
-      // Clip phase: show ♫, then after CLIP_DURATION start countdown
       state.clipPhaseTimeout = setTimeout(() => {
         state.clipPhaseTimeout = null;
         if (!state.hasAnswered) startPracticeTimer(timerDuration);
       }, CLIP_DURATION * 1000);
     }
-    // Without timer: clip plays freely, no countdown
   } else {
     if (timerDuration) startPracticeTimer(timerDuration);
   }

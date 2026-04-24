@@ -125,9 +125,9 @@ Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
         max_tokens: maxTokens,
         messages: [{
           role: 'user',
-          content: `Generate exactly ${count} trivia questions spread evenly across these categories: ${cats.join(', ')}.
-Format: ${fmt}
-Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Questions must be unique and interesting. Return ONLY a valid JSON array, no markdown, no extra text.`,
+          content: `Generate exactly ${count} practice trivia questions spread evenly across these categories: ${cats.join(', ')}.
+${fmt}
+Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Questions must be unique and interesting. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });
       let questions = parseQuestions(json);
