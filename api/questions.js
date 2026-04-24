@@ -6,6 +6,22 @@ const MUSIC_CATS = new Set([
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
+// iTunes search terms per music category — multiple options picked at random
+const CAT_SEARCH_TERMS = {
+  'music':              ['pop hits', 'top 40 hits', 'greatest hits', 'classic pop'],
+  '80s hits':           ['80s pop', '1980s hits', 'eighties pop', '80s greatest hits'],
+  '80s music':          ['80s pop', '1980s hits', 'eighties hits'],
+  '90s pop':            ['90s pop', '1990s pop hits', 'nineties pop'],
+  '90s music':          ['90s music', '1990s hits', 'nineties songs'],
+  'current hits':       ['pop 2023', 'pop 2024', 'top hits 2023', 'top hits 2024'],
+  '60s & 70s classics': ['1960s hits', '1970s hits', 'classic oldies', 'sixties pop'],
+  '2000s bangers':      ['2000s pop', 'early 2000s hits', 'noughties pop'],
+  'classic rock':       ['classic rock', 'rock classics', 'hard rock classics'],
+  'hip hop':            ['hip hop', 'rap classics', 'hip hop hits'],
+  'r&b & soul':         ['r&b soul', 'soul music', 'rhythm and blues'],
+  'country':            ['country hits', 'country music', 'country songs'],
+};
+
 function callAnthropic(body) {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
@@ -37,7 +53,7 @@ function parseQuestions(json) {
   return JSON.parse(text);
 }
 
-// ─── iTunes fallback ──────────────────────────────────────────────────────────
+// ─── iTunes: fetch preview URL for a known artist+song ───────────────────────
 async function getItunesPreview(artist, song) {
   return new Promise(resolve => {
     try {
@@ -68,13 +84,107 @@ async function getItunesPreview(artist, song) {
   });
 }
 
-async function enrichWithPreviews(questions) {
-  await Promise.all(questions.map(async q => {
-    if (q.type === 'music' && q.artist && q.song) {
-      q.preview_url = await getItunesPreview(q.artist, q.song);
-    }
+// ─── iTunes: search for tracks by category with randomised offset ─────────────
+async function searchItunesTracks(category) {
+  const terms = CAT_SEARCH_TERMS[category.toLowerCase().trim()] || CAT_SEARCH_TERMS['music'];
+  const term = terms[Math.floor(Math.random() * terms.length)];
+  const offset = Math.floor(Math.random() * 100);
+  const query = encodeURIComponent(term);
+  return new Promise(resolve => {
+    try {
+      const req = https.request({
+        hostname: 'itunes.apple.com',
+        path: `/search?term=${query}&media=music&entity=song&limit=25&offset=${offset}`,
+        method: 'GET',
+        headers: { 'User-Agent': 'TriviaApp/1.0' },
+      }, res => {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(raw);
+            const results = (data?.results || []).filter(
+              r => r.previewUrl && r.artistName && r.trackName
+            );
+            resolve(results);
+          } catch { resolve([]); }
+        });
+      });
+      req.on('error', () => resolve([]));
+      req.end();
+    } catch { resolve([]); }
+  });
+}
+
+// ─── Generate one music question around a specific iTunes track ───────────────
+async function generateMusicQuestion(track, category, explain) {
+  const artist = track.artistName;
+  const song = track.trackName;
+  const year = track.releaseDate ? new Date(track.releaseDate).getFullYear() : null;
+
+  const questionTypes = ['artist', 'song'];
+  if (year) questionTypes.push('year');
+  const qType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+  let qText, correctAnswer;
+  if (qType === 'artist') {
+    qText = 'Who is this artist?';
+    correctAnswer = artist;
+  } else if (qType === 'song') {
+    qText = 'What is this song called?';
+    correctAnswer = song;
+  } else {
+    qText = 'What year was this released?';
+    correctAnswer = String(year);
+  }
+
+  const explainInstruction = explain
+    ? ' Include an "explanation" field: one concise sentence explaining why the answer is correct.'
+    : '';
+
+  const prompt = `You are writing one music trivia question for a pub quiz.
+Track: "${song}" by ${artist}${year ? ` (${year})` : ''}
+Category: ${category}
+Question: "${qText}"
+Correct answer: "${correctAnswer}"
+
+Write 3 plausible but wrong distractors:
+- "Who is this artist?" → other real artists from a similar era/genre
+- "What is this song called?" → other plausible song titles (real or believable)
+- "What year was this released?" → nearby years within 4 years of ${year}
+
+Return ONLY a JSON object, no markdown, no extra text.${explainInstruction}
+Randomise the correct answer's position among the 4 opts and set "ans" to its 0-based index.
+Format: {"type":"music","artist":"${artist}","song":"${song}","year":${year ?? null},"q":"${qText}","opts":["...","...","...","..."],"ans":N,"cat":"${category}"${explain ? ',"explanation":"..."' : ''}}`;
+
+  const json = await callAnthropic({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  if (json.error || !json.content) throw new Error(json.error?.message || 'Anthropic error');
+  const text = json.content[0].text.trim()
+    .replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/```$/, '').trim();
+  const q = JSON.parse(text);
+  q.preview_url = track.previewUrl;
+  return q;
+}
+
+// ─── Generate music questions for multiple categories ─────────────────────────
+async function generateMusicQuestions(musicCats, perCat, explain) {
+  const results = await Promise.all(musicCats.map(async cat => {
+    try {
+      const tracks = await searchItunesTracks(cat);
+      if (tracks.length === 0) return [];
+      const shuffled = [...tracks].sort(() => Math.random() - 0.5);
+      const chosen = shuffled.slice(0, perCat);
+      return Promise.all(chosen.map(track =>
+        generateMusicQuestion(track, cat, explain).catch(() => null)
+      ));
+    } catch { return []; }
   }));
-  return questions;
+  return results.flat().filter(Boolean);
 }
 
 module.exports = async function handler(req, res) {
@@ -114,39 +224,41 @@ module.exports = async function handler(req, res) {
       ? ',"explanation":"One concise sentence explaining why this answer is correct."'
       : '';
 
-    let fmt;
-    if (hasMusicCats && generalCats.length > 0) {
-      fmt = `
-For MUSIC categories (${musicCats.join(', ')}), use this format:
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
-Alternate "q" randomly between "Who is this artist?" and "What is this song?".
-
-For all other categories (${generalCats.join(', ')}):
-{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}`;
-    } else if (hasMusicCats) {
-      fmt = `All questions are music questions:
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
-Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
-    } else {
-      fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}`;
-    }
-
-    const maxTokens = Math.min(explain ? count * 300 + 600 : count * 180 + 400, 4000);
+    const perCat = Math.max(1, Math.round(count / cats.length));
 
     try {
-      const json = await callAnthropic({
-        model: 'claude-sonnet-4-6',
-        max_tokens: maxTokens,
-        messages: [{
-          role: 'user',
-          content: `Generate exactly ${count} practice trivia questions spread evenly across these categories: ${cats.join(', ')}.
-${fmt}${avoidBlock}
+      // General questions via a single Claude call
+      let generalQuestions = [];
+      if (generalCats.length > 0) {
+        const generalCount = generalCats.length * perCat;
+        const json = await callAnthropic({
+          model: 'claude-sonnet-4-6',
+          max_tokens: Math.min(generalCount * 180 + 400, 4000),
+          messages: [{
+            role: 'user',
+            content: `Generate exactly ${generalCount} practice trivia questions spread evenly across these categories: ${generalCats.join(', ')}.
+{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}${avoidBlock}
 ${difficultyLine}
-Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique — no repeats, no rephrasing of prior questions. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
-        }],
-      });
-      let questions = parseQuestions(json);
-      if (hasMusicCats) questions = await enrichWithPreviews(questions);
+Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
+          }],
+        });
+        generalQuestions = parseQuestions(json);
+      }
+
+      // Music questions: search iTunes first, then have Claude write around the track
+      let musicQuestions = [];
+      if (hasMusicCats) {
+        musicQuestions = await generateMusicQuestions(musicCats, perCat, explain);
+      }
+
+      // Interleave general and music questions for variety
+      const questions = [];
+      let gi = 0, mi = 0;
+      while (gi < generalQuestions.length || mi < musicQuestions.length) {
+        if (gi < generalQuestions.length) questions.push(generalQuestions[gi++]);
+        if (mi < musicQuestions.length) questions.push(musicQuestions[mi++]);
+      }
+
       return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
@@ -162,24 +274,33 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
   const musicPos = 1 + Math.floor(Math.random() * 3);
 
   try {
-    const json = await callAnthropic({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: `Generate exactly 5 trivia questions for ${DATE_STR}.
-Position ${musicPos} (0-indexed) must be a music question. All other positions are standard trivia.
-
-Standard format: {"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
-Music format (position ${musicPos} only): {"type":"music","artist":"Artist Name","song":"Song Title","year":YEAR,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
-For the music question, randomly use "Who is this artist?" or "What is this song?" as the question. Use a widely-known popular song.
-
-For standard questions, mix: Science, History, Geography, Pop Culture, Sports.
+    // Generate 4 general questions and 1 music question in parallel
+    const [generalJson, musicQuestion] = await Promise.all([
+      callAnthropic({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1200,
+        messages: [{
+          role: 'user',
+          content: `Generate exactly 4 trivia questions for ${DATE_STR}.
+{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
+Mix categories: Science, History, Geography, Pop Culture, Sports.
 Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array, no markdown, no extra text.`,
-      }],
-    });
-    let questions = parseQuestions(json);
-    questions = await enrichWithPreviews(questions);
+        }],
+      }),
+      (async () => {
+        const tracks = await searchItunesTracks('music');
+        if (tracks.length === 0) return null;
+        const track = tracks[Math.floor(Math.random() * tracks.length)];
+        return generateMusicQuestion(track, 'Music', false).catch(() => null);
+      })(),
+    ]);
+
+    const generalQuestions = parseQuestions(generalJson);
+
+    // Splice music question into generalQuestions at musicPos
+    const questions = [...generalQuestions];
+    if (musicQuestion) questions.splice(musicPos, 0, musicQuestion);
+
     return res.status(200).json({ questions });
   } catch(e) {
     return res.status(500).json({ error: 'Handler failed', detail: e.message });
