@@ -74,7 +74,7 @@ function avatarColor(name) {
 }
 
 // ─── JOIN SCREEN ─────────────────────────────────────────────────────────────
-function showJoin(prefill = '') {
+function showJoin(prefill = '', namePrefill = '') {
   state.view = 'join';
   setHTML(`
     <div class="fade-in">
@@ -96,6 +96,7 @@ function showJoin(prefill = '') {
       <div class="card" style="margin-bottom:16px;">
         <div style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
         <input id="nameInput" type="text" maxlength="20" placeholder="Enter your name"
+          value="${namePrefill}"
           style="background:#0f0f1a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;font-size:16px;color:#e8e8f0;width:100%;"
           onkeydown="if(event.key==='Enter')joinGame()" />
       </div>
@@ -105,7 +106,8 @@ function showJoin(prefill = '') {
       <div id="joinError" style="margin-top:10px;text-align:center;font-size:13px;color:#ef4444;min-height:20px;"></div>
     </div>
   `);
-  if (prefill) document.getElementById('nameInput')?.focus();
+  if (prefill && namePrefill) document.getElementById('nameInput')?.blur();
+  else if (prefill) document.getElementById('nameInput')?.focus();
   else document.getElementById('codeInput')?.focus();
 }
 
@@ -586,7 +588,7 @@ async function showPlayerResults() {
 }
 
 async function rejoinRoom() {
-  const code = state.room?.room_code || '';
+  const code = state.room?.room_code || localStorage.getItem('trivia_room_code') || '';
   const name = state.player?.name || localStorage.getItem('trivia_player_name') || '';
 
   if (state.subscription) { state.subscription.unsubscribe(); state.subscription = null; }
@@ -596,33 +598,68 @@ async function rejoinRoom() {
   state.hasAnswered = false;
   state.selectedAnswer = null;
 
-  if (!name || !code) { showJoin(code); return; }
-
-  setHTML(`<div style="text-align:center;padding:80px 20px;">
-    <div style="font-size:15px;color:#a78bfa;margin-bottom:6px;">Rejoining room ${code}…</div>
-    <div style="font-size:12px;color:#555;">Welcome back, ${name}</div>
-  </div>`);
+  if (!name || !code) { showJoin(code, name); return; }
 
   try {
     const { data: room } = await sb.from('game_rooms').select('*').eq('room_code', code).maybeSingle();
-    if (!room || room.status === 'finished') { showJoin(code); return; }
+    if (!room) { showJoin(code, name); return; }
     state.room = room;
 
-    const { data: playerData, error } = await sb.from('players').insert({
-      room_id: room.id, name, score: 0, answers: [],
-    }).select().single();
-    if (error || !playerData) { showJoin(code); return; }
+    if (room.status === 'finished') {
+      // Host hasn't clicked "Play again" yet — wait for room to reset
+      showWaitingForHost(code, name);
+      return;
+    }
 
-    state.player = playerData;
-    localStorage.setItem('trivia_player_id', playerData.id);
-    localStorage.setItem('trivia_room_code', code);
-
-    subscribeAsPlayer();
-    if (room.status === 'active') showIngame();
-    else showLobby();
+    await doRejoinInsert(room, name, code);
   } catch(e) {
-    showJoin(code);
+    showJoin(code, name);
   }
+}
+
+function showWaitingForHost(code, name) {
+  state.view = 'waiting';
+  setHTML(`
+    <div class="fade-in" style="text-align:center;padding:80px 20px;">
+      <div style="font-size:22px;color:#a78bfa;margin-bottom:8px;">Almost there…</div>
+      <div style="font-size:14px;color:#e8e8f0;margin-bottom:4px;">Waiting for host to start a new game</div>
+      <div style="font-size:12px;color:#555;margin-bottom:28px;">Room <strong style="color:#e8e8f0;">${code}</strong> · ${name}</div>
+      <div style="display:flex;justify-content:center;gap:4px;">
+        <div style="width:7px;height:7px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .0s infinite;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:7px;height:7px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+    </div>
+    <style>@keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}</style>
+  `);
+
+  const roomId = state.room.id;
+  const waitSub = sb.channel('rejoin_wait_' + roomId + '_' + Date.now())
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` }, async payload => {
+      if (payload.new?.status === 'lobby' || payload.new?.status === 'active') {
+        waitSub.unsubscribe();
+        state.room = payload.new;
+        await doRejoinInsert(state.room, name, code);
+      }
+    })
+    .subscribe();
+}
+
+async function doRejoinInsert(room, name, code) {
+  const { data: playerData, error } = await sb.from('players').insert({
+    room_id: room.id, name, score: 0, answers: [],
+  }).select().single();
+
+  if (error || !playerData) { showJoin(code, name); return; }
+
+  state.player = playerData;
+  localStorage.setItem('trivia_player_id', playerData.id);
+  localStorage.setItem('trivia_room_code', code);
+  localStorage.setItem('trivia_player_name', name);
+
+  subscribeAsPlayer();
+  if (room.status === 'active') showIngame();
+  else showLobby();
 }
 
 function ordinal(n) {
