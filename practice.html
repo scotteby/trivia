@@ -312,6 +312,10 @@ async function fetchQuestions() {
     count,
     explain: state.explainEnabled ? 'true' : 'false',
   });
+  if (state.questions.length > 0) {
+    const avoid = state.questions.map(q => q.q).join('||');
+    params.set('avoid', avoid);
+  }
   const res = await fetch(`/api/questions?${params}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to load questions');

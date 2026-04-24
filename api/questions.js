@@ -91,6 +91,11 @@ module.exports = async function handler(req, res) {
       .split(',').map(c => c.trim().replace(/\+/g, ' ')).filter(Boolean);
     const count = Math.min(Math.max(parseInt(req.query.count) || 10, 1), 20);
     const explain = req.query.explain === 'true';
+    const avoidRaw = (req.query.avoid || '').replace(/\+/g, ' ');
+    const avoidList = avoidRaw ? avoidRaw.split('||').map(s => s.trim()).filter(Boolean) : [];
+    const avoidBlock = avoidList.length > 0
+      ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidList.map(q => `- ${q}`).join('\n')}\n`
+      : '';
 
     const musicCats   = cats.filter(isMusicCat);
     const generalCats = cats.filter(c => !isMusicCat(c));
@@ -126,8 +131,8 @@ Alternate "q" randomly between "Who is this artist?" and "What is this song?".`;
         messages: [{
           role: 'user',
           content: `Generate exactly ${count} practice trivia questions spread evenly across these categories: ${cats.join(', ')}.
-${fmt}
-Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Questions must be unique and interesting. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
+${fmt}${avoidBlock}
+Rules: "ans" is the 0-based index of the correct answer. Mix easy and harder questions. Every question must be completely unique — no repeats, no rephrasing of prior questions. For music questions, use only widely-known popular songs. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
       });
       let questions = parseQuestions(json);
