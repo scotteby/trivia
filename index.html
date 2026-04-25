@@ -52,8 +52,8 @@ body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-syste
 .option-btn:hover:not([disabled]) { background: #f5f3ff; border-color: #7c3aed88; color: #1a1a2e; }
 .option-btn:active:not([disabled]) { transform: scale(.98); }
 .option-btn[disabled] { cursor: default; }
-.option-btn.correct { background: #f0fdf4; border-color: #22c55e; color: #166534; }
-.option-btn.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+.option-btn.correct { background: #f0fdf4; border-color: #22c55e; color: #166534; transition: none; }
+.option-btn.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; transition: none; }
 .score-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
 .score-chip { background: #f5f5fa; border: 1px solid #e4e4f0; border-radius: 20px; padding: 4px 14px; font-size: 13px; color: #a78bfa; font-weight: 500; }
 .feedback-msg { min-height: 24px; font-size: 13px; color: #9090b8; text-align: center; margin-bottom: .5rem; }
@@ -358,7 +358,7 @@ function setFeedback(text, bonus) {
 function beginQuestion() {
   clearInterval(timerInterval);
   timeLeft = MAX_TIME;
-  document.querySelectorAll('.option-btn').forEach(b => b.className = 'option-btn');
+  root.innerHTML = '';
   showQuestion();
   const q = QUESTIONS[qi];
   if (q.type === 'music' && q.preview_url) {
