@@ -69,8 +69,6 @@ let state = {
   roundLeaderboardTimeout: null,
   hasAnswered: false,
   selectedAnswer: null,
-  audio: null,
-  clipTimeout: null,
 };
 
 const AVATAR_COLORS = [
@@ -338,28 +336,9 @@ function showIngame() {
     </div>
   `);
 
-  if (isMusic) playClip(q.preview_url);
   startPlayerTimer(timerDuration, isMusic);
 }
 
-function stopClip() {
-  clearTimeout(state.clipTimeout);
-  state.clipTimeout = null;
-  if (state.audio) {
-    state.audio.pause();
-    state.audio.src = '';
-    state.audio = null;
-  }
-}
-
-function playClip(url) {
-  stopClip();
-  if (!url) return;
-  state.audio = new Audio(url);
-  state.audio.volume = 1;
-  state.audio.play().catch(() => {});
-  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
-}
 
 function startPlayerTimer(duration, isMusic = false) {
   clearInterval(state.timerInterval);
