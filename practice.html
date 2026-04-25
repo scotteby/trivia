@@ -549,13 +549,20 @@ async function fetchQuestions() {
 }
 
 function unlockAudio() {
-  // Called during a user gesture so subsequent audio.play() works after async gaps
-  try { const a = new Audio(); a.play().catch(() => {}); } catch {}
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    src.start(0);
+    window._audioCtx = ctx;
+  } catch(e) {}
 }
 
 async function startPractice() {
   if (!state.categories.length) return;
-  unlockAudio();
+  unlockAudio(); // must be first, before any await
   state.questions = [];
   state.currentIdx = 0;
   state.answers = [];
