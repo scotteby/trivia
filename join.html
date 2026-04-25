@@ -6,28 +6,28 @@
 <title>Join Game — Trivia Night</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
 #app { max-width: 420px; margin: 0 auto; padding: 1.5rem 1rem; }
-.card { background: #16162a; border: 1px solid #2a2a48; border-radius: 12px; padding: 14px 16px; }
+.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
 .badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
-.badge-purple { background: #2d1a4e; color: #c4b5fd; }
-.badge-green { background: #1a2d1e; color: #86efac; }
+.badge-purple { background: #ede9fe; color: #6d28d9; }
+.badge-green { background: #f0fdf4; color: #166534; }
 .btn-primary { background: #7c3aed; border: none; border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; min-height: 50px; }
 .btn-primary:hover:not(:disabled) { background: #6d28d9; }
 .btn-primary:disabled { opacity: .5; cursor: default; }
-.btn-outline { background: transparent; border: 1px solid #2a2a48; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #888; cursor: pointer; width: 100%; transition: border-color .2s; min-height: 44px; }
-.option-btn { background: #16162a; border: 2px solid #2a2a48; border-radius: 12px; padding: 16px 14px; font-size: 15px; color: #c8c8e0; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 54px; display: block; margin-bottom: 10px; }
+.btn-outline { background: transparent; border: 1px solid #e4e4f0; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #9090b8; cursor: pointer; width: 100%; transition: border-color .2s; min-height: 44px; }
+.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 16px 14px; font-size: 16px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 54px; display: block; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
 .option-btn:active:not([disabled]) { transform: scale(.97); }
 .option-btn[disabled] { cursor: default; }
-.option-btn.selected { border-color: #7c3aed; color: #c4b5fd; background: #1e1535; }
-.option-btn.correct { border-color: #22c55e; color: #86efac; background: #0f2d1f; }
-.option-btn.wrong { border-color: #ef4444; color: #fca5a5; background: #2d0f0f; }
-.player-chip { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.option-btn.selected { border-color: #7c3aed; color: #5b21b6; background: #f5f3ff; }
+.option-btn.correct { border-color: #22c55e; color: #166534; background: #f0fdf4; }
+.option-btn.wrong { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
+.player-chip { background: #f5f5fa; border: 1px solid #e4e4f0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
-.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid #2a2a48; }
-.timer-ok { color: #7c3aed; border-color: #7c3aed44; background: #1e1e35; }
-.timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
-.timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
+.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid #e4e4f0; }
+.timer-ok { color: #6d28d9; border-color: #c4b5fd; background: #ede9fe; }
+.timer-warn { color: #92400e; border-color: #fcd34d; background: #fef3c7; }
+.timer-danger { color: #991b1b; border-color: #fca5a5; background: #fee2e2; }
 .fade-in { animation: fadeUp .3s ease forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 input { outline: none; }
@@ -80,29 +80,29 @@ function showJoin(prefill = '', namePrefill = '') {
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:28px;margin-top:20px;">
         <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
-        <div style="font-size:13px;color:#555;">Join a multiplayer game</div>
+        <div style="font-size:13px;color:#9090b8;">Join a multiplayer game</div>
       </div>
 
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Room code</div>
+        <div style="font-size:12px;color:#9090b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Room code</div>
         <input id="codeInput" type="text" maxlength="5" placeholder="e.g. PIZZA"
           value="${prefill}"
           autocomplete="off" spellcheck="false"
-          style="background:#0f0f1a;border:1px solid #2a2a48;border-radius:10px;padding:14px 16px;font-size:22px;color:#e8e8f0;width:100%;text-align:center;letter-spacing:.2em;font-weight:600;text-transform:uppercase;margin-bottom:0;"
+          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:14px 16px;font-size:22px;color:#1a1a2e;width:100%;text-align:center;letter-spacing:.2em;font-weight:600;text-transform:uppercase;margin-bottom:0;"
           oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"
           onkeydown="if(event.key==='Enter')document.getElementById('nameInput')?.focus()" />
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div style="font-size:12px;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
+        <div style="font-size:12px;color:#9090b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
         <input id="nameInput" type="text" maxlength="20" placeholder="Enter your name"
           value="${namePrefill}"
-          style="background:#0f0f1a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;font-size:16px;color:#e8e8f0;width:100%;"
+          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:12px 16px;font-size:16px;color:#1a1a2e;width:100%;"
           onkeydown="if(event.key==='Enter')joinGame()" />
       </div>
 
       <button class="btn-primary" id="joinBtn" onclick="joinGame()">Join room</button>
-      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#9090b8;text-decoration:none;">← Back to home</a></div>
       <div id="joinError" style="margin-top:10px;text-align:center;font-size:13px;color:#ef4444;min-height:20px;"></div>
     </div>
   `);
@@ -170,19 +170,19 @@ function showLobby() {
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:24px;margin-top:20px;">
         <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
-        <div style="font-size:13px;color:#555;">Room <strong style="color:#e8e8f0;letter-spacing:.05em;">${room.room_code}</strong></div>
+        <div style="font-size:13px;color:#9090b8;">Room <strong style="color:#1a1a2e;letter-spacing:.05em;">${room.room_code}</strong></div>
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:11px;color:#555;margin-bottom:8px;">You're in!</div>
+        <div style="font-size:11px;color:#9090b8;margin-bottom:8px;">You're in!</div>
         <div style="font-size:42px;font-weight:500;color:#a78bfa;" id="lobbyCount">…</div>
-        <div style="font-size:12px;color:#555;">players in lobby</div>
+        <div style="font-size:12px;color:#9090b8;">players in lobby</div>
       </div>
 
       <div id="lobbyList" style="margin-bottom:16px;"></div>
 
-      <div style="background:#1e1e35;border-radius:10px;padding:12px 16px;text-align:center;">
-        <div style="font-size:13px;color:#888;">Waiting for host to start…</div>
+      <div style="background:#f0f0fa;border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:13px;color:#9090b8;">Waiting for host to start…</div>
         <div style="margin-top:8px;display:flex;justify-content:center;gap:4px;">
           <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .0s infinite;"></div>
           <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
@@ -216,7 +216,7 @@ function renderLobbyList() {
       const initials = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       return `<div class="player-chip" style="${isMe ? 'border-color:#7c3aed44;' : ''}">
         <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
-        <div style="flex:1;font-size:13px;color:${isMe ? '#c4b5fd' : '#c8c8e0'};">${p.name}</div>
+        <div style="flex:1;font-size:13px;color:${isMe ? '#c4b5fd' : '#1a1a2e'};">${p.name}</div>
         ${isMe ? '<div style="font-size:10px;color:#7c3aed;">you</div>' : ''}
       </div>`;
     }).join('');
@@ -295,7 +295,7 @@ function showIngame() {
   const isMusic = !!(q.preview_url);
 
   const musicBanner = isMusic ? `
-    <div style="background:#1a1535;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
+    <div style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
         ${waveformHTML()}
       </div>
@@ -307,24 +307,24 @@ function showIngame() {
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
         <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
-        <div style="font-size:12px;color:#555;" id="scoreDisplay">${state.localScore} pts</div>
+        <div style="font-size:12px;color:#9090b8;" id="scoreDisplay">${state.localScore} pts</div>
       </div>
 
       ${musicBanner}
 
-      <div style="background:#1e1e35;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
-        <span style="font-size:11px;color:#a78bfa;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+      <div style="background:#ede9fe;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+        <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
       <div class="card" style="margin-bottom:14px;">
-        <div style="font-size:16px;font-weight:500;color:#e8e8f0;line-height:1.5;">${q.q}</div>
+        <div style="font-size:17px;font-weight:500;color:#1a1a2e;line-height:1.5;">${q.q}</div>
       </div>
 
       <div id="optionGrid">
         ${q.opts.map((o, i) => `<button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">${String.fromCharCode(65+i)} &nbsp; ${o}</button>`).join('')}
       </div>
 
-      <div id="statusMsg" style="background:#1e1e35;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#555;margin-top:4px;display:none;"></div>
+      <div id="statusMsg" style="background:#f5f5fa;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
     </div>
   `);
 
@@ -451,7 +451,7 @@ function timeUp() {
   const statusEl = document.getElementById('statusMsg');
   if (statusEl) {
     statusEl.style.display = 'block';
-    statusEl.style.color = '#888';
+    statusEl.style.color = '#9090b8';
     statusEl.textContent = `Time's up! Correct answer: ${q.opts[q.ans]}`;
   }
   // Still save a "no answer" entry so host can count responses
@@ -473,10 +473,10 @@ function revealPlayerAnswer(idx, correct, pts) {
   const statusEl = document.getElementById('statusMsg');
   if (statusEl) {
     if (correct) {
-      statusEl.style.color = '#86efac';
+      statusEl.style.color = '#166534';
       statusEl.textContent = `Correct! +${pts} pts`;
     } else {
-      statusEl.style.color = '#fca5a5';
+      statusEl.style.color = '#991b1b';
       statusEl.textContent = `Wrong — the answer was: ${q.opts[q.ans]}`;
     }
   }
@@ -498,10 +498,10 @@ async function showRoundLeaderboard(completedRound, nextFn) {
   const lbRows = sorted.map((p, i) => {
     const [bg, fg] = avatarColor(p.name);
     const isMe = p.id === state.player?.id;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#1a1535;' : ''}margin-bottom:4px;">
-      <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#555'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#f5f3ff;' : ''}margin-bottom:4px;">
+      <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
       <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
-      <div style="flex:1;font-size:14px;color:${isMe ? '#c4b5fd' : '#aaa'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
+      <div style="flex:1;font-size:14px;color:${isMe ? '#c4b5fd' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
       <div style="font-size:14px;color:#a78bfa;font-weight:600;">${p.score}</div>
     </div>`;
   }).join('');
@@ -511,13 +511,13 @@ async function showRoundLeaderboard(completedRound, nextFn) {
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
         <div style="font-size:11px;color:#7c3aed;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
-        <div style="font-size:22px;font-weight:500;color:#e8e8f0;">${isLastRound ? 'Final scores' : 'Leaderboard'}</div>
-        ${myRank > 0 ? `<div style="font-size:13px;color:#555;margin-top:4px;">You're #${myRank} with ${state.localScore} pts</div>` : ''}
+        <div style="font-size:22px;font-weight:500;color:#1a1a2e;">${isLastRound ? 'Final scores' : 'Leaderboard'}</div>
+        ${myRank > 0 ? `<div style="font-size:13px;color:#9090b8;margin-top:4px;">You're #${myRank} with ${state.localScore} pts</div>` : ''}
       </div>
 
       <div class="card" style="margin-bottom:16px;">${lbRows}</div>
 
-      <div style="background:#1e1e35;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#555;">
+      <div style="background:#f0f0fa;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#9090b8;">
         ${isLastRound ? 'Waiting for final results…' : `Next round in <span id="rlCountdown" style="color:#a78bfa;font-weight:500;">${secs}s</span>`}
       </div>
     </div>
@@ -555,10 +555,10 @@ async function showPlayerResults() {
   const lbRows = sorted.map((p, i) => {
     const [bg, fg] = avatarColor(p.name);
     const isMe = p.id === state.player?.id;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:8px ${isMe?'8px':'0'};border-bottom:1px solid #1e1e35;${isMe?'background:#1a1535;border-radius:6px;margin:0 -4px;':''}">
-      <div style="font-size:12px;color:${i<3?'#7c3aed':'#555'};width:18px;">${i+1}</div>
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px ${isMe?'8px':'0'};border-bottom:1px solid #e4e4f0;${isMe?'background:#f5f3ff;border-radius:6px;margin:0 -4px;':''}">
+      <div style="font-size:12px;color:${i<3?'#7c3aed':'#9090b8'};width:18px;">${i+1}</div>
       <div class="avatar" style="width:26px;height:26px;font-size:9px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-      <div style="flex:1;font-size:13px;color:${isMe?'#c4b5fd':'#aaa'};font-weight:${isMe?500:400};">${isMe ? 'You ('+p.name+')' : p.name}</div>
+      <div style="flex:1;font-size:13px;color:${isMe?'#c4b5fd':'#1a1a2e'};font-weight:${isMe?500:400};">${isMe ? 'You ('+p.name+')' : p.name}</div>
       <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
     </div>`;
   }).join('');
@@ -567,28 +567,28 @@ async function showPlayerResults() {
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
         <div style="font-size:36px;margin-bottom:8px;">${emoji}</div>
-        <div style="font-size:22px;font-weight:500;color:#e8e8f0;margin-bottom:4px;">${msg}</div>
-        <div style="font-size:12px;color:#555;">Room ${state.room.room_code}</div>
+        <div style="font-size:22px;font-weight:500;color:#1a1a2e;margin-bottom:4px;">${msg}</div>
+        <div style="font-size:12px;color:#9090b8;">Room ${state.room.room_code}</div>
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:14px;">
         <div style="font-size:48px;font-weight:500;color:#a78bfa;line-height:1;">${state.localScore}</div>
-        <div style="font-size:13px;color:#555;margin-top:4px;">out of ${maxScore} points · ${myRank > 0 ? myRank + ordinal(myRank) + ' place' : 'unranked'}</div>
+        <div style="font-size:13px;color:#9090b8;margin-top:4px;">out of ${maxScore} points · ${myRank > 0 ? myRank + ordinal(myRank) + ' place' : 'unranked'}</div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div style="font-size:11px;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Final standings</div>
+        <div style="font-size:12px;color:#9090b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Final standings</div>
         ${lbRows}
       </div>
 
-      <div style="background:#0f0f1a;border:1px solid #1e1e35;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
-        <div style="font-size:13px;color:#e8e8f0;font-weight:500;margin-bottom:3px;">Want a rematch?</div>
-        <div style="font-size:12px;color:#555;margin-bottom:10px;">Rejoin with the same code or share with someone new</div>
+      <div style="background:#f5f5fa;border:1px solid #e4e4f0;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:13px;color:#1a1a2e;font-weight:500;margin-bottom:3px;">Want a rematch?</div>
+        <div style="font-size:12px;color:#9090b8;margin-bottom:10px;">Rejoin with the same code or share with someone new</div>
         <button class="btn-primary" style="font-size:13px;padding:10px;margin-bottom:8px;" onclick="rejoinRoom()">Rejoin room ${state.room?.room_code || ''}</button>
         <button class="btn-outline" style="font-size:13px;padding:10px;" onclick="shareRoom()">Share join link</button>
       </div>
 
-      <a href="index.html" style="display:block;text-align:center;font-size:12px;color:#555;text-decoration:none;padding:8px;">← Back to home</a>
+      <a href="index.html" style="display:block;text-align:center;font-size:12px;color:#9090b8;text-decoration:none;padding:8px;">← Back to home</a>
     </div>
   `);
 }
@@ -628,8 +628,8 @@ function showWaitingForHost(code, name) {
   setHTML(`
     <div class="fade-in" style="text-align:center;padding:80px 20px;">
       <div style="font-size:22px;color:#a78bfa;margin-bottom:8px;">Almost there…</div>
-      <div style="font-size:14px;color:#e8e8f0;margin-bottom:4px;">Waiting for host to start a new game</div>
-      <div style="font-size:12px;color:#555;margin-bottom:28px;">Room <strong style="color:#e8e8f0;">${code}</strong> · ${name}</div>
+      <div style="font-size:14px;color:#1a1a2e;margin-bottom:4px;">Waiting for host to start a new game</div>
+      <div style="font-size:12px;color:#9090b8;margin-bottom:28px;">Room <strong style="color:#1a1a2e;">${code}</strong> · ${name}</div>
       <div style="display:flex;justify-content:center;gap:4px;">
         <div style="width:7px;height:7px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .0s infinite;"></div>
         <div style="width:7px;height:7px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
