@@ -138,7 +138,7 @@ async function showHome() {
       <div class="card featured" style="margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:500;color:#1a1a2e;">Daily challenge</div>
+            <div style="font-size:14px;font-weight:500;color:#1a1a2e;">Daily Quizzli</div>
             <div style="font-size:11px;color:#7c3aed;">5 questions · resets midnight</div>
           </div>
         </div>
@@ -238,7 +238,7 @@ function showSoloStart() {
     <div style="text-align:center;padding:1.5rem 1rem 1rem;" class="fade-in">
       <button class="btn-outline" style="width:auto;padding:6px 14px;font-size:12px;margin-bottom:1.5rem;" onclick="showHome()">← Home</button>
       <div class="start-title">Daily Quizzli</div>
-      <div style="font-size:14px;color:#9090b8;margin-bottom:.35rem;">5 questions · Speed bonus · Daily challenge</div>
+      <div style="font-size:14px;color:#9090b8;margin-bottom:.35rem;">5 questions · Speed bonus · Daily Quizzli</div>
       <div style="font-size:13px;color:#7c3aed;margin-bottom:1.5rem;">${DATE_STR}</div>
       ${hsBannerHTML()}
       <div class="rules-grid">
@@ -348,6 +348,7 @@ function setFeedback(text, bonus) {
 function beginQuestion() {
   clearInterval(timerInterval);
   timeLeft = MAX_TIME;
+  document.querySelectorAll('.option-btn').forEach(b => b.className = 'option-btn');
   showQuestion();
   const q = QUESTIONS[qi];
   if (q.type === 'music' && q.preview_url) {
