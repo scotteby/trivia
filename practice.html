@@ -378,7 +378,7 @@ function renderSetup() {
 
   const countBtns = [5, 10, 20, 'Endless'].map(c =>
     `<div class="rt-btn${state.count === c ? ' sel' : ''}" onclick="setCount(${typeof c === 'number' ? c : "'endless'"})">
-      ${c}${typeof c === 'number' ? ' Qs' : ''}
+      ${c}
     </div>`
   ).join('');
 
