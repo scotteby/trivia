@@ -818,7 +818,16 @@ function copyJoinLink(url) {
 }
 
 // ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
+
+// 1-frame silent WAV — playing this before any await unlocks browser audio autoplay
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+function unlockAudio() {
+  try { const a = new Audio(SILENT_AUDIO); a.volume = 0; a.play().catch(() => {}); } catch(e) {}
+}
+
 async function startGame() {
+  // Unlock audio within the user gesture before the async DB call expires the gesture context
+  unlockAudio();
   const startTime = new Date().toISOString();
   await sb.from('game_rooms').update({
     status: 'active',
