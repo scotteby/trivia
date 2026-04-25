@@ -39,53 +39,54 @@
 -->
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0f0f1a; color: #e8e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
 #app { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
 
-.card { background: #16162a; border: 1px solid #2a2a48; border-radius: 12px; padding: 14px 16px; }
-.card.featured { border-color: #7c3aed66; background: #1a1535; }
-.card.music { border-color: #378add44; background: #0f1a2e; }
+.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
+.card.featured { border-color: #c4b5fd; background: #f5f3ff; }
+.card.music { border-color: #93c5fd; background: #eff6ff; }
 .badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
-.badge-purple { background: #2d1a4e; color: #c4b5fd; }
-.badge-blue { background: #0c2d4e; color: #60a5fa; }
-.badge-green { background: #1a2d1e; color: #86efac; }
-.tag { display: inline-block; background: #1e1e35; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #666; margin: 2px; }
-.tag-purple { background: #2d1a4e; color: #a78bfa; }
-.tag-blue { background: #0c2d4e; color: #60a5fa; }
-.tag-green { background: #1a2d1e; color: #86efac; }
-.tag-amber { background: #2d2000; color: #fcd34d; }
+.badge-purple { background: #ede9fe; color: #6d28d9; }
+.badge-blue { background: #eff6ff; color: #1d4ed8; }
+.badge-green { background: #f0fdf4; color: #166534; }
+.tag { display: inline-block; background: #f5f5fa; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #9090b8; margin: 2px; }
+.tag-purple { background: #ede9fe; color: #6d28d9; }
+.tag-blue { background: #eff6ff; color: #3b82f6; }
+.tag-green { background: #f0fdf4; color: #166534; }
+.tag-amber { background: #fefce8; color: #92400e; }
 .btn-primary { background: #7c3aed; border: none; border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; }
 .btn-primary:hover:not(:disabled) { background: #6d28d9; }
 .btn-primary:disabled { opacity: .5; cursor: default; }
-.btn-outline { background: transparent; border: 1px solid #2a2a48; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #888; cursor: pointer; transition: border-color .2s, color .2s; }
-.btn-outline:hover { border-color: #7c3aed88; color: #c4b5fd; }
-.rt-btn { background: #16162a; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #888; text-align: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
-.rt-btn.sel { background: #2d1a4e; border-color: #7c3aed; color: #c4b5fd; }
+.btn-outline { background: transparent; border: 1px solid #e4e4f0; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #9090b8; cursor: pointer; transition: border-color .2s, color .2s; }
+.btn-outline:hover { border-color: #7c3aed88; color: #7c3aed; }
+.rt-btn { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #9090b8; text-align: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.rt-btn.sel { background: #ede9fe; border-color: #7c3aed; color: #6d28d9; }
 .divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; }
-.divider-line { flex: 1; border-top: 1px solid #1e1e35; }
-.divider-text { font-size: 11px; color: #333; }
+.divider-line { flex: 1; border-top: 1px solid #e4e4f0; }
+.divider-text { font-size: 11px; color: #9090b8; }
 .fade-in { animation: fadeUp .35s ease forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.player-chip { background: #1e1e35; border: 1px solid #2a2a48; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.player-chip { background: #f5f5fa; border: 1px solid #e4e4f0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
 .lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; }
-.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 500; display: inline-block; border: 1px solid #2a2a48; }
-.timer-ok { color: #7c3aed; border-color: #7c3aed44; background: #1e1e35; }
-.timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
-.timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
-.option-btn-host { background: #16162a; border: 1px solid #2a2a48; border-radius: 10px; padding: 14px 16px; font-size: 16px; color: #c8c8e0; text-align: left; line-height: 1.4; }
-.option-btn-host.correct { background: #0f2d1f; border-color: #22c55e; color: #86efac; }
-.option-btn-host.wrong { background: #2d0f0f; border-color: #ef4444; color: #fca5a5; }
-.sub-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
-hr { border: none; border-top: 1px solid #1e1e35; margin: 14px 0; }
+.lb-row-first { background: #f0f0fa; }
+.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 500; display: inline-block; border: 1px solid #e4e4f0; }
+.timer-ok { color: #6d28d9; border-color: #c4b5fd; background: #ede9fe; }
+.timer-warn { color: #92400e; border-color: #fcd34d; background: #fef3c7; }
+.timer-danger { color: #991b1b; border-color: #fca5a5; background: #fee2e2; }
+.option-btn-host { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: #2a2a4a; text-align: left; line-height: 1.4; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
+.option-btn-host.correct { background: #f0fdf4; border-color: #22c55e; color: #166534; }
+.option-btn-host.wrong { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+.sub-label { font-size: 11px; color: #9090b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+hr { border: none; border-top: 1px solid #e4e4f0; margin: 14px 0; }
 
 /* Preset grid */
 .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-.preset-card { background: #16162a; border: 2px solid #2a2a48; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .2s, background .2s; }
-.preset-card:hover { border-color: #7c3aed44; }
-.preset-card.selected { border-color: #7c3aed; background: #1a1535; }
-.preset-card.music-card { border-color: #1e3a5f; background: #0f1a2e; }
-.preset-card.music-card:hover, .preset-card.music-card.selected { border-color: #378add; background: #0c2340; }
+.preset-card { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: border-color .2s, background .2s; }
+.preset-card:hover { border-color: #c4b5fd; }
+.preset-card.selected { border-color: #7c3aed; background: #f5f3ff; }
+.preset-card.music-card { border-color: #93c5fd; background: #eff6ff; }
+.preset-card.music-card:hover, .preset-card.music-card.selected { border-color: #378add; background: #dbeafe; }
 
 /* In-game layout */
 .ingame-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
@@ -98,9 +99,33 @@ hr { border: none; border-top: 1px solid #1e1e35; margin: 14px 0; }
 .wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
 @keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
 /* Custom categories */
-.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #e8e8f0; cursor: pointer; border-bottom: 1px solid #1e1e35; transition: background .1s; }
-.custom-suggestion:hover { background: #1e1e35; }
+.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #1a1a2e; cursor: pointer; border-bottom: 1px solid #f0f0fa; transition: background .1s; }
+.custom-suggestion:hover { background: #f0f0fa; }
 .custom-suggestion:last-child { border-bottom: none; }
+
+/* TV mode overrides — all scoped to body.tv-mode */
+body.tv-mode { background: #0f0f1a; color: #e8e8f0; }
+body.tv-mode .card,
+body.tv-mode #app > div { background: transparent; }
+body.tv-mode .ingame-card { background: #16162a; border-color: #2a2a48; }
+body.tv-mode .option-btn-host { background: #16162a; border-color: #2a2a48; color: #c8c8e0; font-size: 18px; }
+body.tv-mode .option-btn-host.correct { background: #0f2d1f; border-color: #22c55e; color: #86efac; }
+body.tv-mode .option-btn-host.wrong { background: #2d0f0f; border-color: #ef4444; color: #fca5a5; }
+body.tv-mode .timer-badge { background: #1e1e35; }
+body.tv-mode .timer-ok { color: #a78bfa; border-color: #7c3aed44; }
+body.tv-mode .timer-warn { color: #f59e0b; border-color: #f59e0b44; background: #1e1e35; }
+body.tv-mode .timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
+body.tv-mode .lb-row { color: #e8e8f0; }
+body.tv-mode .lb-row-first { background: #1e1e35; }
+body.tv-mode .ingame-question { font-size: 22px; color: #e8e8f0; }
+body.tv-mode .ingame-cat { color: #555; }
+body.tv-mode .ingame-sidebar-label { color: #555; }
+body.tv-mode .ingame-resp { background: #16162a; border-color: #2a2a48; color: #a78bfa; }
+body.tv-mode .ingame-resp-bar-track { background: #2a2a48; }
+body.tv-mode .ingame-room-code { background: #1e1e35; border-color: #2a2a48; color: #a78bfa; }
+body.tv-mode .ingame-room-code span { color: #fff; }
+body.tv-mode .wave-bar { background: #7c3aed; }
+body.tv-mode .clip-status { color: #7c3aed; }
 </style>
 </head>
 <body>
@@ -135,6 +160,7 @@ let state = {
   clipTimeout: null,
   customCats: [],
   playedSongs: [],
+  tvMode: false,
 };
 
 const PRESETS = {
@@ -148,41 +174,41 @@ const PRESETS = {
 const CATEGORY_DATA = [
   {
     name: 'General Knowledge', icon: '🧠',
-    color: '#a78bfa', border: '#7c3aed44', bg: '#1a1535', music: false, subs: null,
+    color: '#6d28d9', border: '#c4b5fd', bg: '#f5f3ff', music: false, subs: null,
   },
   {
     name: 'Music', icon: '🎵',
-    color: '#60a5fa', border: '#378add44', bg: '#0f1a2e', music: true,
+    color: '#1d4ed8', border: '#93c5fd', bg: '#eff6ff', music: true,
     subs: ['80s hits', '90s pop', 'Current hits', '60s & 70s classics', '2000s bangers', 'Classic rock', 'Hip hop', 'R&B & soul', 'Country'],
   },
   {
     name: 'Sports', icon: '🏆',
-    color: '#86efac', border: '#22c55e44', bg: '#0f2d1a', music: false,
+    color: '#166534', border: '#86efac', bg: '#f0fdf4', music: false,
     subs: ['General sports', 'NFL Football', 'NBA Basketball', 'MLB Baseball', 'NHL Hockey', 'Soccer / World Cup', 'Olympics'],
   },
   {
     name: 'History', icon: '📜',
-    color: '#fcd34d', border: '#f59e0b44', bg: '#1e1500', music: false,
+    color: '#92400e', border: '#fcd34d', bg: '#fefce8', music: false,
     subs: ['World history', 'US history', 'Ancient history', '20th century'],
   },
   {
     name: 'Science', icon: '🔬',
-    color: '#c4b5fd', border: '#a78bfa44', bg: '#1e1535', music: false,
+    color: '#6d28d9', border: '#c4b5fd', bg: '#f5f3ff', music: false,
     subs: ['General science', 'Space & astronomy', 'Biology & nature', 'Tech & computers'],
   },
   {
     name: 'Pop Culture', icon: '🎬',
-    color: '#f9a8d4', border: '#f472b644', bg: '#2d0f20', music: false,
+    color: '#9d174d', border: '#f9a8d4', bg: '#fdf2f8', music: false,
     subs: ['Movies & film', 'TV shows', 'Music & celebrities', 'Video games'],
   },
   {
     name: 'Geography', icon: '🌍',
-    color: '#5eead4', border: '#2dd4bf44', bg: '#0f2d2a', music: false,
+    color: '#0f766e', border: '#5eead4', bg: '#f0fdfa', music: false,
     subs: ['World geography', 'US geography', 'Capital cities'],
   },
   {
     name: 'Food & Drink', icon: '🍕',
-    color: '#fdba74', border: '#fb923c44', bg: '#2d1500', music: false, subs: null,
+    color: '#c2410c', border: '#fdba74', bg: '#fff7ed', music: false, subs: null,
   },
 ];
 
@@ -211,6 +237,20 @@ function getTimeLeft() {
   const timer = state.room.config?.timer || 15;
   const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
   return Math.max(0, timer - elapsed);
+}
+
+// ─── TV mode ──────────────────────────────────────────────────────────────────
+function toggleTvMode() {
+  state.tvMode = !state.tvMode;
+  localStorage.setItem('trivia-tv-mode', state.tvMode);
+  if (state.tvMode) {
+    document.body.classList.add('tv-mode');
+  } else {
+    document.body.classList.remove('tv-mode');
+  }
+  if (state.view === 'ingame' || state.view === 'reveal') {
+    showIngame();
+  }
 }
 
 // ─── Custom categories ────────────────────────────────────────────────────────
@@ -285,7 +325,7 @@ function toggleMusicFlagHost() {
 function updateMusicToggleUIHost() {
   const track = document.getElementById('hostMusicToggleTrack');
   const thumb = document.getElementById('hostMusicToggleThumb');
-  if (track) track.style.background = _hostCustomMusicFlag ? '#378add' : '#2a2a48';
+  if (track) track.style.background = _hostCustomMusicFlag ? '#378add' : '#e4e4f0';
   if (thumb) thumb.style.left = _hostCustomMusicFlag ? '23px' : '3px';
 }
 function updateMusicHintHost(name) {
@@ -298,9 +338,9 @@ function setHostCustomMusicType(t) {
     const el = document.getElementById('hostCustomType_' + type);
     if (!el) return;
     const sel = type === t;
-    el.style.background = sel ? '#1a1535' : '#16162a';
-    el.style.borderColor = sel ? '#7c3aed' : '#2a2a48';
-    el.querySelector('.type-label').style.color = sel ? '#c4b5fd' : '#888';
+    el.style.background = sel ? '#f5f3ff' : '#ffffff';
+    el.style.borderColor = sel ? '#7c3aed' : '#e4e4f0';
+    el.querySelector('.type-label').style.color = sel ? '#6d28d9' : '#9090b8';
   });
 }
 
@@ -317,8 +357,8 @@ function showSetup() {
       <div class="${cardClass}" onclick="selectPreset('${key}')" style="${key === 'musicmix' ? 'grid-column:span 2;' : ''}">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:${p.isMusic ? '#93c5fd' : '#e8e8f0'};">${p.name}</div>
-            <div style="font-size:11px;color:${p.isMusic ? '#378add' : '#555'};">${p.desc}</div>
+            <div style="font-size:13px;font-weight:500;color:${p.isMusic ? '#1d4ed8' : '#1a1a2e'};">${p.name}</div>
+            <div style="font-size:11px;color:${p.isMusic ? '#378add' : '#9090b8'};">${p.desc}</div>
           </div>
           ${check}${popularBadge}
         </div>
@@ -329,7 +369,7 @@ function showSetup() {
 
   const roundBtns = [2, 3, 4].map(r =>
     `<div class="rt-btn${state.rounds === r ? ' sel' : ''}" onclick="setRounds(${r})">
-      ${r} rounds<div style="font-size:10px;color:${state.rounds===r?'#7c3aed':'#555'};">~${r*10} min</div>
+      ${r} rounds<div style="font-size:10px;color:${state.rounds===r?'#7c3aed':'#9090b8'};">~${r*10} min</div>
     </div>`
   ).join('');
 
@@ -344,7 +384,7 @@ function showSetup() {
   ];
   const diffBtns = difficultyOpts.map(d =>
     `<div class="rt-btn${state.difficulty === d.key ? ' sel' : ''}" onclick="setDifficulty('${d.key}')" style="flex:1;text-align:center;">
-      ${d.label}<div style="font-size:10px;color:${state.difficulty===d.key?'#7c3aed':'#555'};">${d.sub}</div>
+      ${d.label}<div style="font-size:10px;color:${state.difficulty===d.key?'#7c3aed':'#9090b8'};">${d.sub}</div>
     </div>`
   ).join('');
 
@@ -355,34 +395,34 @@ function showSetup() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
         <div>
-          <a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Home</a>
-          <div style="font-size:20px;font-weight:500;color:#e8e8f0;margin-top:4px;">Start a game</div>
-          <div style="font-size:12px;color:#555;margin-top:2px;">How do you want to set it up?</div>
+          <a href="index.html" style="font-size:12px;color:#9090b8;text-decoration:none;">← Home</a>
+          <div style="font-size:20px;font-weight:500;color:#1a1a2e;margin-top:4px;">Start a game</div>
+          <div style="font-size:12px;color:#9090b8;margin-top:2px;">How do you want to set it up?</div>
         </div>
         <div style="display:flex;gap:8px;">${roundBtns}</div>
       </div>
 
       <!-- Quick start -->
-      <div style="background:#1a1535;border:1px solid #7c3aed66;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:6px;cursor:pointer;" onclick="quickStart()">
-        <div style="width:44px;height:44px;border-radius:10px;background:#5b21b6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">⚡</div>
+      <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:6px;cursor:pointer;" onclick="quickStart()">
+        <div style="width:44px;height:44px;border-radius:10px;background:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">⚡</div>
         <div style="flex:1;">
-          <div style="font-size:15px;font-weight:500;color:#fff;">Quick start</div>
-          <div style="font-size:12px;color:#c4b5fd;margin-top:2px;">AI picks everything · room code in ~10 seconds</div>
+          <div style="font-size:15px;font-weight:500;color:#1a1a2e;">Quick start</div>
+          <div style="font-size:12px;color:#6d28d9;margin-top:2px;">AI picks everything · room code in ~10 seconds</div>
         </div>
         <span class="badge badge-purple">One tap</span>
       </div>
-      <div style="font-size:11px;color:#444;text-align:center;margin-bottom:16px;">AI mixes categories and difficulty for a balanced game</div>
+      <div style="font-size:11px;color:#9090b8;text-align:center;margin-bottom:16px;">AI mixes categories and difficulty for a balanced game</div>
 
       <div class="divider"><div class="divider-line"></div><div class="divider-text">or pick a vibe</div><div class="divider-line"></div></div>
-      <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Preset game nights</div>
+      <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Preset game nights</div>
       <div class="preset-grid">${presetCards}</div>
 
       <div class="divider"><div class="divider-line"></div><div class="divider-text">or build your own</div><div class="divider-line"></div></div>
-      <div onclick="showCustomSetup()" style="background:#16162a;border:${state.customMode ? '2px solid #7c3aed' : '1px dashed #2a2a48'};border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;cursor:pointer;transition:border-color .2s;" class="btn-outline" style="border:none;">
-        <div style="width:38px;height:38px;border-radius:50%;background:${state.customMode ? '#2d1a4e' : '#1e1e35'};display:flex;align-items:center;justify-content:center;font-size:20px;">🎯</div>
+      <div onclick="showCustomSetup()" style="background:#f5f5fa;border:${state.customMode ? '2px solid #7c3aed' : '1px dashed #e4e4f0'};border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:20px;cursor:pointer;transition:border-color .2s;">
+        <div style="width:38px;height:38px;border-radius:50%;background:${state.customMode ? '#ede9fe' : '#f0f0fa'};display:flex;align-items:center;justify-content:center;font-size:20px;">🎯</div>
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:500;color:${state.customMode ? '#c4b5fd' : '#e8e8f0'};">Custom game</div>
-          <div style="font-size:11px;color:#555;margin-top:2px;">${state.customMode && state.customCategories.filter(Boolean).length > 0 ? state.customCategories.filter(Boolean).join(' · ') : 'Pick a specific category for each round'}</div>
+          <div style="font-size:13px;font-weight:500;color:${state.customMode ? '#6d28d9' : '#1a1a2e'};">Custom game</div>
+          <div style="font-size:11px;color:#9090b8;margin-top:2px;">${state.customMode && state.customCategories.filter(Boolean).length > 0 ? state.customCategories.filter(Boolean).join(' · ') : 'Pick a specific category for each round'}</div>
         </div>
         <span style="font-size:12px;color:#7c3aed;">→</span>
       </div>
@@ -391,7 +431,7 @@ function showSetup() {
       <div class="card" style="margin-bottom:16px;">
         <div class="sub-label">Timer per question</div>
         <div style="display:flex;gap:8px;">${timerBtns}</div>
-        <div style="font-size:11px;color:#555;margin-top:8px;">Longer timers give players more time to think</div>
+        <div style="font-size:11px;color:#9090b8;margin-top:8px;">Longer timers give players more time to think</div>
       </div>
 
       <!-- Difficulty selector -->
@@ -403,21 +443,21 @@ function showSetup() {
       <!-- Auto-advance toggle -->
       <div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="setAutoAdvance(${!state.autoAdvance})">
         <div>
-          <div style="font-size:13px;color:#e8e8f0;font-weight:500;">Auto-advance questions</div>
-          <div style="font-size:11px;color:#555;margin-top:2px;">Move to next question automatically when timer ends or all players answer</div>
+          <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Auto-advance questions</div>
+          <div style="font-size:11px;color:#9090b8;margin-top:2px;">Move to next question automatically when timer ends or all players answer</div>
         </div>
-        <div style="width:44px;height:24px;border-radius:12px;background:${state.autoAdvance ? '#7c3aed' : '#2a2a48'};position:relative;flex-shrink:0;transition:background .2s;">
+        <div style="width:44px;height:24px;border-radius:12px;background:${state.autoAdvance ? '#7c3aed' : '#e4e4f0'};position:relative;flex-shrink:0;transition:background .2s;">
           <div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${state.autoAdvance ? '23px' : '3px'};transition:left .2s;"></div>
         </div>
       </div>
 
       <!-- Summary + create -->
-      <div style="background:#16162a;border:1px solid #2a2a48;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div style="font-size:13px;color:#aaa;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ${state.difficulty} · ~${state.rounds*10} min</div>
+      <div style="background:#f5f5fa;border:1px solid #e4e4f0;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;color:#6b6b9a;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ${state.difficulty} · ~${state.rounds*10} min</div>
         <div style="font-size:11px;color:#7c3aed;">ready</div>
       </div>
       <button class="btn-primary" id="createBtn" onclick="createRoom()">Create room and get code</button>
-      <div style="font-size:11px;color:#444;text-align:center;margin-top:8px;">Questions are generated fresh when room is created</div>
+      <div style="font-size:11px;color:#9090b8;text-align:center;margin-top:8px;">Questions are generated fresh when room is created</div>
     </div>
   `);
 }
@@ -433,7 +473,6 @@ function quickStart() { state.preset = 'mixed'; state.rounds = 3; state.timer = 
 function showCustomSetup() {
   state.view = 'custom';
   state.customMode = true;
-  // Sync array length with current rounds setting
   while (state.customCategories.length < state.rounds) state.customCategories.push(null);
   state.customCategories = state.customCategories.slice(0, state.rounds);
 
@@ -441,40 +480,40 @@ function showCustomSetup() {
 
   const slots = state.customCategories.map((cat, i) => {
     const catData = cat ? CATEGORY_DATA.find(c => c.name === cat || (c.subs && c.subs.includes(cat))) : null;
-    const color = catData?.color || '#555';
+    const color = catData?.color || '#9090b8';
     const icon = catData?.icon || '';
-    const bg = catData ? catData.bg : '#16162a';
-    const border = cat ? `1px solid ${catData?.border || '#2a2a48'}` : '1px dashed #2a2a48';
+    const bg = catData ? catData.bg : '#ffffff';
+    const border = cat ? `1px solid ${catData?.border || '#e4e4f0'}` : '1px dashed #e4e4f0';
     return `
       <div onclick="openCategoryPicker(${i})" style="background:${bg};border:${border};border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;">
-        <div style="width:32px;height:32px;border-radius:8px;background:#0f0f1a;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${icon || (i + 1)}</div>
+        <div style="width:32px;height:32px;border-radius:8px;background:#f5f5fa;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${icon || (i + 1)}</div>
         <div style="flex:1;">
-          <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;">Round ${i + 1}</div>
-          <div style="font-size:14px;font-weight:500;color:${color};margin-top:2px;">${cat || '<span style="color:#444;">Tap to pick category</span>'}</div>
+          <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;">Round ${i + 1}</div>
+          <div style="font-size:14px;font-weight:500;color:${color};margin-top:2px;">${cat || '<span style="color:#9090b8;">Tap to pick category</span>'}</div>
         </div>
-        <div style="font-size:12px;color:#555;">→</div>
+        <div style="font-size:12px;color:#9090b8;">→</div>
       </div>`;
   }).join('');
 
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <button onclick="state.customMode=false;showSetup()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:12px;color:#555;cursor:pointer;">← Back</button>
+        <button onclick="state.customMode=false;showSetup()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:12px;color:#9090b8;cursor:pointer;">← Back</button>
         <div>
-          <div style="font-size:18px;font-weight:500;color:#e8e8f0;">Custom game</div>
-          <div style="font-size:12px;color:#555;margin-top:2px;">${state.rounds} rounds · ${state.timer}s timer · ${state.difficulty}</div>
+          <div style="font-size:18px;font-weight:500;color:#1a1a2e;">Custom game</div>
+          <div style="font-size:12px;color:#9090b8;margin-top:2px;">${state.rounds} rounds · ${state.timer}s timer · ${state.difficulty}</div>
         </div>
       </div>
 
-      <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pick a category for each round</div>
+      <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pick a category for each round</div>
       ${slots}
 
-      <div style="font-size:11px;color:#444;margin-bottom:16px;margin-top:4px;">Each round is 5 questions from that category</div>
+      <div style="font-size:11px;color:#9090b8;margin-bottom:16px;margin-top:4px;">Each round is 5 questions from that category</div>
 
       <button class="btn-primary" id="createBtn" ${allFilled ? '' : 'disabled'} onclick="createRoom()" style="${allFilled ? '' : 'opacity:.4;'}">
         ${allFilled ? 'Create game →' : 'Pick all ' + state.rounds + ' rounds to continue'}
       </button>
-      <div style="font-size:11px;color:#444;text-align:center;margin-top:8px;">Questions generated fresh by AI</div>
+      <div style="font-size:11px;color:#9090b8;text-align:center;margin-top:8px;">Questions generated fresh by AI</div>
     </div>
   `);
 }
@@ -485,7 +524,7 @@ function openCategoryPicker(roundIdx) {
   state.pickerCat = null;
   const overlay = document.createElement('div');
   overlay.id = 'cat-picker';
-  overlay.style.cssText = 'position:fixed;inset:0;background:#0a0a14f0;z-index:200;display:flex;flex-direction:column;overflow:hidden;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(245,245,250,0.97);z-index:200;display:flex;flex-direction:column;overflow:hidden;';
   overlay.innerHTML = pickerHTML();
   document.body.appendChild(overlay);
 }
@@ -503,7 +542,7 @@ function pickerHTML() {
       <div onclick="selectPickerCat('${c.name}')" style="background:${c.bg};border:1px solid ${c.border};border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color .15s;">
         <div style="font-size:26px;margin-bottom:6px;">${c.icon}</div>
         <div style="font-size:13px;font-weight:500;color:${c.color};">${c.name}</div>
-        <div style="font-size:11px;color:#555;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
+        <div style="font-size:11px;color:#9090b8;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
       </div>`).join('');
 
     const TYPE_ICONS_HOST = { artist: '🎤', genre: '🎵', soundtrack: '🎬' };
@@ -512,13 +551,13 @@ function pickerHTML() {
       const icon = c.music ? (TYPE_ICONS_HOST[c.musicType] || '🎵') : '💬';
       return `<div style="position:relative;">
         <div onclick="applyCategory(${roundIdx},'${en}',event)"
-          style="background:${c.music ? '#0f1a2e' : '#16162a'};border:1px solid ${c.music ? '#378add44' : '#2a2a48'};border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;">
+          style="background:${c.music ? '#eff6ff' : '#ffffff'};border:1px solid ${c.music ? '#93c5fd' : '#e4e4f0'};border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;">
           <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
-          <div style="font-size:13px;font-weight:500;color:${c.music ? '#60a5fa' : '#e8e8f0'};">${c.name}</div>
-          <div style="font-size:11px;color:#555;margin-top:3px;">${c.music ? 'Music clip' : 'Custom'}</div>
+          <div style="font-size:13px;font-weight:500;color:${c.music ? '#1d4ed8' : '#1a1a2e'};">${c.name}</div>
+          <div style="font-size:11px;color:#9090b8;margin-top:3px;">${c.music ? 'Music clip' : 'Custom'}</div>
         </div>
         <button onclick="event.stopPropagation();removeCustomCatHost('${en}')"
-          style="position:absolute;top:6px;right:6px;background:#0f0f1a;border:1px solid #2a2a48;border-radius:50%;width:20px;height:20px;font-size:10px;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+          style="position:absolute;top:6px;right:6px;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:50%;width:20px;height:20px;font-size:10px;color:#9090b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>`;
     }).join('');
 
@@ -529,29 +568,29 @@ function pickerHTML() {
 
     const customSection = `
       <div style="margin-top:20px;">
-        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
+        <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
         ${state.customCats.length > 0
           ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">${customCards}</div>`
-          : `<div style="font-size:12px;color:#444;margin-bottom:12px;">No custom categories yet — add one below</div>`}
+          : `<div style="font-size:12px;color:#9090b8;margin-bottom:12px;">No custom categories yet — add one below</div>`}
         ${state.customCats.length < 10 ? `
           <div style="position:relative;">
             <div style="display:flex;gap:8px;">
               <input id="hostCustomInput" type="text" value="${escapedVal}" placeholder="Add a custom category…"
-                style="flex:1;background:#16162a;border:1px solid #2a2a48;border-radius:8px;padding:9px 12px;font-size:13px;color:#e8e8f0;outline:none;"
+                style="flex:1;background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;padding:9px 12px;font-size:13px;color:#1a1a2e;outline:none;"
                 oninput="onHostCustomInput(this.value)" onkeydown="if(event.key==='Enter')tryAddCustomCatHost()" maxlength="50">
               <button id="hostCustomAddBtn" onclick="tryAddCustomCatHost()"
-                style="background:#16162a;border:1px solid #7c3aed44;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
+                style="background:#ffffff;border:1px solid #c4b5fd;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
             </div>
-            <div id="hostCustomSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:72px;background:#16162a;border:1px solid #2a2a48;border-radius:8px;z-index:10;overflow:hidden;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px #00000066;"></div>
+            <div id="hostCustomSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:72px;background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;z-index:10;overflow:hidden;max-height:180px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.1);"></div>
           </div>
           <div id="hostMusicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
-            <div style="display:flex;align-items:center;gap:12px;background:#0a1a2e;border:1px solid #378add22;border-radius:8px;padding:10px 12px;">
+            <div style="display:flex;align-items:center;gap:12px;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px;">
               <div style="flex:1;">
-                <div style="font-size:12px;color:#60a5fa;">🎵 Music category — find a clip and identify the artist or song</div>
-                <div id="hostMusicHint" style="font-size:11px;color:#378add88;margin-top:3px;">${hintText}</div>
+                <div style="font-size:12px;color:#1d4ed8;">🎵 Music category — find a clip and identify the artist or song</div>
+                <div id="hostMusicHint" style="font-size:11px;color:#378add;margin-top:3px;">${hintText}</div>
               </div>
               <div onclick="toggleMusicFlagHost()" id="hostMusicToggleTrack"
-                style="width:44px;height:24px;border-radius:12px;position:relative;flex-shrink:0;cursor:pointer;transition:background .2s;background:${_hostCustomMusicFlag ? '#378add' : '#2a2a48'};">
+                style="width:44px;height:24px;border-radius:12px;position:relative;flex-shrink:0;cursor:pointer;transition:background .2s;background:${_hostCustomMusicFlag ? '#378add' : '#e4e4f0'};">
                 <div id="hostMusicToggleThumb" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${_hostCustomMusicFlag ? '23px' : '3px'};transition:left .2s;"></div>
               </div>
             </div>
@@ -559,43 +598,43 @@ function pickerHTML() {
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
                 ${[['artist','🎤','Artist','e.g. Taylor Swift'],['genre','🎵','Genre','e.g. 80s pop'],['soundtrack','🎬','Soundtrack','e.g. Grease']].map(([type,icon,label,ex]) => `
                   <div id="hostCustomType_${type}" onclick="setHostCustomMusicType('${type}')"
-                    style="background:${_hostCustomMusicType===type?'#1a1535':'#16162a'};border:1px solid ${_hostCustomMusicType===type?'#7c3aed':'#2a2a48'};border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;">
+                    style="background:${_hostCustomMusicType===type?'#f5f3ff':'#ffffff'};border:1px solid ${_hostCustomMusicType===type?'#7c3aed':'#e4e4f0'};border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;">
                     <div style="font-size:16px;">${icon}</div>
-                    <div class="type-label" style="font-size:11px;font-weight:500;color:${_hostCustomMusicType===type?'#c4b5fd':'#888'};margin-top:2px;">${label}</div>
-                    <div style="font-size:10px;color:#555;margin-top:1px;">${ex}</div>
+                    <div class="type-label" style="font-size:11px;font-weight:500;color:${_hostCustomMusicType===type?'#6d28d9':'#9090b8'};margin-top:2px;">${label}</div>
+                    <div style="font-size:10px;color:#9090b8;margin-top:1px;">${ex}</div>
                   </div>`).join('')}
               </div>
             </div>
           </div>
-        ` : `<div style="font-size:11px;color:#555;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`}
+        ` : `<div style="font-size:11px;color:#9090b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`}
       </div>`;
 
     return `
-      <div style="padding:16px 20px;background:#0f0f1a;border-bottom:1px solid #2a2a48;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-        <button onclick="closePicker()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:13px;color:#888;cursor:pointer;">✕</button>
-        <div style="font-size:15px;font-weight:500;color:#e8e8f0;">Round ${roundIdx + 1} — Pick a category</div>
+      <div style="padding:16px 20px;background:#ffffff;border-bottom:1px solid #e4e4f0;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="closePicker()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:13px;color:#9090b8;cursor:pointer;">✕</button>
+        <div style="font-size:15px;font-weight:500;color:#1a1a2e;">Round ${roundIdx + 1} — Pick a category</div>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:16px;">
+      <div style="flex:1;overflow-y:auto;padding:16px;background:#f5f5fa;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${grid}</div>
         ${customSection}
       </div>`;
   } else {
     const cat = CATEGORY_DATA.find(c => c.name === state.pickerCat);
     const subBtns = cat.subs.map(sub => `
-      <div onclick="applyCategory(${roundIdx},'${sub.replace(/'/g,"\\'")}',event)" style="background:#16162a;border:1px solid ${cat.border};border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:${cat.color};transition:background .15s;">
+      <div onclick="applyCategory(${roundIdx},'${sub.replace(/'/g,"\\'")}',event)" style="background:#ffffff;border:1px solid ${cat.border};border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:${cat.color};transition:background .15s;">
         ${sub}
       </div>`).join('');
     return `
-      <div style="padding:16px 20px;background:#0f0f1a;border-bottom:1px solid #2a2a48;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-        <button onclick="backToCats()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:13px;color:#888;cursor:pointer;">← Back</button>
+      <div style="padding:16px 20px;background:#ffffff;border-bottom:1px solid #e4e4f0;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="backToCats()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:13px;color:#9090b8;cursor:pointer;">← Back</button>
         <div>
-          <div style="font-size:15px;font-weight:500;color:#e8e8f0;">${cat.icon} ${cat.name}</div>
-          <div style="font-size:11px;color:#555;">Round ${roundIdx + 1}</div>
+          <div style="font-size:15px;font-weight:500;color:#1a1a2e;">${cat.icon} ${cat.name}</div>
+          <div style="font-size:11px;color:#9090b8;">Round ${roundIdx + 1}</div>
         </div>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:16px;">
+      <div style="flex:1;overflow-y:auto;padding:16px;background:#f5f5fa;">
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div onclick="applyCategory(${roundIdx},'${cat.name}',event)" style="background:#16162a;border:1px solid #2a2a48;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:#888;">
+          <div onclick="applyCategory(${roundIdx},'${cat.name}',event)" style="background:#ffffff;border:1px solid #e4e4f0;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:#9090b8;">
             All ${cat.name.toLowerCase()} (mixed)
           </div>
           ${subBtns}
@@ -651,7 +690,6 @@ async function createRoom() {
     });
     const data = await res.json();
     if (!res.ok) {
-      // Surface friendly message for known transient errors
       if (data.error?.includes('529') || data.error?.includes('Overloaded')) {
         throw new Error('The AI is a bit busy right now — please try again in a few seconds.');
       }
@@ -672,7 +710,7 @@ function showSetupError(msg) {
   if (existing) existing.remove();
   const el = document.createElement('div');
   el.id = 'setupError';
-  el.style.cssText = 'background:#2d0f0f;border:1px solid #ef4444;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:13px;color:#fca5a5;';
+  el.style.cssText = 'background:#fef2f2;border:1px solid #ef4444;border-radius:10px;padding:12px 16px;margin-top:12px;font-size:13px;color:#991b1b;';
   el.textContent = 'Error: ' + msg;
   document.getElementById('root').appendChild(el);
 }
@@ -681,18 +719,18 @@ function showDevError() {
   setHTML(`
     <div style="max-width:480px;margin:60px auto;text-align:center;padding:0 1rem;">
       <div style="font-size:32px;margin-bottom:12px;">🚫</div>
-      <div style="font-size:18px;font-weight:500;color:#e8e8f0;margin-bottom:8px;">Open via a local server</div>
-      <div style="font-size:14px;color:#888;margin-bottom:24px;line-height:1.6;">
-        This page is being opened as a <code style="background:#1e1e35;padding:2px 6px;border-radius:4px;color:#a78bfa;">file://</code> URL.<br>
-        The <code style="background:#1e1e35;padding:2px 6px;border-radius:4px;color:#a78bfa;">/api/rooms</code> serverless function won't work that way.
+      <div style="font-size:18px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Open via a local server</div>
+      <div style="font-size:14px;color:#9090b8;margin-bottom:24px;line-height:1.6;">
+        This page is being opened as a <code style="background:#ede9fe;padding:2px 6px;border-radius:4px;color:#6d28d9;">file://</code> URL.<br>
+        The <code style="background:#ede9fe;padding:2px 6px;border-radius:4px;color:#6d28d9;">/api/rooms</code> serverless function won't work that way.
       </div>
-      <div style="background:#16162a;border:1px solid #2a2a48;border-radius:12px;padding:20px;text-align:left;margin-bottom:20px;">
-        <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Run locally with Vercel CLI</div>
-        <div style="background:#0f0f1a;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#a78bfa;margin-bottom:8px;">npm i -g vercel</div>
-        <div style="background:#0f0f1a;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#a78bfa;margin-bottom:12px;">vercel dev</div>
-        <div style="font-size:12px;color:#555;">Then open <span style="color:#7c3aed;">http://localhost:3000/host.html</span></div>
+      <div class="card" style="text-align:left;margin-bottom:20px;">
+        <div style="font-size:12px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Run locally with Vercel CLI</div>
+        <div style="background:#f5f5fa;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#6d28d9;margin-bottom:8px;">npm i -g vercel</div>
+        <div style="background:#f5f5fa;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#6d28d9;margin-bottom:12px;">vercel dev</div>
+        <div style="font-size:12px;color:#9090b8;">Then open <span style="color:#7c3aed;">http://localhost:3000/host.html</span></div>
       </div>
-      <a href="index.html" style="font-size:13px;color:#555;text-decoration:none;">← Back to home</a>
+      <a href="index.html" style="font-size:13px;color:#9090b8;text-decoration:none;">← Back to home</a>
     </div>
   `);
 }
@@ -702,7 +740,6 @@ function subscribeToRoom() {
   if (state.subscription) state.subscription.unsubscribe();
   const roomId = state.room.id;
 
-  // Load existing players
   sb.from('players').select('*').eq('room_id', roomId).order('joined_at')
     .then(({ data }) => { if (data) { state.players = data; renderLobbyPlayers(); } });
 
@@ -731,20 +768,20 @@ function showLobby() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <button onclick="newGame()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:12px;color:#555;cursor:pointer;">✕ New game</button>
+        <button onclick="newGame()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:12px;color:#9090b8;cursor:pointer;">✕ New game</button>
       </div>
       <div style="text-align:center;margin-bottom:28px;">
-        <div style="font-size:13px;color:#555;margin-bottom:6px;">Players join at</div>
+        <div style="font-size:13px;color:#9090b8;margin-bottom:6px;">Players join at</div>
         <div style="font-size:15px;color:#7c3aed;margin-bottom:16px;">${joinUrl}</div>
-        <div style="font-size:14px;color:#555;margin-bottom:10px;">Room code</div>
-        <div style="font-size:80px;font-weight:700;color:#fff;letter-spacing:.15em;line-height:1;">${room.room_code}</div>
-        <div style="font-size:12px;color:#444;margin-top:8px;">Type this code on your phone</div>
-        <button onclick="copyJoinLink('${joinUrl}?code=${room.room_code}')" style="margin-top:10px;background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 14px;font-size:12px;color:#888;cursor:pointer;">Copy join link</button>
+        <div style="font-size:14px;color:#9090b8;margin-bottom:10px;">Room code</div>
+        <div style="font-size:80px;font-weight:700;color:#1a1a2e;letter-spacing:.15em;line-height:1;">${room.room_code}</div>
+        <div style="font-size:12px;color:#9090b8;margin-top:8px;">Type this code on your phone</div>
+        <button onclick="copyJoinLink('${joinUrl}?code=${room.room_code}')" style="margin-top:10px;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:8px;padding:6px 14px;font-size:12px;color:#9090b8;cursor:pointer;">Copy join link</button>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div style="font-size:13px;color:#888;">Players in lobby</div>
+          <div style="font-size:13px;color:#9090b8;">Players in lobby</div>
           <div style="font-size:28px;font-weight:500;color:#a78bfa;" id="playerCount">0</div>
         </div>
         <div id="playerList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
@@ -753,7 +790,7 @@ function showLobby() {
       <button class="btn-primary" id="startBtn" style="font-size:16px;padding:14px;" onclick="startGame()" disabled>
         Start game (waiting for players…)
       </button>
-      <div style="font-size:11px;color:#444;text-align:center;margin-top:8px;">Need at least 1 player to start</div>
+      <div style="font-size:11px;color:#9090b8;text-align:center;margin-top:8px;">Need at least 1 player to start</div>
     </div>
   `);
   renderLobbyPlayers();
@@ -767,7 +804,7 @@ function renderLobbyPlayers() {
   if (el) el.textContent = count;
   if (list) {
     list.innerHTML = state.players.map((p, i) =>
-      `<div class="player-chip">${avatarHTML(p.name, i, 26)}<div style="font-size:13px;color:#c8c8e0;">${p.name}</div></div>`
+      `<div class="player-chip">${avatarHTML(p.name, i, 26)}<div style="font-size:13px;color:#1a1a2e;">${p.name}</div></div>`
     ).join('');
   }
   if (btn) {
@@ -795,8 +832,8 @@ async function startGame() {
   showIngame();
 }
 
-const CLIP_DURATION = 10;             // seconds music clip plays before countdown starts
-const ROUND_LEADERBOARD_SECS = 5;    // must match showRoundLeaderboard secs in join.html
+const CLIP_DURATION = 10;
+const ROUND_LEADERBOARD_SECS = 5;
 
 function waveformHTML(color = '#7c3aed') {
   const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
@@ -806,6 +843,12 @@ function waveformHTML(color = '#7c3aed') {
 }
 
 function showIngame() {
+  if (state.tvMode) {
+    document.body.classList.add('tv-mode');
+  } else {
+    document.body.classList.remove('tv-mode');
+  }
+
   state.view = 'ingame';
   state.revealed = false;
   const room = state.room;
@@ -818,36 +861,59 @@ function showIngame() {
   const timerDuration = room.config?.timer || 15;
   const isMusic = !!(q.preview_url);
 
+  const questionSize = state.tvMode ? '22px' : '18px';
+  const optionSize = state.tvMode ? '18px' : '15px';
+
   const musicBanner = isMusic ? `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 0 6px;">
       ${waveformHTML()}
-      <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Playing 10s clip…</div>
+      <div class="clip-status" style="font-size:12px;color:#7c3aed;" id="clipStatus">Playing 10s clip…</div>
     </div>` : '';
+
+  const tvBanner = !state.tvMode ? `
+    <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div>
+        <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Connected to a TV?</div>
+        <div style="font-size:12px;color:#9090b8;margin-top:2px;">Switch to full-screen dark mode for casting</div>
+      </div>
+      <button onclick="toggleTvMode()" style="display:inline-flex;align-items:center;gap:7px;background:#1a1a2e;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;color:#a78bfa;cursor:pointer;">
+        📺 TV mode
+      </button>
+    </div>` : '';
+
+  const exitTvBtn = state.tvMode ? `
+    <button onclick="toggleTvMode()" style="background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:11px;color:#555;cursor:pointer;">← Exit TV mode</button>` : `
+    <button onclick="newGame()" style="background:transparent;border:1.5px solid #d0d0e8;border-radius:8px;padding:6px 12px;font-size:12px;color:#6b6b9a;cursor:pointer;">✕ New game</button>`;
+
+  const tvHint = state.tvMode ? `<div style="font-size:11px;color:#555;text-align:center;margin-bottom:10px;">Press F11 for fullscreen · best for TV casting</div>` : '';
 
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <button onclick="newGame()" style="background:transparent;border:1px solid #2a2a48;border-radius:8px;padding:5px 10px;font-size:12px;color:#555;cursor:pointer;">✕ New game</button>
-        <div style="font-size:12px;color:#555;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}</div>
-        <div style="background:#1e1e35;border:1px solid #2a2a48;border-radius:20px;padding:4px 14px;font-size:13px;color:#a78bfa;font-weight:500;">Join: <span style="color:#fff;letter-spacing:.1em;">${room.room_code}</span></div>
+        ${exitTvBtn}
+        <div style="font-size:12px;color:#9090b8;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}</div>
+        <div class="ingame-room-code" style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:20px;padding:4px 14px;font-size:13px;color:#6d28d9;font-weight:500;">Join: <span style="color:#1a1a2e;letter-spacing:.1em;">${room.room_code}</span></div>
       </div>
+
+      ${tvBanner}
+      ${tvHint}
 
       <div class="ingame-layout">
         <div>
-          <div class="card" style="margin-bottom:14px;">
-            <div style="font-size:11px;color:#555;margin-bottom:8px;">${q.cat}</div>
+          <div class="card ingame-card" style="margin-bottom:14px;">
+            <div class="ingame-cat" style="font-size:11px;color:#9090b8;margin-bottom:8px;">${q.cat}</div>
             ${musicBanner}
-            <div style="font-size:20px;font-weight:500;color:#e8e8f0;line-height:1.4;margin-bottom:14px;">${q.q}</div>
+            <div class="ingame-question" style="font-size:${questionSize};font-weight:500;color:#1a1a2e;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="font-size:12px;color:#555;">${state.players.length} players</div>
+              <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
               <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="optionGrid">
-            ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
+            ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}" style="font-size:${optionSize};">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:12px;color:#555;" id="responseStatus">Waiting for answers...</div>
+            <div class="ingame-sidebar-label" style="font-size:12px;color:#9090b8;" id="responseStatus">Waiting for answers...</div>
             ${state.revealed
               ? `<button class="btn-outline" onclick="advanceQuestion()" style="padding:8px 18px;">${qi + 1 < totalQ ? 'Next question →' : 'Show results →'}</button>`
               : `<button class="btn-outline" onclick="revealAnswer()" style="padding:8px 18px;">Reveal answer</button>`
@@ -856,14 +922,14 @@ function showIngame() {
         </div>
 
         <div class="ingame-sidebar">
-          <div class="sub-label">Live leaderboard</div>
+          <div class="sub-label ingame-sidebar-label">Live leaderboard</div>
           <div id="leaderboard"></div>
           <hr>
-          <div class="sub-label">Responses</div>
-          <div class="card" style="text-align:center;" id="responseCard">
+          <div class="sub-label ingame-sidebar-label">Responses</div>
+          <div class="card ingame-resp" style="text-align:center;" id="responseCard">
             <div style="font-size:28px;font-weight:500;color:#a78bfa;" id="responseCount">0 / ${state.players.length}</div>
-            <div style="font-size:12px;color:#555;margin-top:4px;">players answered</div>
-            <div style="background:#2a2a48;border-radius:4px;height:4px;margin-top:10px;overflow:hidden;"><div id="responseBar" style="background:#7c3aed;height:100%;width:0%;border-radius:4px;transition:width .3s;"></div></div>
+            <div style="font-size:12px;color:#9090b8;margin-top:4px;">players answered</div>
+            <div class="ingame-resp-bar-track" style="background:#e4e4f0;border-radius:4px;height:4px;margin-top:10px;overflow:hidden;"><div id="responseBar" style="background:#7c3aed;height:100%;width:0%;border-radius:4px;transition:width .3s;"></div></div>
           </div>
         </div>
       </div>
@@ -872,7 +938,6 @@ function showIngame() {
 
   renderIngameSidebar();
   if (isMusic) {
-    // Delay clip at round boundaries so players finish the leaderboard screen first
     const isRoundStart = qi > 0 && qi % 5 === 0;
     const delay = isRoundStart ? ROUND_LEADERBOARD_SECS * 1000 : 0;
     state.clipStartTimeout = delay > 0
@@ -915,16 +980,15 @@ function renderIngameSidebar() {
     lbEl.innerHTML = top5.map((p, i) => {
       const [bg, fg] = avatarColor(state.players.indexOf(p));
       return `
-        <div class="lb-row" style="${i===0?'background:#1e1e35;':''}">
-          <div style="font-size:13px;color:#666;width:16px;">${i+1}</div>
+        <div class="lb-row${i===0?' lb-row-first':''}">
+          <div style="font-size:13px;color:#9090b8;width:16px;">${i+1}</div>
           <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-          <div style="flex:1;font-size:13px;color:#e8e8f0;">${p.name}</div>
+          <div style="flex:1;font-size:13px;">${p.name}</div>
           <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
         </div>
       `;
     }).join('');
   }
-  // Response count
   const answered = state.players.filter(p => p.answers?.some(a => a.question_index === qi)).length;
   const total = state.players.length;
   const pct = total > 0 ? Math.round(answered / total * 100) : 0;
@@ -976,7 +1040,6 @@ function revealAnswer() {
   const totalQ = state.room.questions.length;
   const isLast = qi + 1 >= totalQ;
 
-  // Highlight correct/wrong
   q.opts.forEach((_, i) => {
     const el = document.getElementById('opt' + i);
     if (el) el.classList.add(i === q.ans ? 'correct' : 'wrong');
@@ -984,12 +1047,10 @@ function revealAnswer() {
 
   if (q.artist && q.song) state.playedSongs.push(`${q.artist} - ${q.song}`);
 
-  // Correct count
   const correctCount = state.players.filter(p => p.answers?.some(a => a.question_index === qi && a.correct)).length;
   const rsEl = document.getElementById('responseStatus');
   if (rsEl) rsEl.textContent = `${correctCount} of ${state.players.length} correct`;
 
-  // Update button
   const btnArea = document.querySelector('.ingame-layout > div > div:last-child');
   if (btnArea) {
     const btn = btnArea.querySelector('button');
@@ -1047,39 +1108,42 @@ function showResults() {
   if (state.subscription) state.subscription.unsubscribe();
   state.view = 'results';
 
+  // Remove TV mode when showing results
+  document.body.classList.remove('tv-mode');
+
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
 
   const podiumHTML = (() => {
     const top3 = sorted.slice(0, 3);
-    if (top3.length === 0) return '<div style="text-align:center;color:#555;">No players</div>';
+    if (top3.length === 0) return '<div style="text-align:center;color:#9090b8;">No players</div>';
     const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : [top3[0]];
     const heights = [70, 90, 55];
     const labels = top3.length >= 2 ? ['2nd', '1st 🥇', '3rd'] : ['1st 🥇'];
-    const bgColors = ['#1a2d1e', '#2d1a4e', '#2d1a1a'];
+    const bgColors = ['#dcfce7', '#ede9fe', '#fee2e2'];
     return `<div class="podium">${order.map((p, i) => {
       const origIdx = sorted.indexOf(p);
       const [bg, fg] = avatarColor(origIdx);
       const h = top3.length >= 2 ? heights[i] : 90;
       const label = top3.length >= 2 ? labels[i] : '1st 🥇';
-      const podBg = top3.length >= 2 ? bgColors[i] : '#2d1a4e';
+      const podBg = top3.length >= 2 ? bgColors[i] : '#ede9fe';
       return `<div class="podium-slot">
         ${i === 1 || top3.length < 2 ? '<div style="font-size:20px;margin-bottom:4px;">🏆</div>' : ''}
         <div class="avatar" style="margin:0 auto 6px;background:${bg};color:${fg};width:${i===1||top3.length<2?44:36}px;height:${i===1||top3.length<2?44:36}px;font-size:${i===1||top3.length<2?15:12}px;">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-        <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#e8e8f0':'#aaa'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
-        <div class="podium-bar" style="background:${podBg};border:1px solid #2a2a48;height:${h}px;width:80px;flex-direction:column;">
+        <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#1a1a2e':'#6b6b9a'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
+        <div class="podium-bar" style="background:${podBg};border:1px solid #e4e4f0;height:${h}px;width:80px;flex-direction:column;">
           <div style="font-size:${i===1||top3.length<2?18:14}px;color:#a78bfa;font-weight:500;">${p.score}</div>
         </div>
-        <div style="font-size:${i===1||top3.length<2?14:12}px;color:${i===1||top3.length<2?'#7c3aed':'#aaa'};font-weight:${i===1||top3.length<2?500:400};margin-top:4px;">${label}</div>
+        <div style="font-size:${i===1||top3.length<2?14:12}px;color:${i===1||top3.length<2?'#7c3aed':'#6b6b9a'};font-weight:${i===1||top3.length<2?500:400};margin-top:4px;">${label}</div>
       </div>`;
     }).join('')}</div>`;
   })();
 
   const lbRows = sorted.map((p, i) => {
     const [bg, fg] = avatarColor(i);
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1e1e35;">
-      <div style="font-size:13px;color:${i<3?'#7c3aed':'#555'};width:20px;">${i+1}</div>
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e4e4f0;">
+      <div style="font-size:13px;color:${i<3?'#7c3aed':'#9090b8'};width:20px;">${i+1}</div>
       <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-      <div style="flex:1;font-size:13px;color:#e8e8f0;">${p.name}</div>
+      <div style="flex:1;font-size:13px;color:#1a1a2e;">${p.name}</div>
       <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score} pts</div>
     </div>`;
   }).join('');
@@ -1087,19 +1151,19 @@ function showResults() {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:13px;color:#555;margin-bottom:6px;">Game over · ${PRESETS[state.room?.config?.preset]?.name || 'Trivia Night'}</div>
-        <div style="font-size:22px;font-weight:500;color:#e8e8f0;">Final leaderboard</div>
+        <div style="font-size:13px;color:#9090b8;margin-bottom:6px;">Game over · ${PRESETS[state.room?.config?.preset]?.name || 'Trivia Night'}</div>
+        <div style="font-size:22px;font-weight:500;color:#1a1a2e;">Final leaderboard</div>
       </div>
 
       ${podiumHTML}
 
       <div class="card" style="margin-bottom:16px;">
         <div class="sub-label">All players</div>
-        ${lbRows || '<div style="color:#555;font-size:13px;">No players</div>'}
+        ${lbRows || '<div style="color:#9090b8;font-size:13px;">No players</div>'}
       </div>
 
       <button class="btn-primary" onclick="playAgain()">Play again</button>
-      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#555;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#9090b8;text-decoration:none;">← Back to home</a></div>
     </div>
   `);
 }
@@ -1111,7 +1175,7 @@ async function playAgain() {
 
   setHTML(`<div style="text-align:center;padding:100px 20px;">
     <div style="font-size:16px;font-weight:500;color:#a78bfa;margin-bottom:8px;">Generating new questions…</div>
-    <div style="font-size:12px;color:#555;">Same room code · fresh questions · ~10 seconds</div>
+    <div style="font-size:12px;color:#9090b8;">Same room code · fresh questions · ~10 seconds</div>
   </div>`);
 
   const cfg = state.room.config || {};
@@ -1137,7 +1201,7 @@ async function playAgain() {
     });
     const data = await res.json();
     if (res.ok && data.questions) newQuestions = data.questions;
-  } catch(e) { /* fall through — reuse old questions as last resort */ }
+  } catch(e) { /* fall through */ }
 
   const patch = { status: 'lobby', current_question_index: 0, question_start_time: null };
   if (newQuestions) patch.questions = newQuestions;
@@ -1158,7 +1222,6 @@ async function newGame() {
   clearInterval(state.timerInterval);
   clearInterval(state.autoAdvanceTimeout);
   if (state.subscription) state.subscription.unsubscribe();
-  // Mark room finished so players see the game ended
   if (state.room) {
     await sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id);
   }
@@ -1168,11 +1231,14 @@ async function newGame() {
   state.autoAdvanceTimeout = null;
   state.subscription = null;
   state.playedSongs = [];
+  document.body.classList.remove('tv-mode');
   showSetup();
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
 state.customCats = loadCustomCats();
+state.tvMode = localStorage.getItem('trivia-tv-mode') === 'true';
+if (state.tvMode) document.body.classList.add('tv-mode');
 showSetup();
 </script>
 </body>
