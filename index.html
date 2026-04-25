@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trivia Night</title>
+<title>Quizzli</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
@@ -130,7 +130,7 @@ async function showHome() {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;">
-        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:4px;">Trivia Night</div>
+        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:4px;">Quizzli</div>
         <div style="font-size:12px;color:#9090b8;">${DATE_STR}</div>
       </div>
 
@@ -237,7 +237,7 @@ function showSoloStart() {
   setHTML(`
     <div style="text-align:center;padding:1.5rem 1rem 1rem;" class="fade-in">
       <button class="btn-outline" style="width:auto;padding:6px 14px;font-size:12px;margin-bottom:1.5rem;" onclick="showHome()">← Home</button>
-      <div class="start-title">Daily Trivia</div>
+      <div class="start-title">Daily Quizzli</div>
       <div style="font-size:14px;color:#9090b8;margin-bottom:.35rem;">5 questions · Speed bonus · Daily challenge</div>
       <div style="font-size:13px;color:#7c3aed;margin-bottom:1.5rem;">${DATE_STR}</div>
       ${hsBannerHTML()}
@@ -457,7 +457,7 @@ async function showSummary() {
     <button class="share-btn" id="shareBtn">Share on X (Twitter)</button>
     <button class="play-again-btn" onclick="showHome()" style="margin-top:.5rem;">← Back to Home</button>
   `);
-  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Daily Trivia! ${emoji} Today's record is ${recordScore}. Can you beat it? #DailyTrivia`);
+  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Quizzli! ${emoji} Today's record is ${recordScore}. Can you beat it? #Quizzli`);
   document.getElementById('shareBtn').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
 }
 

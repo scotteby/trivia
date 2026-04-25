@@ -77,7 +77,7 @@ async function getItunesPreview(artist, song) {
       hostname: 'itunes.apple.com',
       path: `/search?term=${query}&media=music&entity=song&limit=10`,
       method: 'GET',
-      headers: { 'User-Agent': 'TriviaApp/1.0' },
+      headers: { 'User-Agent': 'QuizzliApp/1.0' },
     }, null);
 
     if (!Array.isArray(data?.results)) return null;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Join Game — Trivia Night</title>
+<title>Join Game — Quizzli</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
@@ -79,7 +79,7 @@ function showJoin(prefill = '', namePrefill = '') {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:28px;margin-top:20px;">
-        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
+        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Quizzli</div>
         <div style="font-size:13px;color:#9090b8;">Join a multiplayer game</div>
       </div>
 
@@ -169,7 +169,7 @@ function showLobby() {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:24px;margin-top:20px;">
-        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Trivia Night</div>
+        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:6px;">Quizzli</div>
         <div style="font-size:13px;color:#9090b8;">Room <strong style="color:#1a1a2e;letter-spacing:.05em;">${room.room_code}</strong></div>
       </div>
 
@@ -679,7 +679,7 @@ function shareRoom() {
   const url = `${window.location.origin}/join.html?code=${code}`;
   const doShare = () => {
     if (navigator.share) {
-      navigator.share({ title: 'Join our Trivia Night!', text: `Join room ${code}`, url }).catch(() => doCopy());
+      navigator.share({ title: 'Join our Quizzli game!', text: `Join room ${code}`, url }).catch(() => doCopy());
     } else {
       doCopy();
     }
