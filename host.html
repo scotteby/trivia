@@ -1168,14 +1168,79 @@ async function advanceQuestion() {
     return;
   }
 
-  const newStart = new Date().toISOString();
   const newIdx = qi + 1;
+  const crossedRound = newIdx > 0 && newIdx % 5 === 0;
+  const newStart = new Date().toISOString();
+
   await sb.from('game_rooms').update({
     current_question_index: newIdx,
     question_start_time: newStart,
   }).eq('id', state.room.id);
   state.room.current_question_index = newIdx;
   state.room.question_start_time = newStart;
+  state.revealed = false;
+
+  if (crossedRound) {
+    const completedRound = Math.floor(newIdx / 5);
+    showRoundLeaderboard(completedRound);
+  } else {
+    showIngame();
+  }
+}
+
+function showRoundLeaderboard(completedRound) {
+  clearInterval(state.timerInterval);
+  clearInterval(state.autoAdvanceTimeout);
+  stopClip();
+  state.view = 'roundleaderboard';
+
+  const nextRound = completedRound + 1;
+  const sorted = [...state.players].sort((a, b) => b.score - a.score);
+
+  const lbRows = sorted.map((p, i) => {
+    const [bg, fg] = avatarColor(i);
+    return `<div class="lb-row${i === 0 ? ' lb-row-first' : ''}">
+      <div style="font-size:14px;color:${i < 3 ? '#7c3aed' : '#9090b8'};width:24px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
+      <div class="avatar" style="width:32px;height:32px;font-size:11px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+      <div style="flex:1;font-size:15px;color:#1a1a2e;">${p.name}</div>
+      <div style="font-size:15px;color:#7c3aed;font-weight:600;">${p.score} pts</div>
+    </div>`;
+  }).join('');
+
+  document.body.classList.remove('tv-mode');
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="newGame()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:12px;color:#9090b8;cursor:pointer;">✕ End game</button>
+      </div>
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="font-size:12px;color:#7c3aed;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Round ${completedRound} complete</div>
+        <div style="font-size:24px;font-weight:500;color:#1a1a2e;">Leaderboard</div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="sub-label">Standings after round ${completedRound}</div>
+        ${lbRows || '<div style="color:#9090b8;font-size:13px;">No players</div>'}
+      </div>
+
+      <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
+        Start round ${nextRound} →
+      </button>
+      <div style="font-size:12px;color:#9090b8;text-align:center;margin-top:8px;">Players are waiting on the leaderboard screen</div>
+    </div>
+  `);
+}
+
+async function startNextRound(roundNum) {
+  const qi = state.room.current_question_index;
+  const newStart = new Date().toISOString();
+  await sb.from('game_rooms').update({
+    question_start_time: newStart,
+    current_question_index: qi,
+  }).eq('id', state.room.id);
+  state.room.question_start_time = newStart;
+  if (state.tvMode) document.body.classList.add('tv-mode');
   state.revealed = false;
   showIngame();
 }

@@ -301,6 +301,12 @@ function subscribeAsPlayer() {
             <div style="font-size:13px;color:#9090b8;">Loading questions</div>
           </div>`);
           fetchFullRoom().then(() => showIngame());
+        } else if (state.view === 'roundleaderboard' && updated.question_start_time !== prev.question_start_time) {
+          // Host clicked "Start round X" — same question_index but new start time
+          clearTimeout(state.roundLeaderboardTimeout);
+          state.hasAnswered = false;
+          state.selectedAnswer = null;
+          fetchFullRoom().then(() => showIngame());
         } else if (updated.current_question_index !== prev.current_question_index) {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
@@ -313,7 +319,7 @@ function subscribeAsPlayer() {
               <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Next question…</div>
               <div style="font-size:13px;color:#9090b8;">Loading</div>
             </div>`);
-            fetchFullRoom().then(() => showRoundLeaderboard(completedRound, showIngame));
+            fetchFullRoom().then(() => showRoundLeaderboard(completedRound));
           } else {
             setHTML(`<div style="text-align:center;padding:80px 20px;">
               <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Next question…</div>
@@ -573,7 +579,7 @@ function revealPlayerAnswer(idx, correct, pts) {
 }
 
 // ─── ROUND LEADERBOARD ────────────────────────────────────────────────────────
-async function showRoundLeaderboard(completedRound, nextFn) {
+async function showRoundLeaderboard(completedRound) {
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'roundleaderboard';
@@ -596,7 +602,6 @@ async function showRoundLeaderboard(completedRound, nextFn) {
     </div>`;
   }).join('');
 
-  let secs = 5;
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
@@ -608,23 +613,15 @@ async function showRoundLeaderboard(completedRound, nextFn) {
       <div class="card" style="margin-bottom:16px;">${lbRows}</div>
 
       <div style="background:#f0f0fa;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#9090b8;">
-        ${isLastRound ? 'Waiting for final results…' : `Next round in <span id="rlCountdown" style="color:#a78bfa;font-weight:500;">${secs}s</span>`}
+        ${isLastRound ? 'Waiting for final results…' : 'Waiting for host to start next round…'}
+        ${!isLastRound ? `<div style="margin-top:8px;display:flex;justify-content:center;gap:4px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+        </div>` : ''}
       </div>
     </div>
   `);
-
-  if (!isLastRound) {
-    state.roundLeaderboardTimeout = setInterval(() => {
-      secs--;
-      const el = document.getElementById('rlCountdown');
-      if (el) el.textContent = secs + 's';
-      if (secs <= 0) {
-        clearInterval(state.roundLeaderboardTimeout);
-        state.roundLeaderboardTimeout = null;
-        nextFn();
-      }
-    }, 1000);
-  }
 }
 
 // ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
