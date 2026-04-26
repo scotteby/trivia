@@ -903,6 +903,7 @@ async function startGame() {
 }
 
 const CLIP_DURATION = 10;
+const QUESTION_REVEAL_SECS = 5;
 const ROUND_LEADERBOARD_SECS = 5;
 
 function waveformHTML(color = '#7c3aed') {
@@ -976,10 +977,10 @@ function showIngame() {
             <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
-              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
+              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : '👁'}</span>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;" id="optionGrid">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;${!isMusic ? 'visibility:hidden;' : ''}" id="optionGrid">
             ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}" style="font-size:${optionSize};">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1079,13 +1080,20 @@ function startIngameTimer(duration, isMusic = false) {
   state.timerInterval = setInterval(() => {
     const elapsed = (Date.now() - startTime) / 1000;
     const clipPhase = isMusic && elapsed < CLIP_DURATION;
-    const countdownElapsed = isMusic ? Math.max(0, elapsed - CLIP_DURATION) : elapsed;
+    const revealPhase = !isMusic && elapsed < QUESTION_REVEAL_SECS;
+    const countdownElapsed = isMusic
+      ? Math.max(0, elapsed - CLIP_DURATION)
+      : Math.max(0, elapsed - QUESTION_REVEAL_SECS);
     const left = Math.max(0, duration - countdownElapsed);
     const badge = document.getElementById('timerBadge');
 
     if (clipPhase) {
       if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
+    } else if (revealPhase) {
+      if (badge) { badge.textContent = '👁'; badge.className = 'timer-badge timer-ok'; }
     } else {
+      const grid = document.getElementById('optionGrid');
+      if (grid) grid.style.visibility = 'visible';
       const clipStatus = document.getElementById('clipStatus');
       if (clipStatus) clipStatus.textContent = '';
       if (badge) {
