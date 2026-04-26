@@ -151,6 +151,8 @@ const root = document.getElementById('root');
 function setHTML(h) { root.innerHTML = h; }
 
 // ─── State ────────────────────────────────────────────────────────────────────
+const HOST_ROOM_CODE_KEY = 'quizzli-host-room-code';
+
 let state = {
   view: 'setup',
   rounds: 3,
@@ -727,7 +729,14 @@ async function createRoom() {
     const customMusicCats = customMusicCatObjs.map(c => c.name);
     const customCatsMeta = {};
     customMusicCatObjs.forEach(c => { customCatsMeta[c.name] = { musicType: c.musicType || 'genre' }; });
-    const basePayload = { rounds: state.rounds, timer: state.timer, difficulty: state.difficulty, ...(customMusicCats.length ? { customMusicCats, customCatsMeta } : {}) };
+    const savedCode = localStorage.getItem(HOST_ROOM_CODE_KEY);
+    const basePayload = {
+      rounds: state.rounds,
+      timer: state.timer,
+      difficulty: state.difficulty,
+      ...(savedCode ? { preferredCode: savedCode } : {}),
+      ...(customMusicCats.length ? { customMusicCats, customCatsMeta } : {}),
+    };
     const res = await fetch('/api/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -743,6 +752,7 @@ async function createRoom() {
       throw new Error(data.error || 'Failed to create room');
     }
     state.room = data;
+    localStorage.setItem(HOST_ROOM_CODE_KEY, data.room_code);
     state.players = [];
     subscribeToRoom();
     showLobby();
@@ -822,8 +832,11 @@ function showLobby() {
         <div style="font-size:15px;color:#7c3aed;margin-bottom:16px;">${joinUrl}</div>
         <div style="font-size:14px;color:#9090b8;margin-bottom:10px;">Room code</div>
         <div style="font-size:80px;font-weight:700;color:#7c3aed;letter-spacing:.15em;line-height:1;">${room.room_code}</div>
-        <div style="font-size:12px;color:#9090b8;margin-top:8px;">Type this code on your phone</div>
+        <div style="font-size:12px;color:#9090b8;margin-top:8px;">Your permanent room code</div>
         <button onclick="copyJoinLink('${joinUrl}?code=${room.room_code}')" style="margin-top:10px;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:8px;padding:6px 14px;font-size:12px;color:#9090b8;cursor:pointer;">Copy join link</button>
+        <div style="margin-top:6px;">
+          <button onclick="resetRoomCode()" style="background:none;border:none;font-size:11px;color:#c4b5fd;cursor:pointer;text-decoration:underline;">Use a different code next time</button>
+        </div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
@@ -927,6 +940,12 @@ async function removePlayer(playerId) {
 
 function copyJoinLink(url) {
   navigator.clipboard.writeText(url).then(() => alert('Join link copied!'));
+}
+
+function resetRoomCode() {
+  localStorage.removeItem(HOST_ROOM_CODE_KEY);
+  const btn = document.querySelector('button[onclick="resetRoomCode()"]');
+  if (btn) { btn.textContent = '✓ Will generate a new code next game'; btn.style.color = '#a78bfa'; btn.disabled = true; }
 }
 
 // ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────

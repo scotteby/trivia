@@ -57,13 +57,19 @@ function assertSb({ status, data }, context) {
 }
 
 // ─── Room code ────────────────────────────────────────────────
-async function getUniqueCode() {
+async function getUniqueCode(preferred = null) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+  if (preferred && /^[A-Z]{4,6}$/.test(preferred)) {
+    const res = await sbReq(`/game_rooms?room_code=eq.${preferred}&status=in.(lobby,active)&select=room_code`);
+    if (!Array.isArray(res.data) || res.data.length === 0) return preferred;
+    console.log(`[rooms] Preferred code ${preferred} is currently active, generating new code`);
+  }
+
   for (let t = 0; t < 20; t++) {
     let code = '';
     for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
     const res = await sbReq(`/game_rooms?room_code=eq.${code}&status=in.(lobby,active)&select=room_code`);
-    // If table missing Supabase returns 404/error — still safe to use the code
     if (!Array.isArray(res.data) || res.data.length === 0) return code;
   }
   throw new Error('Could not generate unique room code');
@@ -304,8 +310,10 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ questions });
       }
 
+      const preferredCode = cfg.preferredCode ? cfg.preferredCode.toUpperCase().trim() : null;
+
       const [roomCode, rawQuestions] = await Promise.all([
-        getUniqueCode(),
+        getUniqueCode(preferredCode),
         generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient),
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
