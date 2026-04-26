@@ -127,8 +127,10 @@ body.tv-mode .timer-warn { color: #f59e0b; border-color: #f59e0b44; background: 
 body.tv-mode .timer-danger { color: #ef4444; border-color: #ef444444; background: #1e1e35; }
 body.tv-mode .lb-row { color: #e8e8f0; }
 body.tv-mode .lb-row-first { background: #1e1e35; }
+.ingame-question { color: #1a1a2e; }
+.ingame-cat { color: #9090b8; }
 body.tv-mode .ingame-question { font-size: 22px; color: #e8e8f0; }
-body.tv-mode .ingame-cat { color: #555; }
+body.tv-mode .ingame-cat { color: #888; }
 body.tv-mode .ingame-sidebar-label { color: #555; }
 body.tv-mode .ingame-resp { background: #16162a; border-color: #2a2a48; color: #a78bfa; }
 body.tv-mode .ingame-resp-bar-track { background: #2a2a48; }
@@ -969,9 +971,9 @@ function showIngame() {
       <div class="ingame-layout">
         <div>
           <div class="card ingame-card" style="margin-bottom:14px;">
-            <div class="ingame-cat" style="font-size:11px;color:#9090b8;margin-bottom:8px;">${q.cat}</div>
+            <div class="ingame-cat" style="font-size:11px;margin-bottom:8px;">${q.cat}</div>
             ${musicBanner}
-            <div class="ingame-question" style="font-size:${questionSize};font-weight:500;color:#1a1a2e;line-height:1.4;margin-bottom:14px;">${q.q}</div>
+            <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
               <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : timerDuration + 's'}</span>
@@ -981,7 +983,7 @@ function showIngame() {
             ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}" style="font-size:${optionSize};">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="ingame-sidebar-label" style="font-size:12px;color:#9090b8;" id="responseStatus">Waiting for answers...</div>
+            <div class="ingame-sidebar-label" style="font-size:12px;" id="responseStatus">Waiting for answers...</div>
             ${state.revealed
               ? `<button class="btn-outline" onclick="advanceQuestion()" style="padding:8px 18px;">${qi + 1 < totalQ ? 'Next question →' : 'Show results →'}</button>`
               : `<button class="btn-outline" onclick="revealAnswer()" style="padding:8px 18px;">Reveal answer</button>`
