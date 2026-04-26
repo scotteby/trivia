@@ -1257,7 +1257,6 @@ async function newGame() {
 // ─── Init ────────────────────────────────────────────────────────────────────
 state.customCats = loadCustomCats();
 state.tvMode = localStorage.getItem('trivia-tv-mode') === 'true';
-if (state.tvMode) document.body.classList.add('tv-mode');
 showSetup();
 </script>
 </body>
