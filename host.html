@@ -152,6 +152,8 @@ function setHTML(h) { root.innerHTML = h; }
 
 // ─── State ────────────────────────────────────────────────────────────────────
 const HOST_ROOM_CODE_KEY = 'quizzli-host-room-code';
+const HOST_PLAYER_NAME_KEY = 'quizzli-host-player-name';
+const HOST_PLAYER_ID_KEY = 'quizzli-host-player-id';
 
 let state = {
   view: 'setup',
@@ -853,7 +855,8 @@ function showLobby() {
         <div style="display:flex;gap:8px;">
           <input id="hostNameInput" type="text" maxlength="20" placeholder="Your name…"
             style="flex:1;background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;padding:9px 12px;font-size:14px;color:#1a1a2e;outline:none;"
-            onkeydown="if(event.key==='Enter')joinAsHost()" />
+            onkeydown="if(event.key==='Enter')joinAsHost()"
+            value="${localStorage.getItem(HOST_PLAYER_NAME_KEY) || ''}" />
           <button onclick="joinAsHost()"
             style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;cursor:pointer;white-space:nowrap;">
             Join
@@ -889,6 +892,9 @@ async function joinAsHost() {
     state.hostPlayer = playerData;
     state.hostScore = 0;
     state.hostAnswers = [];
+
+    localStorage.setItem(HOST_PLAYER_NAME_KEY, name);
+    localStorage.setItem(HOST_PLAYER_ID_KEY, playerData.id);
 
     if (statusEl) statusEl.textContent = `✓ Joined as "${name}" — you'll answer questions on this screen`;
 
@@ -1670,6 +1676,7 @@ async function playAgain() {
   state.hostAnswer = null;
   state.hostScore = 0;
   state.hostAnswers = [];
+  localStorage.removeItem(HOST_PLAYER_ID_KEY);
 
   if (prevHostPlayer) {
     try {
@@ -1681,6 +1688,7 @@ async function playAgain() {
       }).select().single();
       if (!error && newHostPlayer) {
         state.hostPlayer = newHostPlayer;
+        localStorage.setItem(HOST_PLAYER_ID_KEY, newHostPlayer.id);
       }
     } catch(e) {
       console.warn('Failed to re-create host player:', e);
@@ -1711,6 +1719,8 @@ async function newGame() {
   state.hostAnswer = null;
   state.hostScore = 0;
   state.hostAnswers = [];
+  localStorage.removeItem(HOST_PLAYER_ID_KEY);
+  localStorage.removeItem(HOST_PLAYER_NAME_KEY);
   document.body.classList.remove('tv-mode');
   showSetup();
 }
@@ -1718,7 +1728,43 @@ async function newGame() {
 // ─── Init ────────────────────────────────────────────────────────────────────
 state.customCats = loadCustomCats();
 state.tvMode = localStorage.getItem('trivia-tv-mode') === 'true';
-showSetup();
+
+async function init() {
+  const savedCode = localStorage.getItem(HOST_ROOM_CODE_KEY);
+  if (savedCode) {
+    try {
+      const res = await fetch(`/api/rooms?code=${savedCode}`);
+      if (res.ok) {
+        const room = await res.json();
+        if (room && (room.status === 'lobby' || room.status === 'active')) {
+          state.room = room;
+          state.players = [];
+
+          const savedPlayerId = localStorage.getItem(HOST_PLAYER_ID_KEY);
+          if (savedPlayerId) {
+            const { data: playerData } = await sb.from('players')
+              .select('*').eq('id', savedPlayerId).maybeSingle();
+            if (playerData && playerData.room_id === room.id) {
+              state.hostPlayer = playerData;
+              state.hostScore = playerData.score || 0;
+              state.hostAnswers = playerData.answers || [];
+            }
+          }
+
+          subscribeToRoom();
+          if (room.status === 'active') {
+            showIngame();
+          } else {
+            showLobby();
+          }
+          return;
+        }
+      }
+    } catch(e) {}
+  }
+  showSetup();
+}
+init();
 </script>
 </body>
 </html>
