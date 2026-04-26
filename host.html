@@ -1291,9 +1291,9 @@ function startIngameTimerAsPlayer(duration, isMusic = false) {
 async function submitHostAnswer(idx) {
   if (state.hostAnswered || !state.hostPlayer) return;
   const isMusic = !!(state.room.questions[state.room.current_question_index]?.preview_url);
-  const startTime = new Date(state.room.question_start_time).getTime();
-  if (!isNaN(startTime)) {
-    const elapsed = (Date.now() - startTime) / 1000;
+  const answerStartTime = new Date(state.room.question_start_time).getTime();
+  if (!isNaN(answerStartTime)) {
+    const elapsed = (Date.now() - answerStartTime) / 1000;
     if (!isMusic && elapsed < QUESTION_REVEAL_SECS) return;
   }
 
@@ -1304,8 +1304,7 @@ async function submitHostAnswer(idx) {
   const qi = state.room.current_question_index;
   const q = state.room.questions[qi];
   const timerDuration = state.room.config?.timer || 15;
-  const startTime = new Date(state.room.question_start_time).getTime();
-  const totalElapsed = (Date.now() - startTime) / 1000;
+  const totalElapsed = (Date.now() - answerStartTime) / 1000;
   const countElapsed = isMusic
     ? Math.max(0, totalElapsed - CLIP_DURATION)
     : Math.max(0, totalElapsed - QUESTION_REVEAL_SECS);
