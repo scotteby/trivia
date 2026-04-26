@@ -1253,7 +1253,6 @@ async function submitHostAnswer(idx) {
 
   state.hostAnswered = true;
   state.hostAnswer = idx;
-  clearInterval(state.timerInterval);
 
   const qi = state.room.current_question_index;
   const q = state.room.questions[qi];
@@ -1347,9 +1346,10 @@ function revealAnswer() {
 }
 
 function revealAnswerAsPlayer(timedOut) {
+  const q = state.room.questions?.[state.room.current_question_index];
+  if (!q) return;
   stopClip();
   const qi = state.room.current_question_index;
-  const q = state.room.questions[qi];
 
   document.querySelectorAll('#hostPlayerOptionGrid button').forEach((b, i) => {
     b.disabled = true;
