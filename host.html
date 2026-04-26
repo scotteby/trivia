@@ -1057,7 +1057,7 @@ function showIngame() {
             <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
-              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : '…'}</span>
+              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : ''}</span>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;${!isMusic ? 'visibility:hidden;' : ''}" id="optionGrid">
@@ -1169,7 +1169,7 @@ function startIngameTimer(duration, isMusic = false) {
       if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
     } else if (revealPhase) {
       const remaining = Math.ceil(QUESTION_REVEAL_SECS - elapsed);
-      if (badge) { badge.textContent = remaining + 's'; badge.className = 'timer-badge timer-ok'; }
+      if (badge) { badge.textContent = ''; badge.className = 'timer-badge timer-ok'; }
     } else {
       const grid = document.getElementById('optionGrid');
       if (grid) grid.style.visibility = 'visible';
@@ -1210,7 +1210,7 @@ function showIngameAsPlayer() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
-        <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : '…'}</span>
+        <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : ''}</span>
         <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
@@ -1258,7 +1258,7 @@ function startIngameTimerAsPlayer(duration, isMusic = false) {
 
     if (revealPhase) {
       const remaining = Math.ceil(QUESTION_REVEAL_SECS - elapsed);
-      if (badge) { badge.textContent = remaining + 's'; badge.className = 'timer-badge timer-ok'; }
+      if (badge) { badge.textContent = ''; badge.className = 'timer-badge timer-ok'; }
       return;
     }
 
