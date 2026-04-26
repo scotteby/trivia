@@ -830,8 +830,7 @@ async function init() {
     }
   }
 
-  const savedName = localStorage.getItem(PLAYER_NAME_KEY) || '';
-  showJoin(urlCode.toUpperCase(), savedName);
+  showJoin(urlCode.toUpperCase(), localStorage.getItem(PLAYER_NAME_KEY) || '');
 }
 
 init();
