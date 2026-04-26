@@ -70,6 +70,8 @@ let state = {
   lobbyPollInterval: null,
   hasAnswered: false,
   selectedAnswer: null,
+  audio: null,
+  clipTimeout: null,
 };
 
 const AVATAR_COLORS = [
@@ -226,6 +228,10 @@ function startLobbyPoll() {
         .eq('id', state.room.id).maybeSingle();
       if (!data || data.status !== 'active') return;
       clearInterval(state.lobbyPollInterval);
+      setHTML(`<div style="text-align:center;padding:80px 20px;">
+        <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
+        <div style="font-size:13px;color:#9090b8;">Loading questions</div>
+      </div>`);
       fetchFullRoom().then(() => {
         state.hasAnswered = false;
         state.selectedAnswer = null;
@@ -290,6 +296,10 @@ function subscribeAsPlayer() {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
+          setHTML(`<div style="text-align:center;padding:80px 20px;">
+            <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
+            <div style="font-size:13px;color:#9090b8;">Loading questions</div>
+          </div>`);
           fetchFullRoom().then(() => showIngame());
         } else if (updated.current_question_index !== prev.current_question_index) {
           clearTimeout(state.roundLeaderboardTimeout);
@@ -299,8 +309,16 @@ function subscribeAsPlayer() {
           const crossedRound = newIdx > 0 && newIdx % 5 === 0;
           if (crossedRound) {
             const completedRound = Math.floor(newIdx / 5);
+            setHTML(`<div style="text-align:center;padding:80px 20px;">
+              <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Next question…</div>
+              <div style="font-size:13px;color:#9090b8;">Loading</div>
+            </div>`);
             fetchFullRoom().then(() => showRoundLeaderboard(completedRound, showIngame));
           } else {
+            setHTML(`<div style="text-align:center;padding:80px 20px;">
+              <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Next question…</div>
+              <div style="font-size:13px;color:#9090b8;">Loading</div>
+            </div>`);
             fetchFullRoom().then(() => showIngame());
           }
         }
@@ -318,6 +336,28 @@ function subscribeAsPlayer() {
 // ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
 const CLIP_DURATION = 10;
 
+function stopClip() {
+  clearTimeout(state.clipTimeout);
+  state.clipTimeout = null;
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.src = '';
+    state.audio = null;
+  }
+}
+
+function playClip(url) {
+  stopClip();
+  if (!url) return;
+  state.audio = new Audio(url);
+  state.audio.volume = 1;
+  state.audio.play().catch(() => {
+    const cs = document.getElementById('clipStatus');
+    if (cs) cs.textContent = 'Tap to play';
+  });
+  state.clipTimeout = setTimeout(() => stopClip(), 10 * 1000);
+}
+
 function waveformHTML() {
   const heights = [8, 18, 12, 24, 10, 20, 14, 22, 8, 16];
   return heights.map((h, i) =>
@@ -331,7 +371,17 @@ function showIngame() {
   state.view = 'ingame';
   const room = state.room;
   const qi = room.current_question_index;
-  const q = room.questions[qi];
+  const q = room.questions?.[qi];
+
+  if (!q) {
+    setHTML(`<div style="text-align:center;padding:80px 20px;">
+      <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
+      <div style="font-size:13px;color:#9090b8;">Loading questions</div>
+    </div>`);
+    fetchFullRoom().then(() => showIngame());
+    return;
+  }
+
   const timerDuration = room.config?.timer || 15;
   const questionsPerRound = 5;
   const roundNum = Math.floor(qi / questionsPerRound) + 1;
@@ -372,6 +422,7 @@ function showIngame() {
     </div>
   `);
 
+  if (isMusic) playClip(q.preview_url);
   startPlayerTimer(timerDuration, isMusic);
 }
 
@@ -565,6 +616,7 @@ async function showRoundLeaderboard(completedRound, nextFn) {
 // ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
 async function showPlayerResults() {
   clearInterval(state.timerInterval);
+  stopClip();
   if (state.subscription) state.subscription.unsubscribe();
   state.view = 'results';
   localStorage.removeItem('trivia_player_id');
@@ -748,6 +800,10 @@ async function init() {
           state.answers = player.answers || [];
           subscribeAsPlayer();
           if (room.status === 'active') {
+            setHTML(`<div style="text-align:center;padding:80px 20px;">
+              <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
+              <div style="font-size:13px;color:#9090b8;">Loading questions</div>
+            </div>`);
             await fetchFullRoom();
             showIngame();
           } else {
