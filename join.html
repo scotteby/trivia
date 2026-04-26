@@ -240,7 +240,12 @@ function subscribeAsPlayer() {
     .on('postgres_changes', { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` }, payload => {
       const updated = payload.new;
       const prev = state.room;
-      state.room = updated;
+      // Merge rather than replace — Supabase Realtime may omit large JSONB fields
+      // (like questions) from the payload due to size limits. Preserve them from state.
+      state.room = { ...state.room, ...updated };
+      if (!state.room.questions?.length && prev.questions?.length) {
+        state.room.questions = prev.questions;
+      }
 
       if (updated.status === 'finished') {
         clearInterval(state.timerInterval);
