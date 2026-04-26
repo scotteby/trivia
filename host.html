@@ -975,9 +975,17 @@ function showIngame() {
   state.revealed = false;
   state.hostAnswered = false;
   state.hostAnswer = null;
+
   const room = state.room;
   const qi = room.current_question_index;
-  const q = room.questions[qi];
+  const q = room.questions?.[qi];
+  if (!q) return;
+
+  if (state.hostPlayer) {
+    showIngameAsPlayer();
+    return;
+  }
+
   const totalQ = room.questions.length;
   const questionsPerRound = 5;
   const roundNum = Math.floor(qi / questionsPerRound) + 1;
@@ -1055,22 +1063,6 @@ function showIngame() {
         </div>
       </div>
 
-      ${state.hostPlayer ? `
-      <div id="hostAnswerPanel" style="margin-top:20px;border-top:2px dashed #e4e4f0;padding-top:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:12px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;">Your answer — ${state.hostPlayer.name}</div>
-          <div style="font-size:13px;color:#a78bfa;font-weight:500;" id="hostScoreDisplay">${state.hostScore} pts</div>
-        </div>
-        <div style="font-size:11px;color:#9090b8;margin-bottom:10px;font-style:italic;">No peeking before you answer! 👀</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="hostOptionGrid">
-          ${q.opts.map((o, i) => `
-            <button id="hostOpt${i}" onclick="submitHostAnswer(${i})"
-              style="background:#ffffff;border:1.5px solid #e4e4f0;border-radius:10px;padding:12px 14px;font-size:14px;color:#2a2a4a;text-align:left;cursor:pointer;transition:all .15s;">
-              ${String.fromCharCode(65+i)} &nbsp; ${o}
-            </button>`).join('')}
-        </div>
-        <div id="hostAnswerStatus" style="margin-top:8px;font-size:13px;color:#9090b8;text-align:center;min-height:20px;"></div>
-      </div>` : ''}
     </div>
   `);
 
@@ -1175,6 +1167,103 @@ function startIngameTimer(duration, isMusic = false) {
   }, 250);
 }
 
+function showIngameAsPlayer() {
+  stopClip();
+  const room = state.room;
+  const qi = room.current_question_index;
+  const q = room.questions[qi];
+  const timerDuration = room.config?.timer || 15;
+  const questionsPerRound = 5;
+  const roundNum = Math.floor(qi / questionsPerRound) + 1;
+  const qInRound = (qi % questionsPerRound) + 1;
+  const isMusic = !!(q.preview_url);
+
+  const musicBanner = isMusic ? `
+    <div style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
+        ${waveformHTML()}
+      </div>
+      <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Clip playing…</div>
+    </div>` : '';
+
+  setHTML(`
+    <div class="fade-in">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
+        <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : '👁'}</span>
+        <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
+      </div>
+
+      ${musicBanner}
+
+      <div style="background:#ede9fe;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+        <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+      </div>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div style="font-size:17px;font-weight:500;color:#1a1a2e;line-height:1.5;">${q.q}</div>
+      </div>
+
+      <div id="hostPlayerOptionGrid" style="${!isMusic ? 'visibility:hidden;' : ''}">
+        ${q.opts.map((o, i) => `
+          <button class="option-btn" id="hostOpt${i}" onclick="submitHostAnswer(${i})"
+            style="background:#ffffff;border:2px solid #e4e4f0;border-radius:12px;padding:16px 14px;font-size:16px;color:#2a2a4a;width:100%;text-align:left;cursor:pointer;margin-bottom:10px;display:block;">
+            ${String.fromCharCode(65+i)} &nbsp; ${o}
+          </button>`).join('')}
+      </div>
+
+      <div id="hostPlayerStatus" style="background:#f5f5fa;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
+    </div>
+  `);
+
+  if (isMusic) playClip(q.preview_url);
+  startIngameTimerAsPlayer(timerDuration, isMusic);
+}
+
+function startIngameTimerAsPlayer(duration, isMusic = false) {
+  clearInterval(state.timerInterval);
+  const startTime = new Date(state.room.question_start_time).getTime();
+  let optionsRevealed = isMusic;
+
+  state.timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const clipPhase = isMusic && elapsed < CLIP_DURATION;
+    const revealPhase = !isMusic && elapsed < QUESTION_REVEAL_SECS;
+    const badge = document.getElementById('timerBadge');
+
+    if (clipPhase) {
+      if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
+      return;
+    }
+
+    if (!optionsRevealed && !revealPhase) {
+      optionsRevealed = true;
+      const grid = document.getElementById('hostPlayerOptionGrid');
+      if (grid) grid.style.visibility = 'visible';
+    }
+
+    if (revealPhase) {
+      if (badge) { badge.textContent = '👁'; badge.className = 'timer-badge timer-ok'; }
+      return;
+    }
+
+    const countdownElapsed = isMusic
+      ? Math.max(0, elapsed - CLIP_DURATION)
+      : Math.max(0, elapsed - QUESTION_REVEAL_SECS);
+    const left = Math.max(0, duration - countdownElapsed);
+
+    if (badge) {
+      badge.textContent = Math.ceil(left) + 's';
+      badge.className = 'timer-badge ' + (left > 8 ? 'timer-ok' : left > 4 ? 'timer-warn' : 'timer-danger');
+    }
+
+    if (left <= 0) {
+      clearInterval(state.timerInterval);
+      if (!state.hostAnswered) revealAnswerAsPlayer(true);
+    }
+  }, 100);
+}
+
 async function submitHostAnswer(idx) {
   if (state.hostAnswered || !state.hostPlayer) return;
   const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
@@ -1183,6 +1272,7 @@ async function submitHostAnswer(idx) {
 
   state.hostAnswered = true;
   state.hostAnswer = idx;
+  clearInterval(state.timerInterval);
 
   const qi = state.room.current_question_index;
   const q = state.room.questions[qi];
@@ -1204,7 +1294,7 @@ async function submitHostAnswer(idx) {
   const answerEntry = { question_index: qi, answer_index: idx, correct, pts, time_taken: countElapsed };
   state.hostAnswers = [...state.hostAnswers, answerEntry];
 
-  document.querySelectorAll('#hostOptionGrid button').forEach(b => b.disabled = true);
+  document.querySelectorAll('#hostPlayerOptionGrid button').forEach(b => b.disabled = true);
   const selectedEl = document.getElementById('hostOpt' + idx);
   if (selectedEl) {
     selectedEl.style.borderColor = '#7c3aed';
@@ -1212,11 +1302,8 @@ async function submitHostAnswer(idx) {
     selectedEl.style.color = '#5b21b6';
   }
 
-  const statusEl = document.getElementById('hostAnswerStatus');
-  if (statusEl) {
-    statusEl.style.color = '#a78bfa';
-    statusEl.textContent = 'Locked in — waiting for reveal…';
-  }
+  const statusEl = document.getElementById('hostPlayerStatus');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = '#a78bfa'; statusEl.textContent = 'Locked in — waiting for others…'; }
 
   const scoreEl = document.getElementById('hostScoreDisplay');
   if (scoreEl) scoreEl.textContent = state.hostScore + ' pts';
@@ -1226,9 +1313,9 @@ async function submitHostAnswer(idx) {
       score: state.hostScore,
       answers: state.hostAnswers,
     }).eq('id', state.hostPlayer.id);
-  } catch(e) {
-    console.warn('Failed to save host answer:', e);
-  }
+  } catch(e) { console.warn('Failed to save host answer:', e); }
+
+  setTimeout(() => revealAnswerAsPlayer(false), 600);
 }
 
 function revealAnswer() {
@@ -1275,35 +1362,47 @@ function revealAnswer() {
     }
   }
 
-  // Reveal correct/wrong on host answer panel
-  if (state.hostPlayer) {
-    const hq = state.room.questions[qi];
-    document.querySelectorAll('#hostOptionGrid button').forEach((b, i) => {
-      b.disabled = true;
-      if (i === hq.ans) {
-        b.style.background = '#f0fdf4';
-        b.style.borderColor = '#22c55e';
-        b.style.color = '#166534';
-      } else if (i === state.hostAnswer && i !== hq.ans) {
-        b.style.background = '#fef2f2';
-        b.style.borderColor = '#ef4444';
-        b.style.color = '#991b1b';
-      }
-    });
-    const statusEl = document.getElementById('hostAnswerStatus');
-    if (statusEl) {
-      if (!state.hostAnswered) {
-        statusEl.style.color = '#9090b8';
-        statusEl.textContent = `Time's up! Answer was: ${hq.opts[hq.ans]}`;
-      } else if (state.hostAnswer === hq.ans) {
-        statusEl.style.color = '#166534';
-        statusEl.textContent = `Correct! +${state.hostAnswers[state.hostAnswers.length - 1]?.pts || 10} pts`;
-      } else {
-        statusEl.style.color = '#991b1b';
-        statusEl.textContent = `Wrong — answer was: ${hq.opts[hq.ans]}`;
-      }
+}
+
+function revealAnswerAsPlayer(timedOut) {
+  stopClip();
+  const qi = state.room.current_question_index;
+  const q = state.room.questions[qi];
+  const totalQ = state.room.questions.length;
+  const isLast = qi + 1 >= totalQ;
+
+  document.querySelectorAll('#hostPlayerOptionGrid button').forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.ans) {
+      b.style.borderColor = '#22c55e';
+      b.style.background = '#f0fdf4';
+      b.style.color = '#166534';
+    } else if (i === state.hostAnswer && i !== q.ans) {
+      b.style.borderColor = '#ef4444';
+      b.style.background = '#fef2f2';
+      b.style.color = '#991b1b';
+    }
+  });
+
+  const statusEl = document.getElementById('hostPlayerStatus');
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    if (timedOut && !state.hostAnswered) {
+      statusEl.style.color = '#9090b8';
+      statusEl.textContent = `Time's up! Answer: ${q.opts[q.ans]}`;
+    } else if (state.hostAnswer === q.ans) {
+      const pts = state.hostAnswers[state.hostAnswers.length - 1]?.pts || 10;
+      statusEl.style.color = '#166534';
+      statusEl.textContent = `Correct! +${pts} pts`;
+    } else {
+      statusEl.style.color = '#991b1b';
+      statusEl.textContent = `Wrong — answer was: ${q.opts[q.ans]}`;
     }
   }
+
+  state.autoAdvanceTimeout = setTimeout(() => {
+    advanceQuestion();
+  }, 3000);
 }
 
 async function advanceQuestion() {
@@ -1391,6 +1490,38 @@ function showRoundLeaderboard(completedRound) {
   }).join('');
 
   document.body.classList.remove('tv-mode');
+
+  if (state.hostPlayer) {
+    sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false })
+      .then(({ data: allPlayers }) => {
+        const sorted = allPlayers || [];
+        const myRank = sorted.findIndex(p => p.id === state.hostPlayer?.id) + 1;
+        const lbRows = sorted.map((p, i) => {
+          const [bg, fg] = avatarColor(i);
+          const isMe = p.id === state.hostPlayer?.id;
+          return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#f5f3ff;' : ''}margin-bottom:4px;">
+            <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
+            <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+            <div style="flex:1;font-size:14px;color:${isMe ? '#6d28d9' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
+            <div style="font-size:14px;color:#a78bfa;font-weight:600;">${p.score}</div>
+          </div>`;
+        }).join('');
+        setHTML(`
+          <div class="fade-in">
+            <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
+              <div style="font-size:11px;color:#7c3aed;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
+              <div style="font-size:22px;font-weight:500;color:#1a1a2e;">Leaderboard</div>
+              ${myRank > 0 ? `<div style="font-size:13px;color:#9090b8;margin-top:4px;">You're #${myRank}</div>` : ''}
+            </div>
+            <div class="card" style="margin-bottom:20px;">${lbRows}</div>
+            <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
+              Start round ${nextRound} — ${nextRoundCat} →
+            </button>
+          </div>
+        `);
+      });
+    return;
+  }
 
   setHTML(`
     <div class="fade-in">
