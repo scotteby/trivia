@@ -1173,6 +1173,8 @@ function startIngameTimer(duration, isMusic = false) {
       if (badge) badge.style.display = '';
       const grid = document.getElementById('optionGrid');
       if (grid) grid.style.visibility = 'visible';
+      const playerGrid = document.getElementById('hostPlayerOptionGrid');
+      if (playerGrid) { playerGrid.style.visibility = 'visible'; playerGrid.style.pointerEvents = 'auto'; }
       const clipStatus = document.getElementById('clipStatus');
       if (clipStatus) clipStatus.textContent = '';
       if (badge) {
@@ -1237,57 +1239,7 @@ function showIngameAsPlayer() {
   `);
 
   if (isMusic) playClip(q.preview_url);
-  startIngameTimerAsPlayer(timerDuration, isMusic);
-}
-
-function startIngameTimerAsPlayer(duration, isMusic = false) {
-  clearInterval(state.timerInterval);
-  const startTime = new Date(state.room.question_start_time).getTime();
-  let optionsRevealed = isMusic;
-
-  state.timerInterval = setInterval(() => {
-    const elapsed = (Date.now() - startTime) / 1000;
-    const clipPhase = isMusic && elapsed < CLIP_DURATION;
-    const revealPhase = !isMusic && elapsed < QUESTION_REVEAL_SECS;
-    const badge = document.getElementById('timerBadge');
-
-    if (clipPhase) {
-      if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
-      return;
-    }
-
-    if (revealPhase) {
-      if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
-      return;
-    }
-
-    if (!optionsRevealed) {
-      optionsRevealed = true;
-      console.log('[host-player] Revealing option grid');
-      const grid = document.getElementById('hostPlayerOptionGrid');
-      if (grid) {
-        grid.style.visibility = 'visible';
-        grid.style.pointerEvents = 'auto';
-        grid.style.animation = 'fadeUp .3s ease forwards';
-      }
-    }
-
-    const countdownElapsed = isMusic
-      ? Math.max(0, elapsed - CLIP_DURATION)
-      : Math.max(0, elapsed - QUESTION_REVEAL_SECS);
-    const left = Math.max(0, duration - countdownElapsed);
-
-    if (badge) {
-      badge.style.display = '';
-      badge.textContent = Math.ceil(left) + 's';
-      badge.className = 'timer-badge ' + (left > 8 ? 'timer-ok' : left > 4 ? 'timer-warn' : 'timer-danger');
-    }
-
-    if (left <= 0) {
-      clearInterval(state.timerInterval);
-      if (!state.hostAnswered) revealAnswerAsPlayer(true);
-    }
-  }, 100);
+  startIngameTimer(timerDuration, isMusic);
 }
 
 async function submitHostAnswer(idx) {
@@ -1368,6 +1320,8 @@ function revealAnswer() {
   if (rsEl) rsEl.textContent = `${correctCount} of ${state.players.length} correct`;
 
   flashLeaderboardResults(qi);
+
+  if (state.hostPlayer) revealAnswerAsPlayer(false);
 
   const advanceBtn = document.getElementById('advanceBtn');
   if (advanceBtn) {
