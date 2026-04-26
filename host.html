@@ -1335,6 +1335,10 @@ function revealAnswer() {
     revealAnswerAsPlayer(false);
     const hprsEl = document.getElementById('hostPlayerResponseStatus');
     if (hprsEl) hprsEl.textContent = `${correctCount} of ${state.players.length} correct`;
+    state.autoAdvanceTimeout = setTimeout(() => {
+      advanceQuestion();
+    }, 3000);
+    return;
   }
 
   const advanceBtn = document.getElementById('advanceBtn');
