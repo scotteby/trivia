@@ -207,20 +207,30 @@ function showLobby() {
   startLobbyPoll();
 }
 
+async function fetchFullRoom() {
+  const { data } = await sb.from('game_rooms')
+    .select('*')
+    .eq('id', state.room.id)
+    .maybeSingle();
+  if (data) state.room = data;
+  return data;
+}
+
 function startLobbyPoll() {
   clearInterval(state.lobbyPollInterval);
   state.lobbyPollInterval = setInterval(async () => {
     if (state.view !== 'lobby') { clearInterval(state.lobbyPollInterval); return; }
     try {
       const { data } = await sb.from('game_rooms')
-        .select('status,current_question_index,question_start_time,questions,config')
+        .select('status')
         .eq('id', state.room.id).maybeSingle();
       if (!data || data.status !== 'active') return;
       clearInterval(state.lobbyPollInterval);
-      state.room = { ...state.room, ...data };
-      state.hasAnswered = false;
-      state.selectedAnswer = null;
-      showIngame();
+      fetchFullRoom().then(() => {
+        state.hasAnswered = false;
+        state.selectedAnswer = null;
+        showIngame();
+      });
     } catch(e) {}
   }, 2000);
 }
@@ -280,7 +290,7 @@ function subscribeAsPlayer() {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
-          showIngame();
+          fetchFullRoom().then(() => showIngame());
         } else if (updated.current_question_index !== prev.current_question_index) {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
@@ -289,9 +299,9 @@ function subscribeAsPlayer() {
           const crossedRound = newIdx > 0 && newIdx % 5 === 0;
           if (crossedRound) {
             const completedRound = Math.floor(newIdx / 5);
-            showRoundLeaderboard(completedRound, showIngame);
+            fetchFullRoom().then(() => showRoundLeaderboard(completedRound, showIngame));
           } else {
-            showIngame();
+            fetchFullRoom().then(() => showIngame());
           }
         }
       }
