@@ -50,6 +50,14 @@ input:focus { border-color: #7c3aed !important; }
 <div id="app"><div id="root"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+window.onerror = function(msg, src, line, col, err) {
+  document.body.innerHTML = `<div style="padding:20px;font-family:monospace;font-size:13px;color:#991b1b;background:#fef2f2;min-height:100vh;">
+    <strong>Error:</strong><br>${msg}<br><br>
+    <strong>Line:</strong> ${line}<br>
+    <strong>Source:</strong> ${src}<br><br>
+    ${err?.stack || ''}
+  </div>`;
+};
 const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
