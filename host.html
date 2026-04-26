@@ -253,13 +253,43 @@ function getTimeLeft() {
 function toggleTvMode() {
   state.tvMode = !state.tvMode;
   localStorage.setItem('trivia-tv-mode', state.tvMode);
+
   if (state.tvMode) {
     document.body.classList.add('tv-mode');
   } else {
     document.body.classList.remove('tv-mode');
   }
+
+  // Only patch the UI elements that change — do NOT call showIngame()
+  // which would restart the timer and cause double-advancing
   if (state.view === 'ingame' || state.view === 'reveal') {
-    showIngame();
+    const topBar = document.querySelector('.fade-in > div:first-child');
+    if (topBar) {
+      const exitBtn = topBar.querySelector('button:first-child');
+      if (exitBtn) {
+        if (state.tvMode) {
+          exitBtn.textContent = '← Exit TV mode';
+          exitBtn.style.cssText = 'background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:11px;color:#555;cursor:pointer;';
+          exitBtn.onclick = () => toggleTvMode();
+        } else {
+          exitBtn.textContent = '✕ New game';
+          exitBtn.style.cssText = 'background:transparent;border:1.5px solid #d0d0e8;border-radius:8px;padding:6px 12px;font-size:12px;color:#6b6b9a;cursor:pointer;';
+          exitBtn.onclick = () => newGame();
+        }
+      }
+    }
+
+    const tvBannerEl = document.getElementById('tv-banner');
+    if (tvBannerEl) tvBannerEl.style.display = state.tvMode ? 'none' : 'flex';
+
+    const tvHintEl = document.getElementById('tv-hint');
+    if (tvHintEl) tvHintEl.style.display = state.tvMode ? 'block' : 'none';
+
+    const questionEl = document.querySelector('.ingame-question');
+    if (questionEl) questionEl.style.fontSize = state.tvMode ? '22px' : '18px';
+    document.querySelectorAll('.option-btn-host').forEach(el => {
+      el.style.fontSize = state.tvMode ? '18px' : '15px';
+    });
   }
 }
 
@@ -908,8 +938,8 @@ function showIngame() {
       <div class="clip-status" style="font-size:12px;color:#7c3aed;" id="clipStatus">Playing 10s clip…</div>
     </div>` : '';
 
-  const tvBanner = !state.tvMode ? `
-    <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+  const tvBanner = `
+    <div id="tv-banner" style="display:${state.tvMode ? 'none' : 'flex'};background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div>
         <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Connected to a TV?</div>
         <div style="font-size:12px;color:#9090b8;margin-top:2px;">Switch to full-screen dark mode for casting</div>
@@ -917,13 +947,13 @@ function showIngame() {
       <button onclick="toggleTvMode()" style="display:inline-flex;align-items:center;gap:7px;background:#1a1a2e;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;color:#a78bfa;cursor:pointer;">
         📺 TV mode
       </button>
-    </div>` : '';
+    </div>`;
 
   const exitTvBtn = state.tvMode ? `
     <button onclick="toggleTvMode()" style="background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:11px;color:#555;cursor:pointer;">← Exit TV mode</button>` : `
     <button onclick="newGame()" style="background:transparent;border:1.5px solid #d0d0e8;border-radius:8px;padding:6px 12px;font-size:12px;color:#6b6b9a;cursor:pointer;">✕ New game</button>`;
 
-  const tvHint = state.tvMode ? `<div style="font-size:11px;color:#555;text-align:center;margin-bottom:10px;">Press F11 for fullscreen · best for TV casting</div>` : '';
+  const tvHint = `<div id="tv-hint" style="display:${state.tvMode ? 'block' : 'none'};font-size:11px;color:#555;text-align:center;margin-bottom:10px;">Press F11 for fullscreen · best for TV casting</div>`;
 
   setHTML(`
     <div class="fade-in">
