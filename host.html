@@ -903,7 +903,7 @@ async function startGame() {
 }
 
 const CLIP_DURATION = 10;
-const QUESTION_REVEAL_SECS = 5;
+const QUESTION_REVEAL_SECS = 3;
 const ROUND_LEADERBOARD_SECS = 5;
 
 function waveformHTML(color = '#7c3aed') {
@@ -1129,6 +1129,8 @@ function revealAnswer() {
   const rsEl = document.getElementById('responseStatus');
   if (rsEl) rsEl.textContent = `${correctCount} of ${state.players.length} correct`;
 
+  flashLeaderboardResults(qi);
+
   const btnArea = document.querySelector('.ingame-layout > div > div:last-child');
   if (btnArea) {
     const btn = btnArea.querySelector('button');
@@ -1188,6 +1190,35 @@ async function advanceQuestion() {
   }
 }
 
+function flashLeaderboardResults(qi) {
+  const sorted = [...state.players].sort((a, b) => b.score - a.score);
+  const top5 = sorted.slice(0, 5);
+  const lbEl = document.getElementById('leaderboard');
+  if (!lbEl) return;
+
+  lbEl.innerHTML = top5.map((p, i) => {
+    const [bg, fg] = avatarColor(state.players.indexOf(p));
+    const answer = p.answers?.find(a => a.question_index === qi);
+    const gotIt = answer?.correct === true;
+    const answered = answer !== undefined && answer.answer_index !== undefined;
+    const flashBg = !answered ? '' : gotIt ? '#f0fdf4' : '#fef2f2';
+    const flashBorder = !answered ? 'transparent' : gotIt ? '#22c55e' : '#ef4444';
+    const scoreColor = !answered ? '#9090b8' : gotIt ? '#16a34a' : '#ef4444';
+    const indicator = !answered ? '' : gotIt ? ' ✓' : ' ✗';
+    return `
+      <div class="lb-row${i === 0 ? ' lb-row-first' : ''}" style="background:${flashBg};border:1px solid ${flashBorder};border-radius:8px;transition:background .3s;">
+        <div style="font-size:13px;color:#9090b8;width:16px;">${i + 1}</div>
+        <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+        <div style="flex:1;font-size:13px;color:#1a1a2e;">${p.name}</div>
+        <div style="font-size:13px;font-weight:600;color:${scoreColor};">${p.score}${indicator}</div>
+      </div>`;
+  }).join('');
+
+  setTimeout(() => {
+    renderIngameSidebar();
+  }, 2500);
+}
+
 function showRoundLeaderboard(completedRound) {
   clearInterval(state.timerInterval);
   clearInterval(state.autoAdvanceTimeout);
@@ -1195,6 +1226,8 @@ function showRoundLeaderboard(completedRound) {
   state.view = 'roundleaderboard';
 
   const nextRound = completedRound + 1;
+  const nextRoundFirstQIdx = completedRound * 5;
+  const nextRoundCat = state.room.questions?.[nextRoundFirstQIdx]?.cat || `Round ${nextRound}`;
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
 
   const lbRows = sorted.map((p, i) => {
@@ -1225,7 +1258,7 @@ function showRoundLeaderboard(completedRound) {
       </div>
 
       <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
-        Start round ${nextRound} →
+        Start round ${nextRound} — ${nextRoundCat} →
       </button>
       <div style="font-size:12px;color:#9090b8;text-align:center;margin-top:8px;">Players are waiting on the leaderboard screen</div>
     </div>
