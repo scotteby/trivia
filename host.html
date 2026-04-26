@@ -1057,7 +1057,7 @@ function showIngame() {
             <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
-              <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : ''}</span>
+              <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;${!isMusic ? 'visibility:hidden;' : ''}" id="optionGrid">
@@ -1168,9 +1168,9 @@ function startIngameTimer(duration, isMusic = false) {
     if (clipPhase) {
       if (badge) { badge.textContent = '♫'; badge.className = 'timer-badge timer-ok'; }
     } else if (revealPhase) {
-      const remaining = Math.ceil(QUESTION_REVEAL_SECS - elapsed);
-      if (badge) { badge.textContent = ''; badge.className = 'timer-badge timer-ok'; }
+      if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
     } else {
+      if (badge) badge.style.display = '';
       const grid = document.getElementById('optionGrid');
       if (grid) grid.style.visibility = 'visible';
       const clipStatus = document.getElementById('clipStatus');
@@ -1210,7 +1210,7 @@ function showIngameAsPlayer() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
-        <span class="timer-badge timer-ok" id="timerBadge">${isMusic ? '♫' : ''}</span>
+        <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
         <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
@@ -1257,8 +1257,7 @@ function startIngameTimerAsPlayer(duration, isMusic = false) {
     }
 
     if (revealPhase) {
-      const remaining = Math.ceil(QUESTION_REVEAL_SECS - elapsed);
-      if (badge) { badge.textContent = ''; badge.className = 'timer-badge timer-ok'; }
+      if (badge) { badge.textContent = ''; badge.style.display = 'none'; }
       return;
     }
 
@@ -1279,6 +1278,7 @@ function startIngameTimerAsPlayer(duration, isMusic = false) {
     const left = Math.max(0, duration - countdownElapsed);
 
     if (badge) {
+      badge.style.display = '';
       badge.textContent = Math.ceil(left) + 's';
       badge.className = 'timer-badge ' + (left > 8 ? 'timer-ok' : left > 4 ? 'timer-warn' : 'timer-danger');
     }
@@ -1396,15 +1396,13 @@ function revealAnswerAsPlayer(timedOut) {
   stopClip();
   const qi = state.room.current_question_index;
   const q = state.room.questions[qi];
-  const totalQ = state.room.questions.length;
-  const isLast = qi + 1 >= totalQ;
 
   document.querySelectorAll('#hostPlayerOptionGrid button').forEach((b, i) => {
     b.disabled = true;
     if (i === q.ans) {
       b.style.borderColor = '#22c55e';
       b.style.background = '#f0fdf4';
-      b.style.color = '#166534';
+      b.style.color = '#166634';
     } else if (i === state.hostAnswer && i !== q.ans) {
       b.style.borderColor = '#ef4444';
       b.style.background = '#fef2f2';
@@ -1420,17 +1418,14 @@ function revealAnswerAsPlayer(timedOut) {
       statusEl.textContent = `Time's up! Answer: ${q.opts[q.ans]}`;
     } else if (state.hostAnswer === q.ans) {
       const pts = state.hostAnswers[state.hostAnswers.length - 1]?.pts || 10;
-      statusEl.style.color = '#166534';
+      statusEl.style.color = '#166634';
       statusEl.textContent = `Correct! +${pts} pts`;
     } else {
       statusEl.style.color = '#991b1b';
       statusEl.textContent = `Wrong — answer was: ${q.opts[q.ans]}`;
     }
   }
-
-  state.autoAdvanceTimeout = setTimeout(() => {
-    advanceQuestion();
-  }, 3000);
+  // No auto-advance — game flow is controlled by startIngameTimer() and renderIngameSidebar()
 }
 
 async function advanceQuestion() {
