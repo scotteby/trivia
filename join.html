@@ -159,6 +159,7 @@ async function joinGame() {
     localStorage.setItem('trivia_player_id', playerData.id);
     localStorage.setItem('trivia_room_code', code);
     localStorage.setItem('trivia_player_name', name);
+    localStorage.setItem(PLAYER_NAME_KEY, name);
 
     subscribeAsPlayer();
 
@@ -342,6 +343,7 @@ function subscribeAsPlayer() {
 // ─── IN-GAME SCREEN ───────────────────────────────────────────────────────────
 const CLIP_DURATION = 10;
 const QUESTION_REVEAL_SECS = 3;
+const PLAYER_NAME_KEY = 'quizzli-player-name';
 
 function stopClip() {
   clearTimeout(state.clipTimeout);
@@ -632,7 +634,6 @@ async function showPlayerResults() {
   state.view = 'results';
   localStorage.removeItem('trivia_player_id');
   localStorage.removeItem('trivia_room_code');
-  localStorage.removeItem('trivia_player_name');
 
   // Fetch all players with scores
   const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
@@ -753,6 +754,7 @@ async function doRejoinInsert(room, name, code) {
   localStorage.setItem('trivia_player_id', playerData.id);
   localStorage.setItem('trivia_room_code', code);
   localStorage.setItem('trivia_player_name', name);
+  localStorage.setItem(PLAYER_NAME_KEY, name);
 
   subscribeAsPlayer();
   if (room.status === 'active') showIngame();
@@ -828,7 +830,8 @@ async function init() {
     }
   }
 
-  showJoin(urlCode.toUpperCase());
+  const savedName = localStorage.getItem(PLAYER_NAME_KEY) || '';
+  showJoin(urlCode.toUpperCase(), savedName);
 }
 
 init();
