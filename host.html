@@ -173,6 +173,11 @@ let state = {
   customCats: [],
   playedSongs: [],
   tvMode: false,
+  hostPlayer: null,
+  hostAnswered: false,
+  hostAnswer: null,
+  hostScore: 0,
+  hostAnswers: [],
 };
 
 const PRESETS = {
@@ -829,6 +834,21 @@ function showLobby() {
         <div id="playerList" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
       </div>
 
+      <div class="card" style="margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:500;color:#1a1a2e;margin-bottom:4px;">Play along as host?</div>
+        <div style="font-size:11px;color:#9090b8;margin-bottom:10px;">Enter your name to join as a player on this device</div>
+        <div style="display:flex;gap:8px;">
+          <input id="hostNameInput" type="text" maxlength="20" placeholder="Your name…"
+            style="flex:1;background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;padding:9px 12px;font-size:14px;color:#1a1a2e;outline:none;"
+            onkeydown="if(event.key==='Enter')joinAsHost()" />
+          <button onclick="joinAsHost()"
+            style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;cursor:pointer;white-space:nowrap;">
+            Join
+          </button>
+        </div>
+        <div id="hostJoinStatus" style="font-size:12px;color:#7c3aed;margin-top:8px;min-height:18px;"></div>
+      </div>
+
       <button class="btn-primary" id="startBtn" style="font-size:16px;padding:14px;" onclick="startGame()" disabled>
         Start game (waiting for players…)
       </button>
@@ -836,6 +856,37 @@ function showLobby() {
     </div>
   `);
   renderLobbyPlayers();
+}
+
+async function joinAsHost() {
+  const name = document.getElementById('hostNameInput')?.value.trim();
+  if (!name) return;
+  const statusEl = document.getElementById('hostJoinStatus');
+
+  try {
+    const { data: playerData, error } = await sb.from('players').insert({
+      room_id: state.room.id,
+      name,
+      score: 0,
+      answers: [],
+    }).select().single();
+
+    if (error || !playerData) throw new Error('Failed to join');
+
+    state.hostPlayer = playerData;
+    state.hostScore = 0;
+    state.hostAnswers = [];
+
+    if (statusEl) statusEl.textContent = `✓ Joined as "${name}" — you'll answer questions on this screen`;
+
+    const input = document.getElementById('hostNameInput');
+    const btn = input?.nextElementSibling;
+    if (input) input.disabled = true;
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+
+  } catch(e) {
+    if (statusEl) statusEl.textContent = 'Failed to join — try again';
+  }
 }
 
 function renderLobbyPlayers() {
@@ -922,6 +973,8 @@ function showIngame() {
 
   state.view = 'ingame';
   state.revealed = false;
+  state.hostAnswered = false;
+  state.hostAnswer = null;
   const room = state.room;
   const qi = room.current_question_index;
   const q = room.questions[qi];
@@ -985,10 +1038,7 @@ function showIngame() {
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div class="ingame-sidebar-label" style="font-size:12px;" id="responseStatus">Waiting for answers...</div>
-            ${state.revealed
-              ? `<button class="btn-outline" onclick="advanceQuestion()" style="padding:8px 18px;">${qi + 1 < totalQ ? 'Next question →' : 'Show results →'}</button>`
-              : `<button class="btn-outline" onclick="revealAnswer()" style="padding:8px 18px;">Reveal answer</button>`
-            }
+            <div id="advanceBtn"></div>
           </div>
         </div>
 
@@ -1004,6 +1054,23 @@ function showIngame() {
           </div>
         </div>
       </div>
+
+      ${state.hostPlayer ? `
+      <div id="hostAnswerPanel" style="margin-top:20px;border-top:2px dashed #e4e4f0;padding-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;">Your answer — ${state.hostPlayer.name}</div>
+          <div style="font-size:13px;color:#a78bfa;font-weight:500;" id="hostScoreDisplay">${state.hostScore} pts</div>
+        </div>
+        <div style="font-size:11px;color:#9090b8;margin-bottom:10px;font-style:italic;">No peeking before you answer! 👀</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="hostOptionGrid">
+          ${q.opts.map((o, i) => `
+            <button id="hostOpt${i}" onclick="submitHostAnswer(${i})"
+              style="background:#ffffff;border:1.5px solid #e4e4f0;border-radius:10px;padding:12px 14px;font-size:14px;color:#2a2a4a;text-align:left;cursor:pointer;transition:all .15s;">
+              ${String.fromCharCode(65+i)} &nbsp; ${o}
+            </button>`).join('')}
+        </div>
+        <div id="hostAnswerStatus" style="margin-top:8px;font-size:13px;color:#9090b8;text-align:center;min-height:20px;"></div>
+      </div>` : ''}
     </div>
   `);
 
@@ -1108,6 +1175,62 @@ function startIngameTimer(duration, isMusic = false) {
   }, 250);
 }
 
+async function submitHostAnswer(idx) {
+  if (state.hostAnswered || !state.hostPlayer) return;
+  const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
+  const isMusic = !!(state.room.questions[state.room.current_question_index]?.preview_url);
+  if (!isMusic && elapsed < QUESTION_REVEAL_SECS) return;
+
+  state.hostAnswered = true;
+  state.hostAnswer = idx;
+
+  const qi = state.room.current_question_index;
+  const q = state.room.questions[qi];
+  const timerDuration = state.room.config?.timer || 15;
+  const startTime = new Date(state.room.question_start_time).getTime();
+  const totalElapsed = (Date.now() - startTime) / 1000;
+  const countElapsed = isMusic
+    ? Math.max(0, totalElapsed - CLIP_DURATION)
+    : Math.max(0, totalElapsed - QUESTION_REVEAL_SECS);
+  const correct = idx === q.ans;
+
+  let pts = 0;
+  if (correct) {
+    const bonus = Math.round(5 * Math.max(0, (timerDuration - countElapsed) / timerDuration));
+    pts = 10 + bonus;
+    state.hostScore += pts;
+  }
+
+  const answerEntry = { question_index: qi, answer_index: idx, correct, pts, time_taken: countElapsed };
+  state.hostAnswers = [...state.hostAnswers, answerEntry];
+
+  document.querySelectorAll('#hostOptionGrid button').forEach(b => b.disabled = true);
+  const selectedEl = document.getElementById('hostOpt' + idx);
+  if (selectedEl) {
+    selectedEl.style.borderColor = '#7c3aed';
+    selectedEl.style.background = '#f5f3ff';
+    selectedEl.style.color = '#5b21b6';
+  }
+
+  const statusEl = document.getElementById('hostAnswerStatus');
+  if (statusEl) {
+    statusEl.style.color = '#a78bfa';
+    statusEl.textContent = 'Locked in — waiting for reveal…';
+  }
+
+  const scoreEl = document.getElementById('hostScoreDisplay');
+  if (scoreEl) scoreEl.textContent = state.hostScore + ' pts';
+
+  try {
+    await sb.from('players').update({
+      score: state.hostScore,
+      answers: state.hostAnswers,
+    }).eq('id', state.hostPlayer.id);
+  } catch(e) {
+    console.warn('Failed to save host answer:', e);
+  }
+}
+
 function revealAnswer() {
   if (state.revealed) return;
   clearInterval(state.timerInterval);
@@ -1131,26 +1254,53 @@ function revealAnswer() {
 
   flashLeaderboardResults(qi);
 
-  const btnArea = document.querySelector('.ingame-layout > div > div:last-child');
-  if (btnArea) {
-    const btn = btnArea.querySelector('button');
-    if (btn) {
-      btn.onclick = () => { clearTimeout(state.autoAdvanceTimeout); advanceQuestion(); };
-      if (state.autoAdvance) {
-        let secs = 3;
-        const label = isLast ? 'Show results' : 'Next question';
-        btn.textContent = `${label} (${secs}s)`;
-        state.autoAdvanceTimeout = setInterval(() => {
-          secs--;
-          if (secs <= 0) {
-            clearInterval(state.autoAdvanceTimeout);
-            advanceQuestion();
-          } else {
-            btn.textContent = `${label} (${secs}s)`;
-          }
-        }, 1000);
+  const advanceBtn = document.getElementById('advanceBtn');
+  if (advanceBtn) {
+    const label = isLast ? 'Show results' : 'Next question';
+    if (state.autoAdvance) {
+      let secs = 3;
+      advanceBtn.innerHTML = `<button class="btn-outline" onclick="clearInterval(state.autoAdvanceTimeout);advanceQuestion()" style="padding:8px 18px;">${label} (${secs}s)</button>`;
+      state.autoAdvanceTimeout = setInterval(() => {
+        secs--;
+        if (secs <= 0) {
+          clearInterval(state.autoAdvanceTimeout);
+          advanceQuestion();
+        } else {
+          const btn = advanceBtn.querySelector('button');
+          if (btn) btn.textContent = `${label} (${secs}s)`;
+        }
+      }, 1000);
+    } else {
+      advanceBtn.innerHTML = `<button class="btn-outline" onclick="advanceQuestion()" style="padding:8px 18px;">${label} →</button>`;
+    }
+  }
+
+  // Reveal correct/wrong on host answer panel
+  if (state.hostPlayer) {
+    const hq = state.room.questions[qi];
+    document.querySelectorAll('#hostOptionGrid button').forEach((b, i) => {
+      b.disabled = true;
+      if (i === hq.ans) {
+        b.style.background = '#f0fdf4';
+        b.style.borderColor = '#22c55e';
+        b.style.color = '#166534';
+      } else if (i === state.hostAnswer && i !== hq.ans) {
+        b.style.background = '#fef2f2';
+        b.style.borderColor = '#ef4444';
+        b.style.color = '#991b1b';
+      }
+    });
+    const statusEl = document.getElementById('hostAnswerStatus');
+    if (statusEl) {
+      if (!state.hostAnswered) {
+        statusEl.style.color = '#9090b8';
+        statusEl.textContent = `Time's up! Answer was: ${hq.opts[hq.ans]}`;
+      } else if (state.hostAnswer === hq.ans) {
+        statusEl.style.color = '#166534';
+        statusEl.textContent = `Correct! +${state.hostAnswers[state.hostAnswers.length - 1]?.pts || 10} pts`;
       } else {
-        btn.textContent = isLast ? 'Show results →' : 'Next question →';
+        statusEl.style.color = '#991b1b';
+        statusEl.textContent = `Wrong — answer was: ${hq.opts[hq.ans]}`;
       }
     }
   }
@@ -1387,6 +1537,11 @@ async function playAgain() {
   state.room = { ...state.room, ...patch };
   state.players = [];
   state.revealed = false;
+  state.hostPlayer = null;
+  state.hostAnswered = false;
+  state.hostAnswer = null;
+  state.hostScore = 0;
+  state.hostAnswers = [];
 
   subscribeToRoom();
   showLobby();
@@ -1407,6 +1562,11 @@ async function newGame() {
   state.autoAdvanceTimeout = null;
   state.subscription = null;
   state.playedSongs = [];
+  state.hostPlayer = null;
+  state.hostAnswered = false;
+  state.hostAnswer = null;
+  state.hostScore = 0;
+  state.hostAnswers = [];
   document.body.classList.remove('tv-mode');
   showSetup();
 }
