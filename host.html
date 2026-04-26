@@ -1149,6 +1149,13 @@ function renderIngameSidebar() {
   const allAnswered = answered === total && total > 0;
   if (rsEl) rsEl.textContent = allAnswered ? 'All players answered!' : `${answered} of ${total} answered`;
   if (allAnswered && !state.revealed) revealAnswer();
+
+  const hprsEl = document.getElementById('hostPlayerResponseStatus');
+  if (hprsEl) {
+    hprsEl.textContent = allAnswered
+      ? 'All players answered!'
+      : `${answered} of ${total} answered`;
+  }
 }
 
 function startIngameTimer(duration, isMusic = false) {
@@ -1212,7 +1219,6 @@ function showIngameAsPlayer() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
-        <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
         <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
@@ -1235,6 +1241,11 @@ function showIngameAsPlayer() {
       </div>
 
       <div id="hostPlayerStatus" style="background:#f5f5fa;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
+
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e4e4f0;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;color:#9090b8;" id="hostPlayerResponseStatus">Waiting for answers…</div>
+        <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
+      </div>
     </div>
   `);
 
@@ -1320,7 +1331,11 @@ function revealAnswer() {
 
   flashLeaderboardResults(qi);
 
-  if (state.hostPlayer) revealAnswerAsPlayer(false);
+  if (state.hostPlayer) {
+    revealAnswerAsPlayer(false);
+    const hprsEl = document.getElementById('hostPlayerResponseStatus');
+    if (hprsEl) hprsEl.textContent = `${correctCount} of ${state.players.length} correct`;
+  }
 
   const advanceBtn = document.getElementById('advanceBtn');
   if (advanceBtn) {
