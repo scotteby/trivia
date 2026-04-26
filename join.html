@@ -433,6 +433,21 @@ function showIngame() {
 
   if (isMusic) playClip(q.preview_url);
   startPlayerTimer(timerDuration, isMusic);
+
+  // If player already answered this question (e.g. after a reload), restore their answer state
+  if (state.hasAnswered && state.selectedAnswer !== null) {
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    const grid = document.getElementById('optionGrid');
+    if (grid) grid.style.visibility = 'visible';
+    const selectedEl = document.getElementById('opt' + state.selectedAnswer);
+    if (selectedEl) selectedEl.classList.add('selected');
+    const statusEl = document.getElementById('statusMsg');
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#a78bfa';
+      statusEl.textContent = 'Locked in — waiting for others…';
+    }
+  }
 }
 
 
@@ -812,11 +827,21 @@ async function init() {
           state.room = room;
           state.localScore = player.score || 0;
           state.answers = player.answers || [];
+
+          // Restore answered state for the current question
+          const currentQIdx = room.current_question_index;
+          const alreadyAnswered = player.answers?.some(a => a.question_index === currentQIdx);
+          if (alreadyAnswered) {
+            state.hasAnswered = true;
+            const prevAnswer = player.answers.find(a => a.question_index === currentQIdx);
+            state.selectedAnswer = prevAnswer?.answer_index ?? null;
+          }
+
           subscribeAsPlayer();
           if (room.status === 'active') {
             setHTML(`<div style="text-align:center;padding:80px 20px;">
-              <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
-              <div style="font-size:13px;color:#9090b8;">Loading questions</div>
+              <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Rejoining game…</div>
+              <div style="font-size:13px;color:#9090b8;">Loading your session</div>
             </div>`);
             await fetchFullRoom();
             showIngame();
@@ -825,6 +850,10 @@ async function init() {
           }
           return;
         }
+      } else {
+        // Player record gone — host may have removed them; clear stale session
+        localStorage.removeItem('trivia_player_id');
+        localStorage.removeItem('trivia_room_code');
       }
     } catch(e) {
       // Fall through to normal join screen
