@@ -567,6 +567,9 @@ async function showPlayerResults() {
   clearInterval(state.timerInterval);
   if (state.subscription) state.subscription.unsubscribe();
   state.view = 'results';
+  localStorage.removeItem('trivia_player_id');
+  localStorage.removeItem('trivia_room_code');
+  localStorage.removeItem('trivia_player_name');
 
   // Fetch all players with scores
   const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
@@ -719,8 +722,49 @@ function shareRoom() {
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
-const urlCode = new URLSearchParams(window.location.search).get('code') || '';
-showJoin(urlCode.toUpperCase());
+async function init() {
+  const urlCode = new URLSearchParams(window.location.search).get('code') || '';
+  const savedPlayerId = localStorage.getItem('trivia_player_id');
+  const savedRoomCode = localStorage.getItem('trivia_room_code');
+  const savedName = localStorage.getItem('trivia_player_name');
+
+  if (savedPlayerId && savedRoomCode && !urlCode) {
+    try {
+      const { data: player } = await sb.from('players')
+        .select('*')
+        .eq('id', savedPlayerId)
+        .maybeSingle();
+
+      if (player) {
+        const { data: room } = await sb.from('game_rooms')
+          .select('*')
+          .eq('room_code', savedRoomCode)
+          .maybeSingle();
+
+        if (room && room.status !== 'finished') {
+          state.player = player;
+          state.room = room;
+          state.localScore = player.score || 0;
+          state.answers = player.answers || [];
+          subscribeAsPlayer();
+          if (room.status === 'active') {
+            await fetchFullRoom();
+            showIngame();
+          } else {
+            showLobby();
+          }
+          return;
+        }
+      }
+    } catch(e) {
+      // Fall through to normal join screen
+    }
+  }
+
+  showJoin(urlCode.toUpperCase());
+}
+
+init();
 </script>
 </body>
 </html>

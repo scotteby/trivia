@@ -814,12 +814,31 @@ function renderLobbyPlayers() {
   if (el) el.textContent = count;
   if (list) {
     list.innerHTML = state.players.map((p, i) =>
-      `<div class="player-chip">${avatarHTML(p.name, i, 26)}<div style="font-size:13px;color:#1a1a2e;">${p.name}</div></div>`
+      `<div class="player-chip" style="justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${avatarHTML(p.name, i, 26)}
+          <div style="font-size:13px;color:#1a1a2e;">${p.name}</div>
+        </div>
+        <button onclick="removePlayer('${p.id}')"
+          style="background:none;border:none;color:#d0d0e8;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:color .15s;"
+          onmouseover="this.style.color='#ef4444'"
+          onmouseout="this.style.color='#d0d0e8'">✕</button>
+      </div>`
     ).join('');
   }
   if (btn) {
     btn.disabled = count < 1;
     btn.textContent = count >= 1 ? `Start game (${count} player${count>1?'s':''})` : 'Start game (waiting for players…)';
+  }
+}
+
+async function removePlayer(playerId) {
+  try {
+    await sb.from('players').delete().eq('id', playerId);
+    state.players = state.players.filter(p => p.id !== playerId);
+    renderLobbyPlayers();
+  } catch(e) {
+    console.warn('Failed to remove player:', e);
   }
 }
 
