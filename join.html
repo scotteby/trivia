@@ -67,6 +67,7 @@ let state = {
   subscription: null,
   timerInterval: null,
   roundLeaderboardTimeout: null,
+  lobbyPollInterval: null,
   hasAnswered: false,
   selectedAnswer: null,
 };
@@ -203,6 +204,25 @@ function showLobby() {
     </style>
   `);
   fetchLobbyPlayers();
+  startLobbyPoll();
+}
+
+function startLobbyPoll() {
+  clearInterval(state.lobbyPollInterval);
+  state.lobbyPollInterval = setInterval(async () => {
+    if (state.view !== 'lobby') { clearInterval(state.lobbyPollInterval); return; }
+    try {
+      const { data } = await sb.from('game_rooms')
+        .select('status,current_question_index,question_start_time,questions,config')
+        .eq('id', state.room.id).maybeSingle();
+      if (!data || data.status !== 'active') return;
+      clearInterval(state.lobbyPollInterval);
+      state.room = { ...state.room, ...data };
+      state.hasAnswered = false;
+      state.selectedAnswer = null;
+      showIngame();
+    } catch(e) {}
+  }, 2000);
 }
 
 async function fetchLobbyPlayers() {
@@ -256,6 +276,7 @@ function subscribeAsPlayer() {
       if (updated.status === 'active') {
         if (prev.status === 'lobby' || prev.status !== 'active') {
           // Game just started
+          clearInterval(state.lobbyPollInterval);
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
