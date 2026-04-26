@@ -322,17 +322,38 @@ module.exports = async function handler(req, res) {
       const musicCount = questions.filter(q => q.preview_url).length;
       console.log(`[rooms] iTunes enrichment done — ${musicCount} clips found`);
 
-      const insertRes = await sbReq('/game_rooms', 'POST', {
-        room_code: roomCode,
-        status: 'lobby',
-        current_question_index: 0,
-        config: { rounds, timer, preset, difficulty, categories },
-        questions,
-      });
+      const existingRes = await sbReq(`/game_rooms?room_code=eq.${roomCode}&select=id,status`);
+      const existing = Array.isArray(existingRes.data) && existingRes.data.length > 0 ? existingRes.data[0] : null;
 
-      assertSb(insertRes, 'insert game_rooms');
-      console.log(`[rooms] Room created: ${roomCode}`);
-      return res.status(200).json(insertRes.data[0]);
+      let roomRes;
+      if (existing) {
+        await sbReq(`/players?room_id=eq.${existing.id}`, 'DELETE');
+        roomRes = await sbReq(
+          `/game_rooms?id=eq.${existing.id}`,
+          'PATCH',
+          {
+            status: 'lobby',
+            current_question_index: 0,
+            question_start_time: null,
+            config: { rounds, timer, preset, difficulty, categories },
+            questions,
+          }
+        );
+        assertSb(roomRes, 'update game_rooms');
+        console.log(`[rooms] Room reused: ${roomCode}`);
+      } else {
+        roomRes = await sbReq('/game_rooms', 'POST', {
+          room_code: roomCode,
+          status: 'lobby',
+          current_question_index: 0,
+          config: { rounds, timer, preset, difficulty, categories },
+          questions,
+        });
+        assertSb(roomRes, 'insert game_rooms');
+        console.log(`[rooms] Room created: ${roomCode}`);
+      }
+
+      return res.status(200).json(roomRes.data[0]);
 
     } catch (e) {
       console.error('[rooms] Error:', e.message);
