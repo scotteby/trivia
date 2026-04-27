@@ -191,16 +191,20 @@ async function showHome() {
         <button class="btn-primary" style="font-size:13px;padding:12px;" onclick="joinRoom()">Join room</button>
       </div>
 
-      <!-- Leaderboard -->
-      <div style="text-align:center;margin-top:20px;">
-        <div style="font-size:11px;color:#9090b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Today's best score</div>
-        ${todayHS
-          ? `<div style="display:inline-block;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:20px;padding:4px 16px;font-size:13px;color:#9090b8;">Best: <span style="color:#a78bfa;font-weight:500;">${todayHS.score}</span> pts · Set at ${todayHS.setAt}</div>`
-          : `<div style="font-size:12px;color:#9090b8;">No scores yet today</div>`
-        }
+      <!-- Games played counter -->
+      <div style="text-align:center;padding:16px 0 8px;">
+        <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Games played on Quizzli</div>
+        <div style="font-size:28px;font-weight:500;color:#a78bfa;" id="totalGamesCount">—</div>
+        <div style="font-size:11px;color:#9090b8;margin-top:2px;">and counting</div>
       </div>
     </div>
   `);
+
+  sb.from('game_stats').select('count').eq('id', 'total_games').single()
+    .then(({ data }) => {
+      const el = document.getElementById('totalGamesCount');
+      if (el && data) el.textContent = data.count.toLocaleString();
+    });
 }
 
 function joinRoom() {
@@ -433,9 +437,17 @@ async function saveHighScore(finalScore) {
   return false;
 }
 
+async function incrementGamesPlayed() {
+  try {
+    const { data } = await sb.from('game_stats').select('count').eq('id', 'total_games').single();
+    if (data) await sb.from('game_stats').update({ count: (data.count || 0) + 1 }).eq('id', 'total_games');
+  } catch(e) {}
+}
+
 async function showSummary() {
   clearInterval(timerInterval);
   stopClip();
+  incrementGamesPlayed();
   const isNewRecord = await saveHighScore(score);
   const pct = Math.round((score / TOTAL_MAX) * 100);
   const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '⭐' : pct >= 40 ? '👍' : '💡';

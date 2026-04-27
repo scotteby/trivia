@@ -1881,7 +1881,15 @@ async function startNextRound(roundNum) {
 }
 
 // ─── GAME OVER SCREEN ────────────────────────────────────────────────────────
+async function incrementGamesPlayed() {
+  try {
+    const { data } = await sb.from('game_stats').select('count').eq('id', 'total_games').single();
+    if (data) await sb.from('game_stats').update({ count: (data.count || 0) + 1 }).eq('id', 'total_games');
+  } catch(e) {}
+}
+
 function showGameOver() {
+  incrementGamesPlayed();
   clearInterval(state.timerInterval);
   clearInterval(state.autoAdvanceTimeout);
   stopClip();

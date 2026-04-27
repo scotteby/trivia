@@ -896,7 +896,15 @@ function nextQuestion() {
 }
 
 // ─── RESULTS ─────────────────────────────────────────────────────────────────
+async function incrementGamesPlayed() {
+  try {
+    const { data } = await sb.from('game_stats').select('count').eq('id', 'total_games').single();
+    if (data) await sb.from('game_stats').update({ count: (data.count || 0) + 1 }).eq('id', 'total_games');
+  } catch(e) {}
+}
+
 function showResults() {
+  incrementGamesPlayed();
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'results';
