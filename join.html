@@ -331,9 +331,8 @@ function subscribeAsPlayer() {
       }
 
       if (updated.status === 'active' && prev.status !== 'active') {
-        // Status just became active — note it but wait for question_start_time to be set
         clearInterval(state.lobbyPollInterval);
-        return;
+        // Fall through to question_start_time check below
       }
 
       if (state.room?.status === 'active' && updated.question_start_time &&
