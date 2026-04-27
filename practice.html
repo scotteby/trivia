@@ -578,11 +578,18 @@ async function startPractice() {
   state.hasAnswered = false;
   state.totalAnswered = 0;
 
-  showLoading();
+  const hasMusicCat = state.categories.some(c => findCatData(c)?.music) ||
+                      state.customCats.some(c => c.music && state.categories.includes(c.name));
+  const loadingInterval = showLoading(hasMusicCat);
   try {
     await fetchQuestions();
+    clearInterval(loadingInterval);
+    const barEl = document.getElementById('loadingBar');
+    if (barEl) barEl.style.width = '100%';
+    await new Promise(r => setTimeout(r, 400));
     showQuestion();
   } catch(e) {
+    clearInterval(loadingInterval);
     setHTML(`<div style="text-align:center;padding:60px 20px;">
       <div style="color:#ef4444;margin-bottom:16px;">Failed to load questions.<br><span style="font-size:12px;color:#9090b8;">${e.message}</span></div>
       <button class="btn-outline" onclick="showSetup()">← Back</button>
@@ -590,11 +597,92 @@ async function startPractice() {
   }
 }
 
-function showLoading() {
-  setHTML(`<div style="text-align:center;padding:80px 20px;">
-    <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Generating questions…</div>
-    <div style="font-size:12px;color:#9090b8;">Personalised just for you</div>
-  </div>`);
+function showLoading(hasMusicCat) {
+  const step2Label = hasMusicCat ? 'Searching for music clips…' : 'Checking categories…';
+  setHTML(`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:24px;animation:bounce 1.5s ease-in-out infinite;">🧠</div>
+      <div style="font-size:20px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Building your quiz…</div>
+      <div style="font-size:14px;color:#9090b8;margin-bottom:32px;" id="loadingMsg">Generating questions…</div>
+
+      <div style="width:100%;max-width:280px;height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:32px;">
+        <div id="loadingBar" style="height:100%;background:#7c3aed;border-radius:4px;width:0%;transition:width .6s ease;"></div>
+      </div>
+
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:40px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;">
+        <div id="step1" style="display:flex;align-items:center;gap:10px;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:6px;height:6px;border-radius:50%;background:white;"></div>
+          </div>
+          <div style="font-size:13px;color:#6d28d9;">Writing questions</div>
+        </div>
+        <div id="step2" style="display:flex;align-items:center;gap:10px;opacity:0.3;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#e4e4f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#9090b8;"></div>
+          </div>
+          <div style="font-size:13px;color:#9090b8;">${step2Label}</div>
+        </div>
+        <div id="step3" style="display:flex;align-items:center;gap:10px;opacity:0.3;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#e4e4f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#9090b8;"></div>
+          </div>
+          <div style="font-size:13px;color:#9090b8;">Getting ready</div>
+        </div>
+      </div>
+
+      <style>
+        @keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+        @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+      </style>
+    </div>
+  `);
+
+  const messages = [
+    'Generating questions…',
+    'Searching for music clips…',
+    'Checking for duplicates…',
+    'Adding explanations…',
+    'Almost ready…',
+  ];
+  const steps = [
+    document.getElementById('step1'),
+    document.getElementById('step2'),
+    document.getElementById('step3'),
+  ];
+  let msgIdx = 0, progress = 0, stepIdx = 0;
+
+  const loadingInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % messages.length;
+    progress = Math.min(progress + Math.random() * 18 + 10, 88);
+    const msgEl = document.getElementById('loadingMsg');
+    const barEl = document.getElementById('loadingBar');
+    if (msgEl) msgEl.textContent = messages[msgIdx];
+    if (barEl) barEl.style.width = progress + '%';
+
+    if (stepIdx < steps.length - 1 && progress > (stepIdx + 1) * 30) {
+      if (steps[stepIdx]) {
+        steps[stepIdx].style.opacity = '0.5';
+        steps[stepIdx].querySelector('div').style.background = '#ede9fe';
+        steps[stepIdx].querySelector('div div').style.background = '#7c3aed';
+        steps[stepIdx].querySelector('div + div').style.color = '#a78bfa';
+      }
+      stepIdx++;
+      if (steps[stepIdx]) {
+        steps[stepIdx].style.opacity = '1';
+        steps[stepIdx].querySelector('div').style.background = '#7c3aed';
+        steps[stepIdx].querySelector('div div').style.background = 'white';
+        steps[stepIdx].querySelector('div + div').style.color = '#6d28d9';
+      }
+    }
+  }, 2000);
+
+  return loadingInterval;
 }
 
 // ─── QUESTION ────────────────────────────────────────────────────────────────
@@ -885,11 +973,18 @@ async function practiceAgain() {
   state.answers = [];
   state.hasAnswered = false;
   state.totalAnswered = 0;
-  showLoading();
+  const hasMusicCat = state.categories.some(c => findCatData(c)?.music) ||
+                      state.customCats.some(c => c.music && state.categories.includes(c.name));
+  const loadingInterval = showLoading(hasMusicCat);
   try {
     await fetchQuestions();
+    clearInterval(loadingInterval);
+    const barEl = document.getElementById('loadingBar');
+    if (barEl) barEl.style.width = '100%';
+    await new Promise(r => setTimeout(r, 400));
     showQuestion();
   } catch(e) {
+    clearInterval(loadingInterval);
     showSetup();
   }
 }
