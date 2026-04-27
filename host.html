@@ -253,10 +253,14 @@ const CATEGORY_DATA = [
   },
 ];
 
-const AVATAR_COLORS = [
-  ['#2d1a4e','#c4b5fd'], ['#1a2d1e','#86efac'], ['#2d1a1a','#fca5a5'],
-  ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
-];
+const ANIMALS = ['🦊','🐸','🐼','🦋','🐬','🦁','🐨','🦉','🐙','🦚','🐧','🦝','🐯','🦄','🐻','🦈','🐺','🦜','🐮','🐳'];
+const ANIMAL_COLORS = {
+  '🦊':'#fef9c3','🐸':'#dcfce7','🐼':'#ede9fe','🦋':'#fce7f3',
+  '🐬':'#e0f2fe','🦁':'#fef3c7','🐨':'#f0fdf4','🦉':'#fefce8',
+  '🐙':'#fdf4ff','🦚':'#f0fdfa','🐧':'#eff6ff','🦝':'#fff7ed',
+  '🐯':'#fef9c3','🦄':'#fae8ff','🐻':'#fef3c7','🦈':'#e0f2fe',
+  '🐺':'#f1f5f9','🦜':'#f0fdf4','🐮':'#fffbeb','🐳':'#e0f2fe',
+};
 
 const CUSTOM_CATS_KEY = 'trivia-custom-cats';
 const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Potter', 'Lord of the Rings', 'Marvel movies', 'Seinfeld', 'The Office', 'Friends', 'Disney', 'Star Wars', 'Game of Thrones', '90s commercials', 'Christmas movies', 'Halloween trivia', 'Super Bowl history', 'World Cup soccer', 'NBA legends', 'Beatles songs', 'Elvis Presley'];
@@ -265,12 +269,18 @@ let _hostCustomInput = '';
 let _hostCustomMusicFlag = false;
 let _hostCustomMusicType = 'genre';
 
-function avatarColor(i) { return AVATAR_COLORS[i % AVATAR_COLORS.length]; }
-
-function avatarHTML(name, idx, size = 32) {
-  const [bg, fg] = avatarColor(idx);
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${size*.35}px;background:${bg};color:${fg};">${initials}</div>`;
+function animalBg(avatar) { return ANIMAL_COLORS[avatar] || '#f5f5fa'; }
+function avatarHTML(player, size = 32) {
+  const animal = player?.avatar || '🐸';
+  const bg = animalBg(animal);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;">${animal}</div>`;
+}
+function assignAnimal(existingPlayers) {
+  const taken = new Set((existingPlayers || []).map(p => p.avatar).filter(Boolean));
+  const available = ANIMALS.filter(a => !taken.has(a));
+  return available.length > 0
+    ? available[Math.floor(Math.random() * available.length)]
+    : ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
 }
 
 function getTimeLeft() {
@@ -987,11 +997,14 @@ async function joinAsHost() {
   const statusEl = document.getElementById('hostJoinStatus');
 
   try {
+    const { data: existingForAvatar } = await sb.from('players').select('avatar').eq('room_id', state.room.id);
+    const avatar = assignAnimal(existingForAvatar);
     const { data: playerData, error } = await sb.from('players').insert({
       room_id: state.room.id,
       name,
       score: 0,
       answers: [],
+      avatar,
     }).select().single();
 
     if (error || !playerData) throw new Error('Failed to join');
@@ -1025,7 +1038,7 @@ function renderLobbyPlayers() {
     list.innerHTML = state.players.map((p, i) =>
       `<div class="player-chip" style="justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
-          ${avatarHTML(p.name, i, 26)}
+          ${avatarHTML(p, 26)}
           <div style="font-size:13px;color:#1a1a2e;">${p.name}${p.id === state.hostPlayer?.id ? ' <span style="font-size:10px;color:#7c3aed;">(you)</span>' : ''}</div>
         </div>
         ${p.id === state.hostPlayer?.id
@@ -1338,11 +1351,10 @@ function renderIngameSidebar() {
   const lbEl = document.getElementById('leaderboard');
   if (lbEl) {
     lbEl.innerHTML = top5.map((p, i) => {
-      const [bg, fg] = avatarColor(state.players.indexOf(p));
       return `
         <div class="lb-row${i===0?' lb-row-first':''}">
           <div style="font-size:13px;color:#9090b8;width:16px;">${i+1}</div>
-          <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          ${avatarHTML(p, 28)}
           <div style="flex:1;font-size:13px;">${p.name}</div>
           <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
         </div>
@@ -1618,7 +1630,7 @@ async function revealAnswerAsPlayer(timedOut) {
   const pts = correct ? (state.hostAnswers[state.hostAnswers.length - 1]?.pts || 0) : 0;
 
   const { data: allPlayers } = await sb.from('players')
-    .select('id,name,score,answers')
+    .select('id,name,score,answers,avatar')
     .eq('room_id', state.room.id)
     .order('score', { ascending: false });
 
@@ -1636,14 +1648,10 @@ async function revealAnswerAsPlayer(timedOut) {
   const hostInTop3 = top3.some(p => p.id === state.hostPlayer?.id);
   const myRow = hostInSorted && !hostInTop3 ? hostInSorted : null;
 
-  const lbColors = [['#2d1a4e','#c4b5fd'],['#1a2d1e','#86efac'],['#2d1a1a','#fca5a5'],['#1a2240','#93c5fd'],['#2d2000','#fcd34d'],['#1a2d2d','#5eead4']];
   const lbRowHTML = (p, rank, isMe) => {
-    const initials = p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    let h = 0; for (const c of p.name) h = (h * 31 + c.charCodeAt(0)) & 0xff;
-    const [bg, fg] = lbColors[h % lbColors.length];
     return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
       <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-      <div style="width:24px;height:24px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;">${initials}</div>
+      ${avatarHTML(p, 24)}
       <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
       <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
     </div>`;
@@ -1688,7 +1696,7 @@ async function revealAnswerAsPlayer(timedOut) {
     }
     try {
       const { data: updatedPlayers } = await sb.from('players')
-        .select('id,name,score,answers')
+        .select('id,name,score,answers,avatar')
         .eq('room_id', state.room.id)
         .order('score', { ascending: false });
       if (!updatedPlayers) return;
@@ -1759,7 +1767,6 @@ function flashLeaderboardResults(qi) {
   if (!lbEl) return;
 
   lbEl.innerHTML = top5.map((p, i) => {
-    const [bg, fg] = avatarColor(state.players.indexOf(p));
     const answer = p.answers?.find(a => a.question_index === qi);
     const gotIt = answer?.correct === true;
     const answered = answer !== undefined && answer.answer_index !== undefined;
@@ -1770,7 +1777,7 @@ function flashLeaderboardResults(qi) {
     return `
       <div class="lb-row${i === 0 ? ' lb-row-first' : ''}" style="background:${flashBg};border:1px solid ${flashBorder};border-radius:8px;transition:background .3s;">
         <div style="font-size:13px;color:#9090b8;width:16px;">${i + 1}</div>
-        <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+        ${avatarHTML(p, 28)}
         <div style="flex:1;font-size:13px;color:#1a1a2e;">${p.name}</div>
         <div style="font-size:13px;font-weight:600;color:${scoreColor};">${p.score}${indicator}</div>
       </div>`;
@@ -1793,10 +1800,9 @@ function showRoundLeaderboard(completedRound) {
   const sorted = [...state.players].sort((a, b) => b.score - a.score);
 
   const lbRows = sorted.map((p, i) => {
-    const [bg, fg] = avatarColor(i);
     return `<div class="lb-row${i === 0 ? ' lb-row-first' : ''}">
       <div style="font-size:14px;color:${i < 3 ? '#7c3aed' : '#9090b8'};width:24px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
-      <div class="avatar" style="width:32px;height:32px;font-size:11px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+      ${avatarHTML(p, 32)}
       <div style="flex:1;font-size:15px;color:#1a1a2e;">${p.name}</div>
       <div style="font-size:15px;color:#7c3aed;font-weight:600;">${p.score} pts</div>
     </div>`;
@@ -1805,16 +1811,15 @@ function showRoundLeaderboard(completedRound) {
   document.body.classList.remove('tv-mode');
 
   if (state.hostPlayer) {
-    sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false })
+    sb.from('players').select('id,name,score,avatar').eq('room_id', state.room.id).order('score', { ascending: false })
       .then(({ data: allPlayers }) => {
         const sorted = allPlayers || [];
         const myRank = sorted.findIndex(p => p.id === state.hostPlayer?.id) + 1;
         const lbRows = sorted.map((p, i) => {
-          const [bg, fg] = avatarColor(i);
           const isMe = p.id === state.hostPlayer?.id;
           return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#f5f3ff;' : ''}margin-bottom:4px;">
             <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
-            <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+            ${avatarHTML(p, 30)}
             <div style="flex:1;font-size:14px;color:${isMe ? '#6d28d9' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
             <div style="font-size:14px;color:#a78bfa;font-weight:600;">${p.score}</div>
           </div>`;
@@ -1974,14 +1979,12 @@ function showResults() {
     const labels = top3.length >= 2 ? ['2nd', '1st 🥇', '3rd'] : ['1st 🥇'];
     const bgColors = ['#dcfce7', '#ede9fe', '#fee2e2'];
     return `<div class="podium">${order.map((p, i) => {
-      const origIdx = sorted.indexOf(p);
-      const [bg, fg] = avatarColor(origIdx);
       const h = top3.length >= 2 ? heights[i] : 90;
       const label = top3.length >= 2 ? labels[i] : '1st 🥇';
       const podBg = top3.length >= 2 ? bgColors[i] : '#ede9fe';
       return `<div class="podium-slot">
         ${i === 1 || top3.length < 2 ? '<div style="font-size:20px;margin-bottom:4px;">🏆</div>' : ''}
-        <div class="avatar" style="margin:0 auto 6px;background:${bg};color:${fg};width:${i===1||top3.length<2?44:36}px;height:${i===1||top3.length<2?44:36}px;font-size:${i===1||top3.length<2?15:12}px;">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+        <div style="margin:0 auto 6px;width:fit-content;">${avatarHTML(p, i===1||top3.length<2?44:36)}</div>
         <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#1a1a2e':'#6b6b9a'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
         <div class="podium-bar" style="background:${podBg};border:1px solid #e4e4f0;height:${h}px;width:80px;flex-direction:column;">
           <div style="font-size:${i===1||top3.length<2?18:14}px;color:#a78bfa;font-weight:500;">${p.score}</div>
@@ -1992,10 +1995,9 @@ function showResults() {
   })();
 
   const lbRows = sorted.map((p, i) => {
-    const [bg, fg] = avatarColor(i);
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #e4e4f0;">
       <div style="font-size:13px;color:${i<3?'#7c3aed':'#9090b8'};width:20px;">${i+1}</div>
-      <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+      ${avatarHTML(p, 28)}
       <div style="flex:1;font-size:13px;color:#1a1a2e;">${p.name}</div>
       <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score} pts</div>
     </div>`;
@@ -2105,11 +2107,14 @@ async function playAgain() {
 
   if (prevHostPlayer) {
     try {
+      const { data: existingForAvatar } = await sb.from('players').select('avatar').eq('room_id', state.room.id);
+      const avatar = assignAnimal(existingForAvatar);
       const { data: newHostPlayer, error } = await sb.from('players').insert({
         room_id: state.room.id,
         name: prevHostPlayer.name,
         score: 0,
         answers: [],
+        avatar,
       }).select().single();
       if (!error && newHostPlayer) {
         state.hostPlayer = newHostPlayer;

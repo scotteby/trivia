@@ -80,14 +80,26 @@ function playerAudioEnabled() {
   return localStorage.getItem(PLAYER_AUDIO_KEY) === 'true';
 }
 
-const AVATAR_COLORS = [
-  ['#2d1a4e','#c4b5fd'], ['#1a2d1e','#86efac'], ['#2d1a1a','#fca5a5'],
-  ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
-];
-function avatarColor(name) {
-  let h = 0;
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xff;
-  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+const ANIMALS = ['🦊','🐸','🐼','🦋','🐬','🦁','🐨','🦉','🐙','🦚','🐧','🦝','🐯','🦄','🐻','🦈','🐺','🦜','🐮','🐳'];
+const ANIMAL_COLORS = {
+  '🦊':'#fef9c3','🐸':'#dcfce7','🐼':'#ede9fe','🦋':'#fce7f3',
+  '🐬':'#e0f2fe','🦁':'#fef3c7','🐨':'#f0fdf4','🦉':'#fefce8',
+  '🐙':'#fdf4ff','🦚':'#f0fdfa','🐧':'#eff6ff','🦝':'#fff7ed',
+  '🐯':'#fef9c3','🦄':'#fae8ff','🐻':'#fef3c7','🦈':'#e0f2fe',
+  '🐺':'#f1f5f9','🦜':'#f0fdf4','🐮':'#fffbeb','🐳':'#e0f2fe',
+};
+function animalBg(avatar) { return ANIMAL_COLORS[avatar] || '#f5f5fa'; }
+function avatarHTML(player, size = 28) {
+  const animal = player?.avatar || '🐸';
+  const bg = animalBg(animal);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.55)}px;flex-shrink:0;">${animal}</div>`;
+}
+function assignAnimal(existingPlayers) {
+  const taken = new Set((existingPlayers || []).map(p => p.avatar).filter(Boolean));
+  const available = ANIMALS.filter(a => !taken.has(a));
+  return available.length > 0
+    ? available[Math.floor(Math.random() * available.length)]
+    : ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
 }
 
 // ─── JOIN SCREEN ─────────────────────────────────────────────────────────────
@@ -161,11 +173,14 @@ async function joinGame() {
       state.localScore = existingPlayer.score || 0;
       state.answers = existingPlayer.answers || [];
     } else {
+      const { data: existingForAvatar } = await sb.from('players').select('avatar').eq('room_id', rooms.id);
+      const avatar = assignAnimal(existingForAvatar);
       const { data: newPlayer, error: playerError } = await sb.from('players').insert({
         room_id: rooms.id,
         name,
         score: 0,
         answers: [],
+        avatar,
       }).select().single();
       if (playerError) throw new Error('Failed to join room.');
       playerData = newPlayer;
@@ -281,7 +296,7 @@ function startLobbyPoll() {
 }
 
 async function fetchLobbyPlayers() {
-  const { data } = await sb.from('players').select('id,name').eq('room_id', state.room.id).order('joined_at');
+  const { data } = await sb.from('players').select('id,name,avatar').eq('room_id', state.room.id).order('joined_at');
   if (data) {
     state.players = data;
     renderLobbyList();
@@ -295,10 +310,8 @@ function renderLobbyList() {
   if (listEl) {
     listEl.innerHTML = state.players.map(p => {
       const isMe = p.id === state.player?.id;
-      const [bg, fg] = avatarColor(p.name);
-      const initials = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       return `<div class="player-chip" style="${isMe ? 'border-color:#7c3aed44;' : ''}">
-        <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
+        ${avatarHTML(p, 28)}
         <div style="flex:1;font-size:13px;color:${isMe ? '#c4b5fd' : '#1a1a2e'};">${p.name}</div>
         ${isMe ? '<div style="font-size:10px;color:#7c3aed;">you</div>' : ''}
       </div>`;
@@ -746,7 +759,7 @@ async function revealPlayerAnswer(idx, correct, pts) {
   });
 
   const { data: allPlayers } = await sb.from('players')
-    .select('id,name,score,answers')
+    .select('id,name,score,answers,avatar')
     .eq('room_id', state.room.id)
     .order('score', { ascending: false });
 
@@ -763,14 +776,10 @@ async function revealPlayerAnswer(idx, correct, pts) {
   const playerInTop3 = top3.some(p => p.id === state.player?.id);
   const myRow = !playerInTop3 ? sorted.find(p => p.id === state.player?.id) : null;
 
-  const lbColors = [['#2d1a4e','#c4b5fd'],['#1a2d1e','#86efac'],['#2d1a1a','#fca5a5'],['#1a2240','#93c5fd'],['#2d2000','#fcd34d'],['#1a2d2d','#5eead4']];
   const lbRowHTML = (p, rank, isMe) => {
-    const initials = p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    let h = 0; for (const c of p.name) h = (h * 31 + c.charCodeAt(0)) & 0xff;
-    const [bg, fg] = lbColors[h % lbColors.length];
     return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${(!correct&&!timedOut)?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
       <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-      <div style="width:24px;height:24px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;">${initials}</div>
+      ${avatarHTML(p, 24)}
       <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
       <div style="font-size:12px;color:${isMe&&!correct&&!timedOut?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
     </div>`;
@@ -815,7 +824,7 @@ async function revealPlayerAnswer(idx, correct, pts) {
     }
     try {
       const { data: updatedPlayers } = await sb.from('players')
-        .select('id,name,score,answers')
+        .select('id,name,score,answers,avatar')
         .eq('room_id', state.room.id)
         .order('score', { ascending: false });
       if (!updatedPlayers) return;
@@ -853,16 +862,15 @@ async function showRoundLeaderboard(completedRound) {
   const totalRounds = state.room.config?.rounds || 3;
   const isLastRound = completedRound >= totalRounds;
 
-  const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
+  const { data: allPlayers } = await sb.from('players').select('id,name,score,avatar').eq('room_id', state.room.id).order('score', { ascending: false });
   const sorted = allPlayers || [];
   const myRank = sorted.findIndex(p => p.id === state.player?.id) + 1;
 
   const lbRows = sorted.map((p, i) => {
-    const [bg, fg] = avatarColor(p.name);
     const isMe = p.id === state.player?.id;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#f5f3ff;' : ''}margin-bottom:4px;">
       <div style="font-size:13px;color:${isMe ? '#5b21b6' : i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
-      <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
+      ${avatarHTML(p, 30)}
       <div style="flex:1;font-size:14px;color:${isMe ? '#5b21b6' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
       <div style="font-size:14px;color:${isMe ? '#5b21b6' : '#a78bfa'};font-weight:600;">${p.score}</div>
     </div>`;
@@ -924,7 +932,7 @@ async function showPlayerResults() {
   await new Promise(r => setTimeout(r, 3000));
 
   // Fetch all players with scores
-  const { data: allPlayers } = await sb.from('players').select('id,name,score').eq('room_id', state.room.id).order('score', { ascending: false });
+  const { data: allPlayers } = await sb.from('players').select('id,name,score,avatar').eq('room_id', state.room.id).order('score', { ascending: false });
   const sorted = allPlayers || [];
   const myRank = sorted.findIndex(p => p.id === state.player?.id) + 1;
 
@@ -935,11 +943,9 @@ async function showPlayerResults() {
 
   const lbRows = sorted.map((p, i) => {
     const isMe = p.id === state.player?.id;
-    const [bg, fg] = avatarColor(p.name);
-    const initials = p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:8px;background:${isMe ? '#f5f3ff' : 'transparent'};border-bottom:${isMe ? 'none' : '1px solid #e4e4f0'};">
       <div style="font-size:13px;color:${i<3?'#5b21b6':'#9090b8'};width:20px;flex-shrink:0;">${i+1}</div>
-      <div class="avatar" style="width:28px;height:28px;font-size:10px;background:${bg};color:${fg};">${initials}</div>
+      ${avatarHTML(p, 28)}
       <div style="flex:1;font-size:13px;color:${isMe?'#5b21b6':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
       <div style="font-size:13px;color:${isMe?'#5b21b6':'#a78bfa'};font-weight:500;">${p.score}</div>
     </div>`;
@@ -1034,8 +1040,10 @@ function showWaitingForHost(code, name) {
 }
 
 async function doRejoinInsert(room, name, code) {
+  const { data: existingForAvatar } = await sb.from('players').select('avatar').eq('room_id', room.id);
+  const avatar = assignAnimal(existingForAvatar);
   const { data: playerData, error } = await sb.from('players').insert({
-    room_id: room.id, name, score: 0, answers: [],
+    room_id: room.id, name, score: 0, answers: [], avatar,
   }).select().single();
 
   if (error || !playerData) { showJoin(code, name); return; }
