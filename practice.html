@@ -389,7 +389,7 @@ function renderSetup() {
       </div>` : '';
 
     return `
-      <div style="background:#ffffff;border:2px solid ${hasAnySel ? '#7c3aed' : '#e4e4f0'};border-radius:10px;margin-bottom:4px;">
+      <div style="background:#ffffff;border:2px solid ${hasAnySel ? '#7c3aed' : '#e4e4f0'};border-radius:10px;">
         <div class="cat-row" onclick="${onclick}" style="background:transparent;border:none;margin-bottom:0;">
           <span style="font-size:20px;">${c.icon}</span>
           <div style="flex:1;">
@@ -427,7 +427,7 @@ function renderSetup() {
       </div>
 
       <div class="sub-label">Pick your categories</div>
-      <div style="margin-bottom:6px;">${catList}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">${catList}</div>
       <div style="display:flex;gap:8px;margin-bottom:20px;">
         <button class="btn-outline" style="font-size:12px;padding:7px;" onclick="selectAll()">Select all</button>
         <button class="btn-outline" style="font-size:12px;padding:7px;" onclick="clearAll()">Clear</button>
