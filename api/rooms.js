@@ -17,6 +17,9 @@ const MUSIC_CATS = new Set([
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
+const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
+const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
+
 // ─── HTTP helpers ─────────────────────────────────────────────
 function httpsReq(options, body) {
   return new Promise((resolve, reject) => {
@@ -73,6 +76,35 @@ async function getUniqueCode(preferred = null) {
     if (!Array.isArray(res.data) || res.data.length === 0) return code;
   }
   throw new Error('Could not generate unique room code');
+}
+
+// ─── Wikimedia Commons image URL resolver ────────────────────
+async function getWikimediaImageUrl(filename) {
+  try {
+    const encoded = encodeURIComponent(filename.trim());
+    const { data } = await httpsReq({
+      hostname: 'en.wikipedia.org',
+      path: `/w/api.php?action=query&titles=File:${encoded}&prop=imageinfo&iiprop=url&format=json`,
+      method: 'GET',
+      headers: { 'User-Agent': 'QuizzliApp/1.0 (quizzli.app)' },
+    }, null);
+    const pages = data?.query?.pages;
+    if (!pages) return null;
+    const page = Object.values(pages)[0];
+    const url = page?.imageinfo?.[0]?.url;
+    return url || null;
+  } catch {
+    return null;
+  }
+}
+
+async function enrichWithImages(questions) {
+  return Promise.all(questions.map(async q => {
+    if (q.type !== 'image' || !q.image_file) return q;
+    const image_url = await getWikimediaImageUrl(q.image_file);
+    if (!image_url) return { ...q, type: 'general', image_url: null };
+    return { ...q, image_url };
+  }));
 }
 
 // ─── iTunes preview lookup (free, no auth) ────────────────────
@@ -155,7 +187,8 @@ async function generateQuestions(categories, total, difficulty = 'mixed', custom
   const isMusicCatEx = c => isMusicCat(c) || customMusicSet.has(c.toLowerCase().trim());
 
   const musicCats   = categories.filter(isMusicCatEx);
-  const generalCats = categories.filter(c => !isMusicCatEx(c));
+  const imageCats   = categories.filter(c => !isMusicCatEx(c) && isImageCat(c));
+  const generalCats = categories.filter(c => !isMusicCatEx(c) && !isImageCat(c));
 
   const artistTypeCats = musicCats.filter(c => customCatsMeta[c]?.musicType === 'artist');
   const genreMusicCats = musicCats.filter(c => customCatsMeta[c]?.musicType !== 'artist');
@@ -166,21 +199,36 @@ async function generateQuestions(categories, total, difficulty = 'mixed', custom
     ? `\nFor ARTIST categories (${artistTypeCats.join(', ')}): the category IS the artist — never ask "Who is this artist?". Only use question types: "What is this song?", "What year was this released?", "What album is this from?". Wrong answer options must be other songs, years, or albums by the SAME artist.`
     : '';
 
-  if (musicCats.length > 0 && generalCats.length > 0) {
+  const imageFmt = `{"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"What is this?","opts":["A","B","C","D"],"ans":0,"cat":"Category","hint":"Brief description of what makes this image identifiable"}`;
+  const imageRules = imageCats.length > 0 ? `\n\nFor IMAGE categories (${imageCats.join(', ')}), use this format:
+${imageFmt}
+
+IMAGE CATEGORY RULES — follow strictly:
+- "image_file" must be the EXACT filename as it appears on Wikimedia Commons (case-sensitive, include extension)
+- For FLAGS: use format "Flag_of_[Country].svg" e.g. "Flag_of_Japan.svg", "Flag_of_Brazil.svg"
+- For LANDMARKS: use well-known Wikipedia image filenames e.g. "Eiffel_Tower_7_Floors_Below.jpg", "Colosseum_in_Rome-April_2007-1-_copie_2B.jpg"
+- For ART: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg", "The_Starry_Night_-_Vincent_van_Gogh.jpg"
+- Only use images you are CERTAIN exist on Wikimedia Commons
+- Wrong answer options must be plausible alternatives in the same category (other countries, other landmarks, other artists)
+- Questions should be "Which country's flag is this?", "What is this famous landmark?", "Who painted this?", "What is this painting called?"` : '';
+
+  const allGeneralCats = [...generalCats, ...imageCats];
+
+  if (musicCats.length > 0 && allGeneralCats.length > 0) {
     fmt = `
 For MUSIC categories (${musicCats.join(', ')}), use this format — "artist" and "song" are required:
 ${musicFmt}
 For genre/era music categories, alternate "q" randomly between "Who is this artist?" and "What is this song?".${artistCatRules}
 
 For all other categories (${generalCats.join(', ')}):
-{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
+{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}${imageRules}`;
   } else if (musicCats.length > 0) {
     fmt = `
 All questions are music questions:
 ${musicFmt}
 For genre/era music categories, alternate "q" randomly between "Who is this artist?" and "What is this song?".${artistCatRules}`;
   } else {
-    fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
+    fmt = `{"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}${imageRules}`;
   }
 
   const difficultyInstructions = {
@@ -305,7 +353,8 @@ module.exports = async function handler(req, res) {
       // (used by "Play again" to keep the same room code)
       if (req.query?.questionsOnly === 'true') {
         const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient);
-        const questions = await enrichWithPreviews(rawQuestions);
+        let questions = await enrichWithPreviews(rawQuestions);
+        questions = await enrichWithImages(questions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
       }
@@ -318,9 +367,11 @@ module.exports = async function handler(req, res) {
       ]);
       console.log(`[rooms] Generated ${rawQuestions.length} questions, code=${roomCode}`);
 
-      const questions = await enrichWithPreviews(rawQuestions);
+      let questions = await enrichWithPreviews(rawQuestions);
+      questions = await enrichWithImages(questions);
       const musicCount = questions.filter(q => q.preview_url).length;
-      console.log(`[rooms] iTunes enrichment done — ${musicCount} clips found`);
+      const imageCount = questions.filter(q => q.image_url).length;
+      console.log(`[rooms] Enrichment done — ${musicCount} music clips, ${imageCount} images`);
 
       const existingRes = await sbReq(`/game_rooms?room_code=eq.${roomCode}&select=id,status`);
       const existing = Array.isArray(existingRes.data) && existingRes.data.length > 0 ? existingRes.data[0] : null;

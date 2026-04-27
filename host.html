@@ -231,6 +231,18 @@ const CATEGORY_DATA = [
     name: 'Food & Drink', icon: '🍕',
     color: '#c2410c', border: '#fdba74', bg: '#fff7ed', music: false, subs: null,
   },
+  {
+    name: 'Flags', icon: '🚩',
+    color: '#0f766e', border: '#5eead4', bg: '#f0fdfa', music: false, subs: null, image: true,
+  },
+  {
+    name: 'Landmarks', icon: '🏛️',
+    color: '#92400e', border: '#fcd34d', bg: '#fefce8', music: false, subs: null, image: true,
+  },
+  {
+    name: 'Art & Paintings', icon: '🎨',
+    color: '#9d174d', border: '#f9a8d4', bg: '#fdf2f8', music: false, subs: null, image: true,
+  },
 ];
 
 const AVATAR_COLORS = [
@@ -1017,6 +1029,7 @@ function showIngame() {
   const qInRound = (qi % questionsPerRound) + 1;
   const timerDuration = room.config?.timer || 15;
   const isMusic = !!(q.preview_url);
+  const isImage = q.type === 'image' && !!(q.image_url);
 
   const questionSize = state.tvMode ? '22px' : '18px';
   const optionSize = state.tvMode ? '18px' : '15px';
@@ -1025,6 +1038,14 @@ function showIngame() {
     <div style="display:flex;align-items:center;gap:12px;padding:10px 0 6px;">
       ${waveformHTML()}
       <div class="clip-status" style="font-size:12px;color:#7c3aed;" id="clipStatus">Playing 10s clip…</div>
+    </div>` : '';
+
+  const imageBanner = isImage ? `
+    <div style="margin-bottom:14px;border-radius:12px;overflow:hidden;border:1px solid #e4e4f0;background:#f5f5fa;text-align:center;">
+      <img src="${q.image_url}"
+        style="max-width:100%;max-height:280px;object-fit:contain;display:block;margin:0 auto;"
+        onerror="this.parentElement.innerHTML='<div style=padding:20px;color:#9090b8;font-size:13px;>Image unavailable</div>'"
+      />
     </div>` : '';
 
   const tvBanner = `
@@ -1060,6 +1081,7 @@ function showIngame() {
           <div class="card ingame-card" style="margin-bottom:14px;">
             <div class="ingame-cat" style="font-size:11px;margin-bottom:8px;">${q.cat}</div>
             ${musicBanner}
+            ${imageBanner}
             <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:12px;color:#9090b8;">${state.players.length} players</div>
@@ -1212,6 +1234,7 @@ function showIngameAsPlayer() {
   const roundNum = Math.floor(qi / questionsPerRound) + 1;
   const qInRound = (qi % questionsPerRound) + 1;
   const isMusic = !!(q.preview_url);
+  const isImage = q.type === 'image' && !!(q.image_url);
 
   const musicBanner = isMusic ? `
     <div style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
@@ -1219,6 +1242,14 @@ function showIngameAsPlayer() {
         ${waveformHTML()}
       </div>
       <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Clip playing…</div>
+    </div>` : '';
+
+  const imageBanner = isImage ? `
+    <div style="margin-bottom:14px;border-radius:12px;overflow:hidden;border:1px solid #e4e4f0;background:#f5f5fa;text-align:center;">
+      <img src="${q.image_url}"
+        style="max-width:100%;max-height:280px;object-fit:contain;display:block;margin:0 auto;"
+        onerror="this.parentElement.innerHTML='<div style=padding:20px;color:#9090b8;font-size:13px;>Image unavailable</div>'"
+      />
     </div>` : '';
 
   setHTML(`
@@ -1229,6 +1260,7 @@ function showIngameAsPlayer() {
       </div>
 
       ${musicBanner}
+      ${imageBanner}
 
       <div style="background:#ede9fe;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
         <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>

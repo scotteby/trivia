@@ -7,6 +7,9 @@ const MUSIC_CATS = new Set([
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
+const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
+const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
+
 function callAnthropic(body) {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
@@ -85,6 +88,44 @@ async function enrichWithPreviews(questions) {
   }));
 }
 
+function getWikimediaImageUrl(filename) {
+  return new Promise(resolve => {
+    try {
+      const encoded = encodeURIComponent(filename.trim());
+      const req = https.request({
+        hostname: 'en.wikipedia.org',
+        path: `/w/api.php?action=query&titles=File:${encoded}&prop=imageinfo&iiprop=url&format=json`,
+        method: 'GET',
+        headers: { 'User-Agent': 'QuizzliApp/1.0 (quizzli.app)' },
+      }, res => {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(raw);
+            const pages = data?.query?.pages;
+            if (!pages) return resolve(null);
+            const page = Object.values(pages)[0];
+            const url = page?.imageinfo?.[0]?.url;
+            resolve(url || null);
+          } catch { resolve(null); }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.end();
+    } catch { resolve(null); }
+  });
+}
+
+async function enrichWithImages(questions) {
+  return Promise.all(questions.map(async q => {
+    if (q.type !== 'image' || !q.image_file) return q;
+    const image_url = await getWikimediaImageUrl(q.image_file);
+    if (!image_url) return { ...q, type: 'general', image_url: null };
+    return { ...q, image_url };
+  }));
+}
+
 function getMusicConstraint(category) {
   const decades = ['1965-1972','1973-1979','1980-1985','1986-1989','1990-1994','1995-1999','2000-2004','2005-2009','2010-2015','2016-2021'];
   const tiers = [
@@ -146,7 +187,8 @@ module.exports = async function handler(req, res) {
     try { if (req.query.customCatsMeta) customCatsMeta = JSON.parse(req.query.customCatsMeta); } catch {}
 
     const musicCats   = cats.filter(isMusicCatEx);
-    const generalCats = cats.filter(c => !isMusicCatEx(c));
+    const imageCats   = cats.filter(c => !isMusicCatEx(c) && isImageCat(c));
+    const generalCats = cats.filter(c => !isMusicCatEx(c) && !isImageCat(c));
     const artistTypeCats = musicCats.filter(c => customCatsMeta[c]?.musicType === 'artist');
     const genreMusicCats = musicCats.filter(c => customCatsMeta[c]?.musicType !== 'artist');
 
@@ -171,8 +213,20 @@ Music constraint (follow strictly): ${getMusicConstraint(genreMusicCats[0] || 'm
 Session seed (ignore): ${Date.now()}-${Math.random()}${avoidSongBlock ? '\n' + avoidSongBlock : ''}`);
     }
     if (artistTypeCats.length > 0) {
-      fmtParts.push(`For artist categories (${artistTypeCats.join(', ')}): the category IS the artist — NEVER ask "Who is this artist?". Only use: "What is this song called?", "What year was this released?". Wrong answer options must be other songs or years by the same artist.
-{"type":"music","artist":"[exact artist name]","song":"Song Title","year":1999,"q":"What is this song called?","opts":["Song A","Song B","Song C","Song D"],"ans":0,"cat":"[artist name]"${explainField}}`);
+      fmtParts.push(`For artist categories (${artistTypeCats.join(', ')}): the category IS the artist — NEVER ask "Who is this artist?". Only use: "What is this song called?". Wrong answer options must be other songs by the same artist.
+{"type":"music","artist":"[exact artist name]","song":"Song Title","q":"What is this song called?","opts":["Song A","Song B","Song C","Song D"],"ans":0,"cat":"[artist name]"${explainField}}`);
+    }
+    if (imageCats.length > 0) {
+      fmtParts.push(`For image categories (${imageCats.join(', ')}):
+{"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"What is this?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField ? explainField : ''},"hint":"Brief description"}
+
+IMAGE CATEGORY RULES — follow strictly:
+- "image_file" must be the EXACT filename as it appears on Wikimedia Commons (case-sensitive, include extension)
+- For FLAGS: use format "Flag_of_[Country].svg" e.g. "Flag_of_Japan.svg", "Flag_of_Brazil.svg"
+- For LANDMARKS: use well-known Wikipedia image filenames e.g. "Eiffel_Tower_7_Floors_Below.jpg"
+- For ART: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"
+- Only use images you are CERTAIN exist on Wikimedia Commons
+- Wrong answer options must be plausible alternatives in the same category`);
     }
 
     try {
@@ -191,6 +245,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
 
       let questions = parseQuestions(json);
       questions = await enrichWithPreviews(questions);
+      questions = await enrichWithImages(questions);
       return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
@@ -227,6 +282,7 @@ Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSO
 
     let questions = parseQuestions(json);
     questions = await enrichWithPreviews(questions);
+    questions = await enrichWithImages(questions);
     return res.status(200).json({ questions });
   } catch(e) {
     return res.status(500).json({ error: 'Handler failed', detail: e.message });
