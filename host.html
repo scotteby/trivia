@@ -1061,15 +1061,23 @@ function resetRoomCode() {
 
 // 1-frame silent WAV — playing this before any await unlocks browser audio autoplay
 const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+let _audioContext = null;
+let _audioSource = null;
+
 function unlockAudio() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
+    if (!_audioContext) {
+      _audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_audioContext.state === 'suspended') {
+      _audioContext.resume();
+    }
+    const buf = _audioContext.createBuffer(1, 1, 22050);
+    const src = _audioContext.createBufferSource();
     src.buffer = buf;
-    src.connect(ctx.destination);
+    src.connect(_audioContext.destination);
     src.start(0);
-    window._audioCtx = ctx;
+    window._audioCtx = _audioContext;
   } catch(e) {
     try { const a = new Audio(SILENT_AUDIO); a.volume = 0; a.play().catch(() => {}); } catch(e2) {}
   }
@@ -1230,6 +1238,10 @@ function stopClip() {
   state.clipStartTimeout = null;
   clearTimeout(state.clipTimeout);
   state.clipTimeout = null;
+  if (_audioSource) {
+    try { _audioSource.stop(); } catch(e) {}
+    _audioSource = null;
+  }
   if (state.audio) {
     state.audio.pause();
     state.audio.src = '';
@@ -1240,29 +1252,58 @@ function stopClip() {
 function playClip(url) {
   stopClip();
   if (!url) return;
-  state.audio = new Audio(url);
-  state.audio.volume = 1;
-  state.audio.play().catch(() => {
-    const cs = document.getElementById('clipStatus');
-    if (cs) {
-      cs.innerHTML = `<button onclick="forcePlayClip('${url}')"
+
+  const cs = document.getElementById('clipStatus');
+
+  if (!_audioContext) {
+    state.audio = new Audio(url);
+    state.audio.volume = 1;
+    state.audio.play().catch(() => {
+      if (cs) cs.innerHTML = `<button onclick="forcePlayClip('${url}')"
         style="background:#7c3aed;border:none;border-radius:8px;padding:6px 14px;font-size:12px;color:#fff;cursor:pointer;">
         ▶ Tap to play clip
       </button>`;
-    }
-  });
-  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+    });
+    state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+    return;
+  }
+
+  if (_audioContext.state === 'suspended') {
+    _audioContext.resume();
+  }
+
+  fetch(url)
+    .then(r => r.arrayBuffer())
+    .then(buf => _audioContext.decodeAudioData(buf))
+    .then(decoded => {
+      if (_audioSource) {
+        try { _audioSource.stop(); } catch(e) {}
+        _audioSource = null;
+      }
+      _audioSource = _audioContext.createBufferSource();
+      _audioSource.buffer = decoded;
+      _audioSource.connect(_audioContext.destination);
+      _audioSource.start(0);
+      if (cs) cs.textContent = 'Playing 10s clip…';
+      state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+    })
+    .catch(() => {
+      state.audio = new Audio(url);
+      state.audio.volume = 1;
+      state.audio.play().catch(() => {
+        if (cs) cs.innerHTML = `<button onclick="forcePlayClip('${url}')"
+          style="background:#7c3aed;border:none;border-radius:8px;padding:6px 14px;font-size:12px;color:#fff;cursor:pointer;">
+          ▶ Tap to play clip
+        </button>`;
+      });
+    });
 }
 
 function forcePlayClip(url) {
   unlockAudio();
-  stopClip();
-  state.audio = new Audio(url);
-  state.audio.volume = 1;
-  state.audio.play().catch(() => {});
-  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
+  playClip(url);
   const cs = document.getElementById('clipStatus');
-  if (cs) cs.textContent = 'Playing 10s clip…';
+  if (cs) cs.textContent = 'Loading clip…';
 }
 
 function renderIngameSidebar() {
