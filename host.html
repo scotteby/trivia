@@ -438,7 +438,7 @@ function showSetup() {
 
   const roundBtns = [2, 3, 4].map(r =>
     `<div class="rt-btn${state.rounds === r ? ' sel' : ''}" onclick="setRounds(${r})">
-      ${r} rounds<div style="font-size:10px;color:${state.rounds===r?'#7c3aed':'#9090b8'};">~${r*10} min</div>
+      ${r} rounds<div style="font-size:10px;color:${state.rounds===r?'#7c3aed':'#9090b8'};"></div>
     </div>`
   ).join('');
 
