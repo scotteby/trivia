@@ -492,6 +492,7 @@ async function showRoundStarting(roundNum) {
   }
   if (circle) circle.style.strokeDashoffset = circumference;
 
+  await fetchFullRoom();
   showIngame();
 }
 

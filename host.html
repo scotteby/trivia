@@ -1075,18 +1075,7 @@ function unlockAudio() {
 }
 
 async function startGame() {
-  // Unlock audio within the user gesture before the async DB call expires the gesture context
   unlockAudio();
-  const startTime = new Date().toISOString();
-  await sb.from('game_rooms').update({
-    status: 'active',
-    current_question_index: 0,
-    question_start_time: startTime,
-  }).eq('id', state.room.id);
-  state.room.status = 'active';
-  state.room.current_question_index = 0;
-  state.room.question_start_time = startTime;
-  state.revealed = false;
 
   if (state.hostPlayer) {
     const q = state.room.questions?.[0];
@@ -1117,6 +1106,17 @@ async function startGame() {
       await new Promise(r => setTimeout(r, 1000));
     }
   }
+
+  const startTime = new Date().toISOString();
+  await sb.from('game_rooms').update({
+    status: 'active',
+    current_question_index: 0,
+    question_start_time: startTime,
+  }).eq('id', state.room.id);
+  state.room.status = 'active';
+  state.room.current_question_index = 0;
+  state.room.question_start_time = startTime;
+  state.revealed = false;
 
   showIngame();
 }
@@ -1817,17 +1817,10 @@ function showRoundLeaderboard(completedRound) {
 
 async function startNextRound(roundNum) {
   unlockAudio();
-  const qi = state.room.current_question_index;
-  const newStart = new Date().toISOString();
-  await sb.from('game_rooms').update({
-    question_start_time: newStart,
-    current_question_index: qi,
-  }).eq('id', state.room.id);
-  state.room.question_start_time = newStart;
-  if (state.tvMode) document.body.classList.add('tv-mode');
   state.revealed = false;
 
   if (state.hostPlayer) {
+    const qi = state.room.current_question_index;
     const q = state.room.questions?.[qi];
     setHTML(`
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px;">
@@ -1856,6 +1849,15 @@ async function startNextRound(roundNum) {
       await new Promise(r => setTimeout(r, 1000));
     }
   }
+
+  const qi = state.room.current_question_index;
+  const newStart = new Date().toISOString();
+  await sb.from('game_rooms').update({
+    question_start_time: newStart,
+    current_question_index: qi,
+  }).eq('id', state.room.id);
+  state.room.question_start_time = newStart;
+  if (state.tvMode) document.body.classList.add('tv-mode');
 
   showIngame();
 }
