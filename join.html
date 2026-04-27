@@ -26,7 +26,7 @@ body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-syste
 .btn-primary:hover:not(:disabled) { background: #6d28d9; }
 .btn-primary:disabled { opacity: .5; cursor: default; }
 .btn-outline { background: transparent; border: 1px solid #e4e4f0; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #9090b8; cursor: pointer; width: 100%; transition: border-color .2s; min-height: 44px; }
-.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 18px 16px; font-size: 17px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 58px; display: block; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
+.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 13px 14px; font-size: 17px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 50px; display: block; margin-bottom: 7px; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
 .option-btn:active:not([disabled]) { transform: scale(.97); }
 .option-btn[disabled] { cursor: default; }
 .option-btn.selected { border-color: #7c3aed; color: #5b21b6; background: #f5f3ff; }
@@ -103,11 +103,11 @@ function assignAnimal(existingPlayers) {
 
 function lbRowHTML(p, rank, isMe) {
   const correct = isMe ? (state.selectedAnswer === state.room?.questions?.[state.room?.current_question_index]?.ans) : false;
-  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
-    <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-    ${avatarHTML(p, 24)}
-    <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
-    <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+  return `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:3px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
+    <div style="font-size:11px;color:${rank<=3?'#7c3aed':'#9090b8'};width:14px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
+    ${avatarHTML(p, 20)}
+    <div style="flex:1;font-size:11px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:11px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
   </div>`;
 }
 
@@ -592,7 +592,7 @@ function showIngame() {
   const isImage = q.type === 'image' && !!(q.image_url);
 
   const musicBanner = isMusic ? `
-    <div style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
+    <div style="background:#f5f3ff;border-radius:10px;padding:8px 12px;margin-bottom:8px;text-align:center;">
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
         ${waveformHTML()}
       </div>
@@ -615,7 +615,7 @@ function showIngame() {
 
   setHTML(`
     <div class="fade-in">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
         <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
         <div style="font-size:12px;color:#9090b8;" id="scoreDisplay">${state.localScore} pts</div>
@@ -624,11 +624,11 @@ function showIngame() {
       ${musicBanner}
       ${imageBanner}
 
-      <div style="background:#ede9fe;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+      <div style="background:#ede9fe;border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block;">
         <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
-      <div class="card" style="margin-bottom:14px;">
+      <div class="card" style="margin-bottom:10px;padding:12px 14px;">
         <div style="font-size:17px;font-weight:500;color:#1a1a2e;line-height:1.5;">${q.q}</div>
       </div>
 
@@ -636,7 +636,7 @@ function showIngame() {
         ${q.opts.map((o, i) => `<button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">${String.fromCharCode(65+i)} &nbsp; ${o}</button>`).join('')}
       </div>
 
-      <div id="statusMsg" style="background:#f5f5fa;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
+      <div id="statusMsg" style="background:#f5f5fa;border-radius:10px;padding:8px 12px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
     </div>
   `);
 
@@ -835,16 +835,16 @@ async function revealPlayerAnswer(idx, correct, pts) {
     statusEl.style.background = 'transparent';
     statusEl.style.padding = '0';
     statusEl.innerHTML = `
-      <div style="background:${panelBg};border:1.5px solid ${panelBorder};border-radius:14px;padding:14px 16px;margin-top:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="background:${panelBg};border:1.5px solid ${panelBorder};border-radius:14px;padding:10px 12px;margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <div style="font-size:15px;font-weight:500;color:${verdictColor};">${verdictText}</div>
           ${pts > 0 ? `<div style="font-size:13px;font-weight:600;background:${correct?'#dcfce7':'#fee2e2'};color:${verdictColor};padding:4px 12px;border-radius:20px;">+${pts} pts</div>` : ''}
         </div>
-        <div style="font-size:13px;color:#6b7280;margin-bottom:4px;"><span id="revealGotRight" style="font-weight:500;color:#1a1a2e;">${gotRight} of ${total}</span> players got it right</div>
-        <div style="height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:12px;">
+        <div style="font-size:13px;color:#6b7280;margin-bottom:3px;"><span id="revealGotRight" style="font-weight:500;color:#1a1a2e;">${gotRight} of ${total}</span> players got it right</div>
+        <div style="height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:8px;">
           <div id="revealBar" style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .6s ease;"></div>
         </div>
-        <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Leaderboard</div>
+        <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Leaderboard</div>
         <div id="revealLeaderboard">${lbHTML}</div>
       </div>`;
   }
