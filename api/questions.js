@@ -278,7 +278,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
       max_tokens: 1500,
       messages: [{
         role: 'user',
-        content: `Generate exactly 5 trivia questions for ${DATE_STR}: 4 general and 1 music, mixed in any order.
+        content: `Generate exactly 5 trivia questions for ${DATE_STR}: 3 general, 1 music, and 1 image question, mixed in any order.
 
 For general questions:
 {"type":"general","q":"Question?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}
@@ -289,6 +289,11 @@ For the music question:
 Alternate "q" randomly between: "Who is this artist?" and "What is this song called?"
 Music constraint (follow strictly): ${getMusicConstraint('music')}
 Session seed (ignore): ${Date.now()}-${Math.random()}
+
+For the image question — pick one of: flags, famous landmarks, or famous artworks:
+{"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"Which country's flag is this?","opts":["A","B","C","D"],"ans":0,"cat":"Images"}
+Use EXACT Wikimedia Commons filenames. For flags: "Flag_of_[Country].svg". For landmarks: exact Wikipedia image filenames. For art: exact Wikimedia filenames.
+Only use images you are CERTAIN exist on Wikimedia Commons.
 
 For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array of exactly 5 questions, no markdown, no extra text.`,
