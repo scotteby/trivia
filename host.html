@@ -1518,7 +1518,7 @@ async function advanceQuestion() {
   if (qi + 1 >= totalQ) {
     await sb.from('game_rooms').update({ status: 'finished' }).eq('id', state.room.id);
     state.room.status = 'finished';
-    showResults();
+    showGameOver();
     return;
   }
 
@@ -1660,6 +1660,33 @@ async function startNextRound(roundNum) {
   if (state.tvMode) document.body.classList.add('tv-mode');
   state.revealed = false;
   showIngame();
+}
+
+// ─── GAME OVER SCREEN ────────────────────────────────────────────────────────
+function showGameOver() {
+  clearInterval(state.timerInterval);
+  stopClip();
+  document.body.classList.remove('tv-mode');
+  state.view = 'gameover';
+
+  setHTML(`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px;">
+      <div style="font-size:64px;margin-bottom:24px;animation:trophy 0.6s ease-out forwards;">🏆</div>
+      <div style="font-size:28px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Game over!</div>
+      <div style="font-size:15px;color:#9090b8;margin-bottom:32px;">Calculating final scores…</div>
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+      <style>
+        @keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+        @keyframes trophy{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+      </style>
+    </div>
+  `);
+
+  setTimeout(() => showResults(), 3000);
 }
 
 // ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
