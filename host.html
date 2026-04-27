@@ -609,7 +609,7 @@ function pickerHTML() {
   if (state.pickerCat === null) {
     const grid = CATEGORY_DATA.map(c => `
       <div onclick="selectPickerCat('${c.name}')"
-        style="background:#ffffff;border:1px solid #e4e4f0;border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color .15s;"
+        style="background:#ffffff;border:1px solid #e4e4f0;border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color .15s;align-self:start;"
         onmouseover="this.style.borderColor='#c4b5fd'"
         onmouseout="this.style.borderColor='#e4e4f0'">
         <div style="font-size:24px;margin-bottom:6px;">${c.icon}</div>
@@ -644,7 +644,7 @@ function pickerHTML() {
       <div style="margin-top:20px;">
         <div style="font-size:11px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
         ${state.customCats.length > 0
-          ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">${customCards}</div>`
+          ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:12px;">${customCards}</div>`
           : `<div style="font-size:12px;color:#9090b8;margin-bottom:12px;">No custom categories yet — add one below</div>`}
         ${state.customCats.length < 10 ? `
           <div style="position:relative;">
@@ -689,7 +689,7 @@ function pickerHTML() {
         <div style="font-size:15px;font-weight:500;color:#1a1a2e;">Round ${roundIdx + 1} — Pick a category</div>
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;background:#f5f5fa;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${grid}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;">${grid}</div>
         ${customSection}
       </div>`;
   } else {
