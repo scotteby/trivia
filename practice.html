@@ -389,11 +389,11 @@ function renderSetup() {
       </div>` : '';
 
     return `
-      <div style="background:${c.bg};border:2px solid ${hasAnySel ? c.border : 'transparent'};border-radius:10px;margin-bottom:4px;">
+      <div style="background:#ffffff;border:2px solid ${hasAnySel ? '#7c3aed' : '#e4e4f0'};border-radius:10px;margin-bottom:4px;">
         <div class="cat-row" onclick="${onclick}" style="background:transparent;border:none;margin-bottom:0;">
           <span style="font-size:20px;">${c.icon}</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:${c.color};">${c.name}</div>
+            <div style="font-size:13px;font-weight:500;color:#1a1a2e;">${c.name}</div>
             ${hasSubs ? `<div style="font-size:12px;color:#9090b8;">${c.subs.length} subcategories</div>` : ''}
           </div>
           ${selCount}${check}${chevron}

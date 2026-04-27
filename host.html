@@ -608,9 +608,12 @@ function pickerHTML() {
   const roundIdx = state.pickerRound;
   if (state.pickerCat === null) {
     const grid = CATEGORY_DATA.map(c => `
-      <div onclick="selectPickerCat('${c.name}')" style="background:${c.bg};border:1px solid ${c.border};border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color .15s;">
-        <div style="font-size:26px;margin-bottom:6px;">${c.icon}</div>
-        <div style="font-size:13px;font-weight:500;color:${c.color};">${c.name}</div>
+      <div onclick="selectPickerCat('${c.name}')"
+        style="background:#ffffff;border:1px solid #e4e4f0;border-radius:12px;padding:16px 14px;cursor:pointer;transition:border-color .15s;"
+        onmouseover="this.style.borderColor='#c4b5fd'"
+        onmouseout="this.style.borderColor='#e4e4f0'">
+        <div style="font-size:24px;margin-bottom:6px;">${c.icon}</div>
+        <div style="font-size:13px;font-weight:500;color:#1a1a2e;">${c.name}</div>
         <div style="font-size:11px;color:#9090b8;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
       </div>`).join('');
 
@@ -620,10 +623,12 @@ function pickerHTML() {
       const icon = c.music ? (TYPE_ICONS_HOST[c.musicType] || '🎵') : '💬';
       return `<div style="position:relative;">
         <div onclick="applyCategory(${roundIdx},'${en}',event)"
-          style="background:${c.music ? '#eff6ff' : '#ffffff'};border:1px solid ${c.music ? '#93c5fd' : '#e4e4f0'};border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;">
+          style="background:#ffffff;border:1px solid #e4e4f0;border-radius:12px;padding:14px 12px;cursor:pointer;transition:border-color .15s;"
+          onmouseover="this.style.borderColor='#c4b5fd'"
+          onmouseout="this.style.borderColor='#e4e4f0'">
           <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
-          <div style="font-size:13px;font-weight:500;color:${c.music ? '#1d4ed8' : '#1a1a2e'};">${c.name}</div>
-          <div style="font-size:11px;color:#9090b8;margin-top:3px;">${c.music ? 'Music clip' : 'Custom'}</div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a2e;">${c.name}</div>
+          <div style="font-size:11px;color:#9090b8;margin-top:3px;">${c.music ? '🎵 Music clip' : '💬 Custom'}</div>
         </div>
         <button onclick="event.stopPropagation();removeCustomCatHost('${en}')"
           style="position:absolute;top:6px;right:6px;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:50%;width:20px;height:20px;font-size:10px;color:#9090b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
@@ -690,7 +695,10 @@ function pickerHTML() {
   } else {
     const cat = CATEGORY_DATA.find(c => c.name === state.pickerCat);
     const subBtns = cat.subs.map(sub => `
-      <div onclick="applyCategory(${roundIdx},'${sub.replace(/'/g,"\\'")}',event)" style="background:#ffffff;border:1px solid ${cat.border};border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:${cat.color};transition:background .15s;">
+      <div onclick="applyCategory(${roundIdx},'${sub.replace(/'/g,"\\'")}',event)"
+        style="background:#ffffff;border:1px solid #e4e4f0;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:#1a1a2e;transition:border-color .15s;"
+        onmouseover="this.style.borderColor='#c4b5fd'"
+        onmouseout="this.style.borderColor='#e4e4f0'">
         ${sub}
       </div>`).join('');
     return `
@@ -703,7 +711,10 @@ function pickerHTML() {
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;background:#f5f5fa;">
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div onclick="applyCategory(${roundIdx},'${cat.name}',event)" style="background:#ffffff;border:1px solid #e4e4f0;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:#9090b8;">
+          <div onclick="applyCategory(${roundIdx},'${cat.name}',event)"
+            style="background:#ffffff;border:1px solid #e4e4f0;border-radius:10px;padding:14px 16px;cursor:pointer;font-size:14px;color:#9090b8;transition:border-color .15s;"
+            onmouseover="this.style.borderColor='#c4b5fd'"
+            onmouseout="this.style.borderColor='#e4e4f0'">
             All ${cat.name.toLowerCase()} (mixed)
           </div>
           ${subBtns}
