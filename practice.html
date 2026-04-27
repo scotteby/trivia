@@ -71,6 +71,7 @@ const root = document.getElementById('root');
 function setHTML(h) { root.innerHTML = h; }
 
 const CLIP_DURATION = 10;
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
 const CUSTOM_CATS_KEY = 'trivia-custom-cats';
 const SUGGESTIONS = ['Taylor Swift', 'Eagles trivia', 'Philly sports', 'Harry Potter', 'Lord of the Rings', 'Marvel movies', 'Seinfeld', 'The Office', 'Friends', 'Disney', 'Star Wars', 'Game of Thrones', '90s commercials', 'Christmas movies', 'Halloween trivia', 'Super Bowl history', 'World Cup soccer', 'NBA legends', 'Beatles songs', 'Elvis Presley'];
@@ -134,7 +135,11 @@ let state = {
 
 // ─── Audio ───────────────────────────────────────────────────────────────────
 function stopClip() {
-  if (state.audio) { state.audio.pause(); state.audio = null; }
+  if (state.audio) {
+    state.audio.pause();
+    state.audio.src = '';
+    // Don't null state.audio — preserve the unlocked element for reuse
+  }
   clearTimeout(state.clipTimeout);
   clearTimeout(state.clipPhaseTimeout);
   state.clipTimeout = null;
@@ -144,13 +149,17 @@ function stopClip() {
 
 function playClip(url) {
   stopClip();
-  try {
-    const audio = new Audio(url);
-    audio.volume = 0.85;
-    audio.play().catch(() => {});
-    state.audio = audio;
-    state.clipTimeout = setTimeout(() => stopClip(), (CLIP_DURATION + 5) * 1000);
-  } catch {}
+  if (!url) return;
+  if (state.audio) {
+    state.audio.src = url;
+    state.audio.volume = 0.85;
+    state.audio.play().catch(() => {});
+  } else {
+    state.audio = new Audio(url);
+    state.audio.volume = 0.85;
+    state.audio.play().catch(() => {});
+  }
+  state.clipTimeout = setTimeout(() => stopClip(), (CLIP_DURATION + 5) * 1000);
 }
 
 function waveformHTML() {
@@ -557,13 +566,11 @@ async function fetchQuestions() {
 
 function unlockAudio() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
-    src.buffer = buf;
-    src.connect(ctx.destination);
-    src.start(0);
-    window._audioCtx = ctx;
+    if (!state.audio) {
+      state.audio = new Audio(SILENT_AUDIO);
+      state.audio.volume = 0;
+      state.audio.play().catch(() => {});
+    }
   } catch(e) {}
 }
 
