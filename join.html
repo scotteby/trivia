@@ -271,13 +271,7 @@ function startLobbyPoll() {
       await fetchFullRoom();
       state.hasAnswered = false;
       state.selectedAnswer = null;
-      const qi = state.room?.current_question_index || 0;
-      if (qi === 0) {
-        // Host already counted down — go straight to ingame
-        showIngame();
-      } else {
-        showIngame();
-      }
+      showRoundStarting(1);
     } catch(e) {}
   }, 2000);
 }
@@ -340,9 +334,8 @@ function subscribeAsPlayer() {
         clearTimeout(state.roundLeaderboardTimeout);
         state.hasAnswered = false;
         state.selectedAnswer = null;
-        if (state.view === 'lobby' || state.view === 'roundstarting') {
-          // Host already counted down — go straight to ingame
-          fetchFullRoom().then(() => showIngame());
+        if (state.view === 'lobby') {
+          fetchFullRoom().then(() => showRoundStarting(1));
           return;
         }
         if (state.view === 'roundleaderboard') {
