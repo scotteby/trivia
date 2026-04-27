@@ -952,7 +952,7 @@ async function showPlayerResults() {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
-        <div style="font-size:36px;margin-bottom:8px;">${emoji}</div>
+        <div style="font-size:${myRank === 1 ? '56px' : '36px'};line-height:1;margin-bottom:8px;">${emoji}</div>
         <div style="font-size:22px;font-weight:500;color:#1a1a2e;margin-bottom:4px;">${msg}</div>
         <div style="font-size:12px;color:#9090b8;">Room ${state.room.room_code}</div>
       </div>

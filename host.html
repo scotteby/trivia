@@ -2013,7 +2013,7 @@ function showResults() {
       const label = top3.length >= 2 ? labels[i] : '1st 🥇';
       const podBg = top3.length >= 2 ? bgColors[i] : '#ede9fe';
       return `<div class="podium-slot">
-        <div style="font-size:20px;margin-bottom:4px;">${(i === 1 || top3.length < 2) ? '🏆' : i === 0 ? '🥈' : '🥉'}</div>
+        <div style="font-size:${(i === 1 || top3.length < 2) ? '36px' : '22px'};line-height:1;margin-bottom:6px;">${(i === 1 || top3.length < 2) ? '🏆' : i === 0 ? '🥈' : '🥉'}</div>
         <div style="margin:0 auto 6px;width:fit-content;">${avatarHTML(p, i===1||top3.length<2?44:36)}</div>
         <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#1a1a2e':'#6b6b9a'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
         <div class="podium-bar" style="background:${podBg};border:1px solid #e4e4f0;height:${h}px;width:80px;flex-direction:column;">
