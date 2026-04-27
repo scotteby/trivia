@@ -896,6 +896,8 @@ function nextQuestion() {
 }
 
 // ─── RESULTS ─────────────────────────────────────────────────────────────────
+let practiceGameCounted = false;
+
 async function incrementGamesPlayed() {
   try {
     const { data } = await sb.from('game_stats').select('count').eq('id', 'total_games').single();
@@ -904,7 +906,10 @@ async function incrementGamesPlayed() {
 }
 
 function showResults() {
-  incrementGamesPlayed();
+  if (!practiceGameCounted) {
+    practiceGameCounted = true;
+    incrementGamesPlayed();
+  }
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'results';
