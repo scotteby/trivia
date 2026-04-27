@@ -10,6 +10,7 @@ const PRESETS = {
   brainiac: { categories: ['Science', 'History', 'Geography'] },
   musicmix: { categories: ['General knowledge', '90s music', 'Pop culture'] },
   kids:     { categories: ['Disney & Pixar', 'Animals & nature', 'Cartoons & animation', 'Books & stories', 'Science & space'] },
+  pictures: { categories: ['Flags', 'Landmarks', 'Art & Paintings', 'Famous people', 'Images'] },
 };
 
 const MUSIC_CATS = new Set([

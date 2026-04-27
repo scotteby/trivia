@@ -185,12 +185,13 @@ let state = {
 };
 
 const PRESETS = {
-  mixed:    { name: 'Mixed bag',           desc: 'Something for everyone',  tags: [['General','purple'],['History','purple'],['90s music','purple'],['Sports','purple'],['Pop culture','purple']] },
-  music:    { name: 'Music night',         desc: 'All music rounds',        tags: [['80s hits','blue'],['90s pop','blue'],['Current hits','blue']], isMusic: true },
-  sports:   { name: 'Sports bar',          desc: 'Heavy on sports',         tags: [['Sports','green'],['General','green'],['Pop culture','green']] },
-  brainiac: { name: 'Brainiac',            desc: 'Hard mode',               tags: [['Science','amber'],['History','amber'],['Geography','amber']] },
-  musicmix: { name: 'Music + general mix', desc: 'Most popular',            tags: [['General','blue'],['90s music','blue'],['Pop culture','blue']], isMusic: true, popular: true },
-  kids:     { name: 'Kids night',          desc: 'Family friendly fun',     tags: [['Disney','amber'],['Animals','amber'],['Cartoons','amber']] },
+  mixed:    { name: 'Mixed bag',           desc: 'Something for everyone',  icon: '🎲' },
+  music:    { name: 'Music night',         desc: 'All music rounds',        icon: '🎵', isMusic: true },
+  sports:   { name: 'Sports bar',          desc: 'Heavy on sports',         icon: '🏆' },
+  brainiac: { name: 'Brainiac',            desc: 'Hard mode',               icon: '🔬' },
+  kids:     { name: 'Kids night',          desc: 'Family friendly fun',     icon: '⭐' },
+  pictures: { name: 'Picture round',       desc: 'Flags, landmarks & art',  icon: '🖼️', isImage: true },
+  musicmix: { name: 'Music + general mix', desc: 'The crowd favourite',     icon: '🎶', isMusic: true, popular: true },
 };
 
 const CATEGORY_DATA = [
@@ -418,22 +419,39 @@ function showSetup() {
   state.view = 'setup';
   const presetCards = Object.entries(PRESETS).map(([key, p]) => {
     const isSelected = state.preset === key;
-    const cardClass = p.isMusic ? `preset-card music-card${isSelected ? ' selected' : ''}` : `preset-card${isSelected ? ' selected' : ''}`;
-    const tags = p.tags.map(([t, c]) => `<span class="tag tag-${c}">${t}</span>`).join('');
+    const isFull = key === 'musicmix';
+    const borderColor = isSelected ? '#7c3aed' : p.isMusic ? '#93c5fd' : '#e4e4f0';
+    const bg = isSelected ? '#f5f3ff' : p.isMusic ? '#eff6ff' : '#ffffff';
+    const nameColor = isSelected ? '#5b21b6' : p.isMusic ? '#1d4ed8' : '#1a1a2e';
+    const descColor = isSelected ? '#7c3aed' : p.isMusic ? '#378add' : '#9090b8';
     const check = isSelected ? `<div style="width:18px;height:18px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0;">✓</div>` : '';
-    const popularBadge = p.popular ? `<span class="badge badge-blue" style="font-size:10px;">Most popular</span>` : '';
-    return `
-      <div class="${cardClass}" onclick="selectPreset('${key}')" style="${key === 'musicmix' ? 'grid-column:span 2;' : ''}">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:${p.isMusic ? '#1d4ed8' : '#1a1a2e'};">${p.name}</div>
-            <div style="font-size:11px;color:${p.isMusic ? '#378add' : '#9090b8'};">${p.desc}</div>
+    const popularBadge = p.popular ? `<div style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:6px;">Most popular</div>` : '';
+
+    if (isFull) {
+      return `
+        <div onclick="selectPreset('${key}')"
+          style="grid-column:span 2;background:${bg};border:2px solid ${borderColor};border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="font-size:28px;flex-shrink:0;">${p.icon}</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:${nameColor};">${p.name}</div>
+              <div style="font-size:11px;color:${descColor};margin-top:2px;">${p.desc}</div>
+              ${popularBadge}
+            </div>
           </div>
-          ${check}${popularBadge}
+        </div>`;
+    }
+
+    return `
+      <div onclick="selectPreset('${key}')"
+        style="background:${bg};border:2px solid ${borderColor};border-radius:12px;padding:14px;cursor:pointer;transition:border-color .15s;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div style="font-size:22px;">${p.icon}</div>
+          ${check}
         </div>
-        <div>${tags}</div>
-      </div>
-    `;
+        <div style="font-size:13px;font-weight:500;color:${nameColor};">${p.name}</div>
+        <div style="font-size:11px;color:${descColor};margin-top:2px;">${p.desc}</div>
+      </div>`;
   }).join('');
 
   const roundBtns = [2, 3, 4].map(r =>
