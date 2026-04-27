@@ -222,8 +222,8 @@ module.exports = async function handler(req, res) {
     }
     if (genreMusicCats.length > 0) {
       fmtParts.push(`For music categories (${genreMusicCats.join(', ')}):
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
-Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"
+{"type":"music","artist":"Artist Name","song":"Song Title","q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"${explainField}}
+Alternate "q" randomly between: "Who is this artist?" and "What is this song called?"
 Music constraint (follow strictly): ${getMusicConstraint(genreMusicCats[0] || 'music')}
 Session seed (ignore): ${Date.now()}-${Math.random()}${avoidSongBlock ? '\n' + avoidSongBlock : ''}`);
     }
@@ -285,8 +285,8 @@ For general questions:
 Mix categories: Science, History, Geography, Pop Culture, Sports.
 
 For the music question:
-{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
-Alternate "q" randomly among: "Who is this artist?", "What is this song called?", "What year was this released?"
+{"type":"music","artist":"Artist Name","song":"Song Title","q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
+Alternate "q" randomly between: "Who is this artist?" and "What is this song called?"
 Music constraint (follow strictly): ${getMusicConstraint('music')}
 Session seed (ignore): ${Date.now()}-${Math.random()}
 

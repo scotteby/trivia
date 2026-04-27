@@ -202,9 +202,9 @@ async function generateQuestions(categories, total, difficulty = 'mixed', custom
   const genreMusicCats = musicCats.filter(c => customCatsMeta[c]?.musicType !== 'artist');
 
   let fmt = '';
-  const musicFmt = `{"type":"music","artist":"Artist Name","song":"Song Title","year":1999,"q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
+  const musicFmt = `{"type":"music","artist":"Artist Name","song":"Song Title","q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Category"}`;
   const artistCatRules = artistTypeCats.length > 0
-    ? `\nFor ARTIST categories (${artistTypeCats.join(', ')}): the category IS the artist — never ask "Who is this artist?". Only use question types: "What is this song?", "What year was this released?", "What album is this from?". Wrong answer options must be other songs, years, or albums by the SAME artist.`
+    ? `\nFor ARTIST categories (${artistTypeCats.join(', ')}): the category IS the artist — never ask "Who is this artist?". Only use question type: "What is this song?". Wrong answer options must be other songs by the SAME artist.`
     : '';
 
   const imageFmt = `{"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"What is this?","opts":["A","B","C","D"],"ans":0,"cat":"Category","hint":"Brief description of what makes this image identifiable"}`;
