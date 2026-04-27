@@ -142,18 +142,32 @@ async function joinGame() {
 
     state.room = rooms;
 
-    // Create player
-    const { data: playerData, error: playerError } = await sb.from('players').insert({
-      room_id: rooms.id,
-      name,
-      score: 0,
-      answers: [],
-    }).select().single();
+    // Check if a player with this name already exists in the room (e.g. after page reload)
+    const { data: existingPlayer } = await sb.from('players')
+      .select('*')
+      .eq('room_id', rooms.id)
+      .eq('name', name)
+      .maybeSingle();
 
-    if (playerError) throw new Error('Failed to join room.');
+    let playerData;
+    if (existingPlayer) {
+      playerData = existingPlayer;
+      state.localScore = existingPlayer.score || 0;
+      state.answers = existingPlayer.answers || [];
+    } else {
+      const { data: newPlayer, error: playerError } = await sb.from('players').insert({
+        room_id: rooms.id,
+        name,
+        score: 0,
+        answers: [],
+      }).select().single();
+      if (playerError) throw new Error('Failed to join room.');
+      playerData = newPlayer;
+      state.localScore = 0;
+      state.answers = [];
+    }
+
     state.player = playerData;
-    state.answers = [];
-    state.localScore = 0;
 
     // Cache for refresh recovery and rejoin
     localStorage.setItem('trivia_player_id', playerData.id);
@@ -441,7 +455,10 @@ function showIngame() {
     </div>
   `);
 
-  if (isMusic) playClip(q.preview_url);
+  if (isMusic) {
+    const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
+    if (elapsed < CLIP_DURATION) playClip(q.preview_url);
+  }
   startPlayerTimer(timerDuration, isMusic);
 
   // If player already answered this question (e.g. after a reload), restore their answer state
