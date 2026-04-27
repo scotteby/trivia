@@ -1261,10 +1261,15 @@ function playClip(url) {
 }
 
 function forcePlayClip(url) {
-  stopClip();
-  state.audio = new Audio(url);
-  state.audio.volume = 1;
-  state.audio.play().catch(() => {});
+  if (state.audio) {
+    state.audio.src = url;
+    state.audio.volume = 1;
+    state.audio.play().catch(() => {});
+  } else {
+    state.audio = new Audio(url);
+    state.audio.volume = 1;
+    state.audio.play().catch(() => {});
+  }
   state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
   const cs = document.getElementById('clipStatus');
   if (cs) cs.textContent = 'Playing clip…';
