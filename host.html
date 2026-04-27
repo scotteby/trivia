@@ -1160,7 +1160,7 @@ function showIngame() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
         ${exitTvBtn}
-        <div style="font-size:12px;color:#9090b8;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}</div>
+        <div style="font-size:12px;color:#9090b8;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
         <div class="ingame-room-code" style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:20px;padding:4px 14px;font-size:13px;color:#6d28d9;font-weight:500;">Join: <span style="color:#1a1a2e;letter-spacing:.1em;">${room.room_code}</span></div>
       </div>
 
@@ -1375,7 +1375,7 @@ function showIngameAsPlayer() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
+        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
         <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
@@ -1432,10 +1432,15 @@ async function submitHostAnswer(idx) {
     : Math.max(0, totalElapsed - QUESTION_REVEAL_SECS);
   const correct = idx === q.ans;
 
+  const questionsPerRound = 5;
+  const roundNum = Math.floor(qi / questionsPerRound) + 1;
+  const basePoints = 100 * roundNum;
+  const maxBonus = 50 * roundNum;
+
   let pts = 0;
   if (correct) {
-    const bonus = Math.round(5 * Math.max(0, (timerDuration - countElapsed) / timerDuration));
-    pts = 10 + bonus;
+    const bonus = Math.round(maxBonus * Math.max(0, (timerDuration - countElapsed) / timerDuration));
+    pts = basePoints + bonus;
     state.hostScore += pts;
   }
 
@@ -1668,7 +1673,11 @@ function showRoundLeaderboard(completedRound) {
               <div style="font-size:22px;font-weight:500;color:#1a1a2e;">Leaderboard</div>
               ${myRank > 0 ? `<div style="font-size:13px;color:#9090b8;margin-top:4px;">You're #${myRank}</div>` : ''}
             </div>
-            <div class="card" style="margin-bottom:20px;">${lbRows}</div>
+            <div class="card" style="margin-bottom:16px;">${lbRows}</div>
+            <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:16px;">
+              <div style="font-size:13px;color:#6d28d9;font-weight:500;">Round ${nextRound} is worth ${nextRound}× points</div>
+              <div style="font-size:11px;color:#9090b8;margin-top:2px;">Time to catch up — or pull ahead</div>
+            </div>
             <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
               Start round ${nextRound} — ${nextRoundCat} →
             </button>
@@ -1688,9 +1697,14 @@ function showRoundLeaderboard(completedRound) {
         <div style="font-size:24px;font-weight:500;color:#1a1a2e;">Leaderboard</div>
       </div>
 
-      <div class="card" style="margin-bottom:20px;">
+      <div class="card" style="margin-bottom:16px;">
         <div class="sub-label">Standings after round ${completedRound}</div>
         ${lbRows || '<div style="color:#9090b8;font-size:13px;">No players</div>'}
+      </div>
+
+      <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:13px;color:#6d28d9;font-weight:500;">Round ${nextRound} is worth ${nextRound}× points</div>
+        <div style="font-size:11px;color:#9090b8;margin-top:2px;">Time to catch up — or pull ahead</div>
       </div>
 
       <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">

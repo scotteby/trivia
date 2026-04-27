@@ -482,7 +482,7 @@ function showIngame() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}</div>
+        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
         <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
         <div style="font-size:12px;color:#9090b8;" id="scoreDisplay">${state.localScore} pts</div>
       </div>
@@ -590,10 +590,15 @@ async function submitAnswer(idx) {
   const elapsed = isMusic ? Math.max(0, totalElapsed - CLIP_DURATION) : totalElapsed;
   const correct = idx === q.ans;
 
+  const questionsPerRound = 5;
+  const roundNum = Math.floor(qi / questionsPerRound) + 1;
+  const basePoints = 100 * roundNum;
+  const maxBonus = 50 * roundNum;
+
   let pts = 0;
   if (correct) {
-    const bonus = Math.round(5 * Math.max(0, (timerDuration - elapsed) / timerDuration));
-    pts = 10 + bonus;
+    const bonus = Math.round(maxBonus * Math.max(0, (timerDuration - elapsed) / timerDuration));
+    pts = basePoints + bonus;
     state.localScore += pts;
   }
 
@@ -710,6 +715,11 @@ async function showRoundLeaderboard(completedRound) {
 
       <div class="card" style="margin-bottom:16px;">${lbRows}</div>
 
+      ${!isLastRound ? `<div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:12px;">
+        <div style="font-size:13px;color:#6d28d9;font-weight:500;">Round ${completedRound + 1} is worth ${completedRound + 1}× points</div>
+        <div style="font-size:11px;color:#9090b8;margin-top:2px;">Time to catch up — or pull ahead</div>
+      </div>` : ''}
+
       <div style="background:#f0f0fa;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#9090b8;">
         ${isLastRound ? 'Waiting for final results…' : 'Waiting for host to start next round…'}
         ${!isLastRound ? `<div style="margin-top:8px;display:flex;justify-content:center;gap:4px;">
@@ -757,7 +767,8 @@ async function showPlayerResults() {
 
   const emoji = myRank === 1 ? '🏆' : myRank <= 3 ? '⭐' : '👍';
   const msg = myRank === 1 ? 'You won!' : myRank <= 3 ? 'Great work!' : 'Good game!';
-  const maxScore = (state.room.questions?.length || 0) * 15;
+  const totalRounds = state.room.config?.rounds || 3;
+  const maxScore = Array.from({length: totalRounds}, (_, i) => 150 * (i + 1) * 5).reduce((a, b) => a + b, 0);
 
   const lbRows = sorted.map((p, i) => {
     const [bg, fg] = avatarColor(p.name);
