@@ -693,10 +693,10 @@ async function showRoundLeaderboard(completedRound) {
     const [bg, fg] = avatarColor(p.name);
     const isMe = p.id === state.player?.id;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:8px;${isMe ? 'background:#f5f3ff;' : ''}margin-bottom:4px;">
-      <div style="font-size:13px;color:${i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
+      <div style="font-size:13px;color:${isMe ? '#5b21b6' : i < 3 ? '#a78bfa' : '#9090b8'};width:20px;font-weight:${i < 3 ? 600 : 400};">${i + 1}</div>
       <div class="avatar" style="width:30px;height:30px;font-size:10px;background:${bg};color:${fg};">${p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</div>
-      <div style="flex:1;font-size:14px;color:${isMe ? '#c4b5fd' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
-      <div style="font-size:14px;color:#a78bfa;font-weight:600;">${p.score}</div>
+      <div style="flex:1;font-size:14px;color:${isMe ? '#5b21b6' : '#1a1a2e'};font-weight:${isMe ? 500 : 400};">${isMe ? p.name + ' (you)' : p.name}</div>
+      <div style="font-size:14px;color:${isMe ? '#5b21b6' : '#a78bfa'};font-weight:600;">${p.score}</div>
     </div>`;
   }).join('');
 
@@ -765,8 +765,8 @@ async function showPlayerResults() {
     return `<div style="display:flex;align-items:center;gap:10px;padding:8px ${isMe?'8px':'0'};border-bottom:1px solid #e4e4f0;${isMe?'background:#f5f3ff;border-radius:6px;margin:0 -4px;':''}">
       <div style="font-size:12px;color:${i<3?'#7c3aed':'#9090b8'};width:18px;">${i+1}</div>
       <div class="avatar" style="width:26px;height:26px;font-size:9px;background:${bg};color:${fg};">${p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-      <div style="flex:1;font-size:13px;color:${isMe?'#c4b5fd':'#1a1a2e'};font-weight:${isMe?500:400};">${isMe ? 'You ('+p.name+')' : p.name}</div>
-      <div style="font-size:13px;color:#a78bfa;font-weight:500;">${p.score}</div>
+      <div style="flex:1;font-size:13px;color:${isMe?'#5b21b6':'#1a1a2e'};font-weight:${isMe?500:400};">${isMe ? 'You ('+p.name+')' : p.name}</div>
+      <div style="font-size:13px;color:${isMe?'#5b21b6':'#a78bfa'};font-weight:500;">${p.score}</div>
     </div>`;
   }).join('');
 
