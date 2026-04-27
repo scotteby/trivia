@@ -1329,6 +1329,37 @@ function playClip(url) {
   state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
 }
 
+function playVictoryFanfare() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+
+    function playNote(freq, startTime, duration, gain = 0.28, type = 'triangle') {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, startTime);
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.02);
+      gainNode.gain.setValueAtTime(gain, startTime + duration - 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.05);
+    }
+
+    // C E G C — ascending then held chord
+    playNote(261.6, t + 0.0,  0.18);
+    playNote(329.6, t + 0.18, 0.18);
+    playNote(392.0, t + 0.36, 0.18);
+    playNote(523.2, t + 0.54, 0.6, 0.32);
+    // harmony on the final note
+    playNote(392.0, t + 0.54, 0.6, 0.18, 'sine');
+    playNote(329.6, t + 0.54, 0.6, 0.12, 'sine');
+  } catch(e) {}
+}
+
 function forcePlayClip(url) {
   if (state.audio) {
     state.audio.src = url;
@@ -1934,6 +1965,7 @@ async function incrementGamesPlayed() {
 
 function showGameOver() {
   incrementGamesPlayed();
+  playVictoryFanfare();
   clearInterval(state.timerInterval);
   clearInterval(state.autoAdvanceTimeout);
   stopClip();
