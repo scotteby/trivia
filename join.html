@@ -259,17 +259,22 @@ function startLobbyPoll() {
     if (state.view !== 'lobby') { clearInterval(state.lobbyPollInterval); return; }
     try {
       const { data } = await sb.from('game_rooms')
-        .select('status')
+        .select('status,question_start_time,current_question_index')
         .eq('id', state.room.id).maybeSingle();
       if (!data || data.status !== 'active') return;
+      if (!data.question_start_time) {
+        // Status active but start time not set yet — keep polling
+        state.room = { ...state.room, ...data };
+        return;
+      }
       clearInterval(state.lobbyPollInterval);
       await fetchFullRoom();
       state.hasAnswered = false;
       state.selectedAnswer = null;
       const qi = state.room?.current_question_index || 0;
-      const roundNum = Math.floor(qi / 5) + 1;
       if (qi === 0) {
-        showRoundStarting(1);
+        // Host already counted down — go straight to ingame
+        showIngame();
       } else {
         showIngame();
       }
@@ -325,29 +330,33 @@ function subscribeAsPlayer() {
         return;
       }
 
-      if (updated.status === 'active') {
-        if (prev.status === 'lobby' || prev.status !== 'active') {
-          // Game just started
-          clearInterval(state.lobbyPollInterval);
-          clearTimeout(state.roundLeaderboardTimeout);
-          state.hasAnswered = false;
-          state.selectedAnswer = null;
-          setHTML(`<div style="text-align:center;padding:80px 20px;">
-            <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
-            <div style="font-size:13px;color:#9090b8;">Loading questions</div>
-          </div>`);
-          fetchFullRoom().then(() => showRoundStarting(1));
-        } else if (state.view === 'roundleaderboard' && updated.question_start_time !== prev.question_start_time) {
-          // Host clicked "Start round X" — same question_index but new start time
-          clearTimeout(state.roundLeaderboardTimeout);
-          state.hasAnswered = false;
-          state.selectedAnswer = null;
+      if (updated.status === 'active' && prev.status !== 'active') {
+        // Status just became active — note it but wait for question_start_time to be set
+        clearInterval(state.lobbyPollInterval);
+        return;
+      }
+
+      if (state.room?.status === 'active' && updated.question_start_time &&
+          updated.question_start_time !== prev.question_start_time) {
+        clearTimeout(state.roundLeaderboardTimeout);
+        state.hasAnswered = false;
+        state.selectedAnswer = null;
+        if (state.view === 'lobby' || state.view === 'roundstarting') {
+          // Host already counted down — go straight to ingame
+          fetchFullRoom().then(() => showIngame());
+          return;
+        }
+        if (state.view === 'roundleaderboard') {
           fetchFullRoom().then(() => {
             const qi = state.room.current_question_index || 0;
             const roundNum = Math.floor(qi / 5) + 1;
             showRoundStarting(roundNum);
           });
-        } else if (updated.current_question_index !== prev.current_question_index) {
+          return;
+        }
+      }
+
+      if (state.room?.status === 'active' && updated.current_question_index !== prev.current_question_index) {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
@@ -367,7 +376,6 @@ function subscribeAsPlayer() {
             </div>`);
             fetchFullRoom().then(() => showIngame());
           }
-        }
       }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, payload => {
@@ -492,7 +500,6 @@ async function showRoundStarting(roundNum) {
   }
   if (circle) circle.style.strokeDashoffset = circumference;
 
-  await fetchFullRoom();
   showIngame();
 }
 
