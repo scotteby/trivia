@@ -17,8 +17,8 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
-#app { max-width: 420px; margin: 0 auto; padding: 1.5rem 1rem; }
-.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
+#app { max-width: 440px; margin: 0 auto; padding: 1.5rem 1rem; }
+.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
 .badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
 .badge-purple { background: #ede9fe; color: #6d28d9; }
 .badge-green { background: #f0fdf4; color: #166534; }
@@ -26,15 +26,15 @@ body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-syste
 .btn-primary:hover:not(:disabled) { background: #6d28d9; }
 .btn-primary:disabled { opacity: .5; cursor: default; }
 .btn-outline { background: transparent; border: 1px solid #e4e4f0; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #9090b8; cursor: pointer; width: 100%; transition: border-color .2s; min-height: 44px; }
-.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 16px 14px; font-size: 16px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 54px; display: block; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
+.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 18px 16px; font-size: 17px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 58px; display: block; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(100,100,200,0.06); }
 .option-btn:active:not([disabled]) { transform: scale(.97); }
 .option-btn[disabled] { cursor: default; }
 .option-btn.selected { border-color: #7c3aed; color: #5b21b6; background: #f5f3ff; }
 .option-btn.correct { border-color: #22c55e; color: #166534; background: #f0fdf4; }
 .option-btn.wrong { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
-.player-chip { background: #f5f5fa; border: 1px solid #e4e4f0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.player-chip { background: #f5f5fa; border: 1px solid #e4e4f0; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
-.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid #e4e4f0; }
+.timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 15px; font-weight: 600; display: inline-block; border: 1px solid #e4e4f0; }
 .timer-ok { color: #6d28d9; border-color: #c4b5fd; background: #ede9fe; }
 .timer-warn { color: #92400e; border-color: #fcd34d; background: #fef3c7; }
 .timer-danger { color: #991b1b; border-color: #fca5a5; background: #fee2e2; }
@@ -99,7 +99,7 @@ function showJoin(prefill = '', namePrefill = '') {
         <input id="codeInput" type="text" maxlength="5" placeholder="e.g. PIZZA"
           value="${prefill}"
           autocomplete="off" spellcheck="false"
-          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:14px 16px;font-size:22px;color:#1a1a2e;width:100%;text-align:center;letter-spacing:.2em;font-weight:600;text-transform:uppercase;margin-bottom:0;"
+          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:14px 16px;font-size:24px;color:#1a1a2e;width:100%;text-align:center;letter-spacing:.2em;font-weight:600;text-transform:uppercase;margin-bottom:0;"
           oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"
           onkeydown="if(event.key==='Enter')document.getElementById('nameInput')?.focus()" />
       </div>
@@ -108,7 +108,7 @@ function showJoin(prefill = '', namePrefill = '') {
         <div style="font-size:12px;color:#9090b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
         <input id="nameInput" type="text" maxlength="20" placeholder="Enter your name"
           value="${namePrefill}"
-          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:12px 16px;font-size:16px;color:#1a1a2e;width:100%;"
+          style="background:#ffffff;border:1px solid #d0d0e8;border-radius:10px;padding:12px 16px;font-size:17px;color:#1a1a2e;width:100%;"
           onkeydown="if(event.key==='Enter')joinGame()" />
       </div>
 
@@ -680,7 +680,7 @@ async function showPlayerResults() {
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:14px;">
-        <div style="font-size:48px;font-weight:500;color:#a78bfa;line-height:1;">${state.localScore}</div>
+        <div style="font-size:54px;font-weight:500;color:#a78bfa;line-height:1;">${state.localScore}</div>
         <div style="font-size:13px;color:#9090b8;margin-top:4px;">out of ${maxScore} points · ${myRank > 0 ? myRank + ordinal(myRank) + ' place' : 'unranked'}</div>
       </div>
 
