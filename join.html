@@ -362,10 +362,14 @@ function subscribeAsPlayer() {
       }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, payload => {
-      if (payload.eventType === 'INSERT' && state.view === 'lobby') {
-        state.players = [...state.players.filter(p => p.id !== payload.new.id), { id: payload.new.id, name: payload.new.name }];
-        renderLobbyList();
+      if (payload.eventType === 'INSERT') {
+        state.players = [...(state.players || []).filter(p => p.id !== payload.new.id), payload.new];
+      } else if (payload.eventType === 'DELETE') {
+        state.players = (state.players || []).filter(p => p.id !== payload.old.id);
+      } else if (payload.eventType === 'UPDATE') {
+        state.players = (state.players || []).map(p => p.id === payload.new.id ? { ...p, ...payload.new } : p);
       }
+      if (state.view === 'lobby') renderLobbyList();
     })
     .subscribe();
 }
