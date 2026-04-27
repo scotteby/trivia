@@ -891,11 +891,11 @@ function showDevError() {
 function hostLbRowHTML(p, rank, isMe) {
   const qi = state.room?.current_question_index;
   const correct = isMe ? (state.hostAnswer === state.room?.questions?.[qi]?.ans) : false;
-  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
-    <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-    ${avatarHTML(p, 24)}
-    <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
-    <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+  return `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:3px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
+    <div style="font-size:11px;color:${rank<=3?'#7c3aed':'#9090b8'};width:14px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
+    ${avatarHTML(p, 20)}
+    <div style="flex:1;font-size:11px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:11px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
   </div>`;
 }
 
@@ -1507,7 +1507,7 @@ function showIngameAsPlayer() {
   const isImage = q.type === 'image' && !!(q.image_url);
 
   const musicBanner = isMusic ? `
-    <div style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center;">
+    <div style="background:#f5f3ff;border-radius:10px;padding:8px 12px;margin-bottom:8px;text-align:center;">
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
         ${waveformHTML()}
       </div>
@@ -1524,7 +1524,7 @@ function showIngameAsPlayer() {
 
   setHTML(`
     <div class="fade-in">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;">
         <button onclick="newGame()" style="background:transparent;border:1px solid #d0d0e8;border-radius:8px;padding:5px 10px;font-size:12px;color:#9090b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>
         <div style="text-align:center;flex:1;min-width:0;">
           <div style="font-size:12px;color:#7c3aed;white-space:nowrap;">Round ${roundNum} · Q${qInRound}</div>
@@ -1536,25 +1536,25 @@ function showIngameAsPlayer() {
       ${musicBanner}
       ${imageBanner}
 
-      <div style="background:#ede9fe;border-radius:8px;padding:6px 12px;margin-bottom:10px;display:inline-block;">
+      <div style="background:#ede9fe;border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block;">
         <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
-      <div class="card" style="margin-bottom:14px;">
+      <div class="card" style="margin-bottom:10px;">
         <div style="font-size:17px;font-weight:500;color:#1a1a2e;line-height:1.5;">${q.q}</div>
       </div>
 
       <div id="hostPlayerOptionGrid" style="visibility:${isMusic ? 'visible' : 'hidden'};pointer-events:${isMusic ? 'auto' : 'none'};">
         ${q.opts.map((o, i) => `
           <button id="hostOpt${i}" onclick="submitHostAnswer(${i})"
-            style="background:#ffffff;border:2px solid #e4e4f0;border-radius:12px;padding:16px 14px;font-size:16px;color:#2a2a4a;width:100%;text-align:left;cursor:pointer;margin-bottom:10px;display:block;pointer-events:auto;transition:all .15s;">
+            style="background:#ffffff;border:2px solid #e4e4f0;border-radius:12px;padding:13px 14px;font-size:16px;color:#2a2a4a;width:100%;text-align:left;cursor:pointer;margin-bottom:7px;display:block;pointer-events:auto;transition:all .15s;">
             ${String.fromCharCode(65+i)} &nbsp; ${o}
           </button>`).join('')}
       </div>
 
       <div id="hostPlayerStatus" style="background:#f5f5fa;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#9090b8;margin-top:4px;display:none;"></div>
 
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e4e4f0;display:flex;justify-content:space-between;align-items:center;">
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid #e4e4f0;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:12px;color:#9090b8;" id="hostPlayerResponseStatus">Waiting for answers…</div>
         <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
       </div>
@@ -1739,16 +1739,16 @@ async function revealAnswerAsPlayer(timedOut) {
     statusEl.style.background = 'transparent';
     statusEl.style.padding = '0';
     statusEl.innerHTML = `
-      <div style="background:${panelBg};border:1.5px solid ${panelBorder};border-radius:14px;padding:14px 16px;margin-top:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="background:${panelBg};border:1.5px solid ${panelBorder};border-radius:14px;padding:10px 12px;margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <div style="font-size:15px;font-weight:500;color:${verdictColor};">${verdictText}</div>
           ${pts > 0 ? `<div style="font-size:13px;font-weight:600;background:${correct?'#dcfce7':'#fee2e2'};color:${verdictColor};padding:4px 12px;border-radius:20px;">+${pts} pts</div>` : ''}
         </div>
-        <div style="font-size:13px;color:#6b7280;margin-bottom:4px;"><span id="revealGotRight" style="font-weight:500;color:#1a1a2e;">${gotRight} of ${total}</span> players got it right</div>
-        <div style="height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:12px;">
+        <div style="font-size:13px;color:#6b7280;margin-bottom:3px;"><span id="revealGotRight" style="font-weight:500;color:#1a1a2e;">${gotRight} of ${total}</span> players got it right</div>
+        <div style="height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:8px;">
           <div id="revealBar" style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .6s ease;"></div>
         </div>
-        <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Leaderboard</div>
+        <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Leaderboard</div>
         <div id="revealLeaderboard">${lbHTML}</div>
       </div>`;
   }
@@ -1973,7 +1973,7 @@ function showGameOver() {
 
   setHTML(`
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px;">
-      <div style="font-size:64px;margin-bottom:24px;animation:trophy 0.6s ease-out forwards;">🏆</div>
+      <div style="font-size:96px;margin-bottom:24px;animation:trophy 0.6s ease-out forwards;">🏆</div>
       <div style="font-size:28px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Game over!</div>
       <div style="font-size:15px;color:#9090b8;margin-bottom:32px;">Calculating final scores…</div>
       <div style="display:flex;gap:6px;justify-content:center;">
@@ -2007,14 +2007,14 @@ function showResults() {
     if (top3.length === 0) return '<div style="text-align:center;color:#9090b8;">No players</div>';
     const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : [top3[0]];
     const heights = [70, 90, 55];
-    const labels = top3.length >= 2 ? ['2nd', '1st 🥇', '3rd'] : ['1st 🥇'];
+    const labels = top3.length >= 2 ? ['🥈 2nd', '🥇 1st', '🥉 3rd'] : ['🥇 1st'];
     const bgColors = ['#dcfce7', '#ede9fe', '#fee2e2'];
     return `<div class="podium">${order.map((p, i) => {
       const h = top3.length >= 2 ? heights[i] : 90;
       const label = top3.length >= 2 ? labels[i] : '1st 🥇';
       const podBg = top3.length >= 2 ? bgColors[i] : '#ede9fe';
       return `<div class="podium-slot">
-        ${i === 1 || top3.length < 2 ? '<div style="font-size:20px;margin-bottom:4px;">🏆</div>' : ''}
+        <div style="font-size:20px;margin-bottom:4px;">${(i === 1 || top3.length < 2) ? '🏆' : i === 0 ? '🥈' : '🥉'}</div>
         <div style="margin:0 auto 6px;width:fit-content;">${avatarHTML(p, i===1||top3.length<2?44:36)}</div>
         <div style="font-size:${i===1||top3.length<2?13:12}px;color:${i===1||top3.length<2?'#1a1a2e':'#6b6b9a'};margin-bottom:6px;font-weight:${i===1||top3.length<2?500:400};">${p.name}</div>
         <div class="podium-bar" style="background:${podBg};border:1px solid #e4e4f0;height:${h}px;width:80px;flex-direction:column;">
