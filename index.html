@@ -20,7 +20,7 @@ body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-syste
 #app { max-width: 480px; margin: 0 auto; padding: 1.5rem 1rem; }
 
 /* Cards & layout */
-.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
+.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
 .card.featured { border-color: #c4b5fd; background: #f5f3ff; }
 .badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
 .badge-purple { background: #ede9fe; color: #6d28d9; }
@@ -134,65 +134,65 @@ async function showHome() {
   if (data) todayHS = data.score ? { score: data.score, setAt: data.set_at } : null;
 
   const hsLine = todayHS
-    ? `<div style="font-size:12px;color:#a78bfa;font-weight:500;">${todayHS.score} / ${TOTAL_MAX} pts</div>`
-    : `<div style="font-size:12px;color:#9090b8;">No games played yet</div>`;
+    ? `<div style="font-size:14px;color:#a78bfa;font-weight:500;">${todayHS.score} / ${TOTAL_MAX} pts</div>`
+    : `<div style="font-size:14px;color:#9090b8;">No games played yet</div>`;
 
   setHTML(`
     <div class="fade-in">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="font-size:26px;font-weight:500;color:#a78bfa;margin-bottom:4px;">Quizzli</div>
-        <div style="font-size:12px;color:#9090b8;">${DATE_STR}</div>
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:32px;font-weight:500;color:#a78bfa;margin-bottom:4px;">Quizzli</div>
+        <div style="font-size:14px;color:#9090b8;">${DATE_STR}</div>
       </div>
 
       <!-- Daily challenge -->
-      <div class="card featured" style="margin-bottom:10px;">
+      <div class="card featured" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:500;color:#1a1a2e;">Daily Quizzli</div>
-            <div style="font-size:11px;color:#7c3aed;">5 questions · resets midnight</div>
+            <div style="font-size:16px;font-weight:500;color:#1a1a2e;">Daily Quizzli</div>
+            <div style="font-size:13px;color:#7c3aed;">5 questions · resets midnight</div>
           </div>
         </div>
         <div style="background:#f5f5fa;border-radius:8px;padding:7px 12px;display:flex;justify-content:space-between;margin-bottom:10px;">
-          <div style="font-size:11px;color:#9090b8;">Today's best</div>
+          <div style="font-size:13px;color:#9090b8;">Today's best</div>
           ${hsLine}
         </div>
         <button class="btn-primary" style="font-size:13px;padding:9px;" onclick="startSoloFlow()">Play today's quiz</button>
       </div>
 
       <!-- Practice mode -->
-      <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="window.location.href='practice.html'">
+      <div class="card" style="margin-bottom:14px;cursor:pointer;" onclick="window.location.href='practice.html'">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:500;color:#1a1a2e;">Practice mode</div>
-            <div style="font-size:11px;color:#9090b8;">Solo · pick your categories · with explanations</div>
+            <div style="font-size:16px;font-weight:500;color:#1a1a2e;">Practice mode</div>
+            <div style="font-size:13px;color:#9090b8;">Solo · pick your categories · with explanations</div>
           </div>
-          <div style="background:#ede9fe;color:#6d28d9;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;white-space:nowrap;">Practice →</div>
+          <div style="background:#ede9fe;color:#6d28d9;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:500;white-space:nowrap;">Practice →</div>
         </div>
       </div>
 
       <!-- Host a game -->
-      <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="window.location.href='host.html'">
+      <div class="card" style="margin-bottom:14px;cursor:pointer;" onclick="window.location.href='host.html'">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="flex:1;">
-            <div style="font-size:14px;font-weight:500;color:#1a1a2e;">Host a game</div>
-            <div style="font-size:11px;color:#9090b8;">Multiplayer · up to 75 players</div>
+            <div style="font-size:16px;font-weight:500;color:#1a1a2e;">Host a game</div>
+            <div style="font-size:13px;color:#9090b8;">Multiplayer · up to 75 players</div>
           </div>
-          <div style="background:#f0fdf4;color:#166534;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;white-space:nowrap;">Start game →</div>
+          <div style="background:#f0fdf4;color:#166534;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:500;white-space:nowrap;">Start game →</div>
         </div>
       </div>
 
       <!-- Join a game -->
       <div class="card" style="margin-bottom:14px;">
-        <div style="font-size:13px;font-weight:500;color:#1a1a2e;margin-bottom:10px;">Join a game</div>
+        <div style="font-size:15px;font-weight:500;color:#1a1a2e;margin-bottom:10px;">Join a game</div>
         <input id="joinCode" type="text" maxlength="5" placeholder="Enter room code..."
-          style="background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;padding:10px 14px;font-size:16px;color:#1a1a2e;width:100%;text-align:center;letter-spacing:.15em;font-weight:500;text-transform:uppercase;outline:none;margin-bottom:8px;"
+          style="background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;padding:14px 16px;font-size:16px;color:#1a1a2e;width:100%;text-align:center;letter-spacing:.2em;font-weight:500;text-transform:uppercase;outline:none;margin-bottom:10px;"
           oninput="this.value=this.value.toUpperCase()"
           onkeydown="if(event.key==='Enter')joinRoom()" />
-        <button class="btn-primary" style="font-size:13px;padding:9px;" onclick="joinRoom()">Join room</button>
+        <button class="btn-primary" style="font-size:13px;padding:12px;" onclick="joinRoom()">Join room</button>
       </div>
 
       <!-- Leaderboard -->
-      <div style="text-align:center;">
+      <div style="text-align:center;margin-top:20px;">
         <div style="font-size:11px;color:#9090b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Today's best score</div>
         ${todayHS
           ? `<div style="display:inline-block;background:#f5f5fa;border:1px solid #e4e4f0;border-radius:20px;padding:4px 16px;font-size:13px;color:#9090b8;">Best: <span style="color:#a78bfa;font-weight:500;">${todayHS.score}</span> pts · Set at ${todayHS.setAt}</div>`
