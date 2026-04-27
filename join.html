@@ -72,7 +72,6 @@ let state = {
   selectedAnswer: null,
   audio: null,
   clipTimeout: null,
-  revealPollInterval: null,
 };
 
 const PLAYER_AUDIO_KEY = 'quizzli-player-audio';
@@ -100,6 +99,48 @@ function assignAnimal(existingPlayers) {
   return available.length > 0
     ? available[Math.floor(Math.random() * available.length)]
     : ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+}
+
+function lbRowHTML(p, rank, isMe) {
+  const correct = isMe ? (state.selectedAnswer === state.room?.questions?.[state.room?.current_question_index]?.ans) : false;
+  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
+    <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
+    ${avatarHTML(p, 24)}
+    <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+  </div>`;
+}
+
+async function refreshRevealLeaderboard() {
+  try {
+    const qi = state.room?.current_question_index;
+    if (qi === null || qi === undefined) return;
+    const { data: updatedPlayers } = await sb.from('players')
+      .select('id,name,score,answers,avatar')
+      .eq('room_id', state.room.id)
+      .order('score', { ascending: false });
+    if (!updatedPlayers) return;
+    const total = updatedPlayers.length;
+    const gotRight = updatedPlayers.filter(p =>
+      p.answers?.some(a => a.question_index === qi && a.correct === true)
+    ).length;
+    const pct = total > 0 ? Math.round((gotRight / total) * 100) : 0;
+    const barColor = pct >= 50 ? '#22c55e' : '#ef4444';
+    const top3 = updatedPlayers.slice(0, 3);
+    const myRank = updatedPlayers.findIndex(p => p.id === state.player?.id) + 1;
+    const playerInTop3 = top3.some(p => p.id === state.player?.id);
+    const myRow = !playerInTop3 ? updatedPlayers.find(p => p.id === state.player?.id) : null;
+    const updatedLbHTML = [
+      ...top3.map((p, i) => lbRowHTML(p, i+1, p.id === state.player?.id)),
+      ...(myRow ? [lbRowHTML(myRow, myRank, true)] : [])
+    ].join('');
+    const countEl = document.getElementById('revealGotRight');
+    const barEl = document.getElementById('revealBar');
+    const lbEl = document.getElementById('revealLeaderboard');
+    if (countEl) countEl.textContent = `${gotRight} of ${total}`;
+    if (barEl) { barEl.style.width = pct + '%'; barEl.style.background = barColor; }
+    if (lbEl) lbEl.innerHTML = updatedLbHTML;
+  } catch(e) {}
 }
 
 // ─── JOIN SCREEN ─────────────────────────────────────────────────────────────
@@ -395,6 +436,9 @@ function subscribeAsPlayer() {
       } else if (payload.eventType === 'UPDATE') {
         state.players = (state.players || []).map(p => p.id === payload.new.id ? { ...p, ...payload.new } : p);
       }
+      if (payload.eventType === 'UPDATE' && state.view === 'ingame' && state.hasAnswered) {
+        refreshRevealLeaderboard();
+      }
       if (state.view === 'lobby') renderLobbyList();
     })
     .subscribe();
@@ -524,7 +568,6 @@ async function showRoundStarting(roundNum) {
 }
 
 function showIngame() {
-  clearInterval(state.revealPollInterval); state.revealPollInterval = null;
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'ingame';
@@ -776,15 +819,6 @@ async function revealPlayerAnswer(idx, correct, pts) {
   const playerInTop3 = top3.some(p => p.id === state.player?.id);
   const myRow = !playerInTop3 ? sorted.find(p => p.id === state.player?.id) : null;
 
-  const lbRowHTML = (p, rank, isMe) => {
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${(!correct&&!timedOut)?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
-      <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-      ${avatarHTML(p, 24)}
-      <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
-      <div style="font-size:12px;color:${isMe&&!correct&&!timedOut?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
-    </div>`;
-  };
-
   const lbHTML = [
     ...top3.map((p, i) => lbRowHTML(p, i+1, p.id === state.player?.id)),
     ...(myRow ? [lbRowHTML(myRow, myRank, true)] : [])
@@ -815,46 +849,10 @@ async function revealPlayerAnswer(idx, correct, pts) {
       </div>`;
   }
 
-  if (state.revealPollInterval) clearInterval(state.revealPollInterval);
-  state.revealPollInterval = setInterval(async () => {
-    if (state.view !== 'ingame') {
-      clearInterval(state.revealPollInterval);
-      state.revealPollInterval = null;
-      return;
-    }
-    try {
-      const { data: updatedPlayers } = await sb.from('players')
-        .select('id,name,score,answers,avatar')
-        .eq('room_id', state.room.id)
-        .order('score', { ascending: false });
-      if (!updatedPlayers) return;
-      const updatedTotal = updatedPlayers.length;
-      const updatedGotRight = updatedPlayers.filter(p =>
-        p.answers?.some(a => a.question_index === qi && a.correct === true)
-      ).length;
-      const updatedPct = updatedTotal > 0 ? Math.round((updatedGotRight / updatedTotal) * 100) : 0;
-      const updatedBarColor = updatedPct >= 50 ? '#22c55e' : '#ef4444';
-      const updatedTop3 = updatedPlayers.slice(0, 3);
-      const updatedPlayerInTop3 = updatedTop3.some(p => p.id === state.player?.id);
-      const updatedMyRow = !updatedPlayerInTop3 ? updatedPlayers.find(p => p.id === state.player?.id) : null;
-      const updatedMyRank = updatedPlayers.findIndex(p => p.id === state.player?.id) + 1;
-      const updatedLbHTML = [
-        ...updatedTop3.map((p, i) => lbRowHTML(p, i+1, p.id === state.player?.id)),
-        ...(updatedMyRow ? [lbRowHTML(updatedMyRow, updatedMyRank, true)] : [])
-      ].join('');
-      const countEl = document.getElementById('revealGotRight');
-      const barEl = document.getElementById('revealBar');
-      const lbEl = document.getElementById('revealLeaderboard');
-      if (countEl) countEl.textContent = `${updatedGotRight} of ${updatedTotal}`;
-      if (barEl) { barEl.style.width = updatedPct + '%'; barEl.style.background = updatedBarColor; }
-      if (lbEl) lbEl.innerHTML = updatedLbHTML;
-    } catch(e) {}
-  }, 2000);
 }
 
 // ─── ROUND LEADERBOARD ────────────────────────────────────────────────────────
 async function showRoundLeaderboard(completedRound) {
-  clearInterval(state.revealPollInterval); state.revealPollInterval = null;
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'roundleaderboard';

@@ -182,7 +182,6 @@ let state = {
   hostAnswer: null,
   hostScore: 0,
   hostAnswers: [],
-  revealPollInterval: null,
 };
 
 const PRESETS = {
@@ -889,6 +888,49 @@ function showDevError() {
   `);
 }
 
+function hostLbRowHTML(p, rank, isMe) {
+  const qi = state.room?.current_question_index;
+  const correct = isMe ? (state.hostAnswer === state.room?.questions?.[qi]?.ans) : false;
+  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
+    <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
+    ${avatarHTML(p, 24)}
+    <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+  </div>`;
+}
+
+async function refreshHostRevealLeaderboard() {
+  try {
+    const qi = state.room?.current_question_index;
+    if (qi === null || qi === undefined) return;
+    const { data: updatedPlayers } = await sb.from('players')
+      .select('id,name,score,answers,avatar')
+      .eq('room_id', state.room.id)
+      .order('score', { ascending: false });
+    if (!updatedPlayers) return;
+    const total = updatedPlayers.length;
+    const gotRight = updatedPlayers.filter(p =>
+      p.answers?.some(a => a.question_index === qi && a.correct === true)
+    ).length;
+    const pct = total > 0 ? Math.round((gotRight / total) * 100) : 0;
+    const barColor = pct >= 50 ? '#22c55e' : '#ef4444';
+    const top3 = updatedPlayers.slice(0, 3);
+    const hostInTop3 = top3.some(p => p.id === state.hostPlayer?.id);
+    const myRank = updatedPlayers.findIndex(p => p.id === state.hostPlayer?.id) + 1;
+    const myRow = !hostInTop3 ? updatedPlayers.find(p => p.id === state.hostPlayer?.id) : null;
+    const updatedLbHTML = [
+      ...top3.map((p, i) => hostLbRowHTML(p, i+1, p.id === state.hostPlayer?.id)),
+      ...(myRow ? [hostLbRowHTML(myRow, myRank, true)] : [])
+    ].join('');
+    const countEl = document.getElementById('revealGotRight');
+    const barEl = document.getElementById('revealBar');
+    const lbEl = document.getElementById('revealLeaderboard');
+    if (countEl) countEl.textContent = `${gotRight} of ${total}`;
+    if (barEl) { barEl.style.width = pct + '%'; barEl.style.background = barColor; }
+    if (lbEl) lbEl.innerHTML = updatedLbHTML;
+  } catch(e) {}
+}
+
 // ─── LOBBY SCREEN ─────────────────────────────────────────────────────────────
 function subscribeToRoom() {
   if (state.subscription) state.subscription.unsubscribe();
@@ -905,6 +947,9 @@ function subscribeToRoom() {
         state.players = state.players.map(p => p.id === payload.new.id ? payload.new : p);
         if (state.view === 'ingame' || state.view === 'reveal') {
           renderIngameSidebar();
+        }
+        if (state.view === 'ingame' && state.hostAnswered) {
+          refreshHostRevealLeaderboard();
         }
       } else if (payload.eventType === 'DELETE') {
         state.players = state.players.filter(p => p.id !== payload.old.id);
@@ -1165,7 +1210,6 @@ function waveformHTML(color = '#7c3aed') {
 }
 
 function showIngame() {
-  clearInterval(state.revealPollInterval); state.revealPollInterval = null;
   if (state.tvMode) {
     document.body.classList.add('tv-mode');
   } else {
@@ -1679,18 +1723,9 @@ async function revealAnswerAsPlayer(timedOut) {
   const hostInTop3 = top3.some(p => p.id === state.hostPlayer?.id);
   const myRow = hostInSorted && !hostInTop3 ? hostInSorted : null;
 
-  const lbRowHTML = (p, rank, isMe) => {
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
-      <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
-      ${avatarHTML(p, 24)}
-      <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
-      <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
-    </div>`;
-  };
-
   const lbHTML = [
-    ...top3.map((p, i) => lbRowHTML(p, i+1, p.id === state.hostPlayer?.id)),
-    ...(myRow ? [lbRowHTML(myRow, myRank, true)] : [])
+    ...top3.map((p, i) => hostLbRowHTML(p, i+1, p.id === state.hostPlayer?.id)),
+    ...(myRow ? [hostLbRowHTML(myRow, myRank, true)] : [])
   ].join('');
 
   const panelBg = timedOutNoAnswer ? '#f8f8ff' : correct ? '#f0fdf4' : '#fef2f2';
@@ -1718,41 +1753,6 @@ async function revealAnswerAsPlayer(timedOut) {
       </div>`;
   }
 
-  if (state.revealPollInterval) clearInterval(state.revealPollInterval);
-  state.revealPollInterval = setInterval(async () => {
-    if (state.view !== 'ingame') {
-      clearInterval(state.revealPollInterval);
-      state.revealPollInterval = null;
-      return;
-    }
-    try {
-      const { data: updatedPlayers } = await sb.from('players')
-        .select('id,name,score,answers,avatar')
-        .eq('room_id', state.room.id)
-        .order('score', { ascending: false });
-      if (!updatedPlayers) return;
-      const updatedTotal = updatedPlayers.length;
-      const updatedGotRight = updatedPlayers.filter(p =>
-        p.answers?.some(a => a.question_index === qi && a.correct === true)
-      ).length;
-      const updatedPct = updatedTotal > 0 ? Math.round((updatedGotRight / updatedTotal) * 100) : 0;
-      const updatedBarColor = updatedPct >= 50 ? '#22c55e' : '#ef4444';
-      const updatedTop3 = updatedPlayers.slice(0, 3);
-      const updatedHostInTop3 = updatedTop3.some(p => p.id === state.hostPlayer?.id);
-      const updatedMyRow = !updatedHostInTop3 ? updatedPlayers.find(p => p.id === state.hostPlayer?.id) : null;
-      const updatedMyRank = updatedPlayers.findIndex(p => p.id === state.hostPlayer?.id) + 1;
-      const updatedLbHTML = [
-        ...updatedTop3.map((p, i) => lbRowHTML(p, i+1, p.id === state.hostPlayer?.id)),
-        ...(updatedMyRow ? [lbRowHTML(updatedMyRow, updatedMyRank, true)] : [])
-      ].join('');
-      const countEl = document.getElementById('revealGotRight');
-      const barEl = document.getElementById('revealBar');
-      const lbEl = document.getElementById('revealLeaderboard');
-      if (countEl) countEl.textContent = `${updatedGotRight} of ${updatedTotal}`;
-      if (barEl) { barEl.style.width = updatedPct + '%'; barEl.style.background = updatedBarColor; }
-      if (lbEl) lbEl.innerHTML = updatedLbHTML;
-    } catch(e) {}
-  }, 2000);
   // No auto-advance — game flow is controlled by startIngameTimer() and renderIngameSidebar()
 }
 
@@ -1908,7 +1908,6 @@ function showRoundLeaderboard(completedRound) {
 }
 
 async function startNextRound(roundNum) {
-  clearInterval(state.revealPollInterval); state.revealPollInterval = null;
   unlockAudio();
   state.revealed = false;
   const qi = state.room.current_question_index;
