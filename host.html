@@ -1544,7 +1544,7 @@ function revealAnswer() {
 
 }
 
-function revealAnswerAsPlayer(timedOut) {
+async function revealAnswerAsPlayer(timedOut) {
   const q = state.room.questions?.[state.room.current_question_index];
   if (!q) return;
   stopClip();
@@ -1563,20 +1563,70 @@ function revealAnswerAsPlayer(timedOut) {
     }
   });
 
+  const correct = state.hostAnswer === q.ans;
+  const timedOutNoAnswer = timedOut && !state.hostAnswered;
+  const pts = correct ? (state.hostAnswers[state.hostAnswers.length - 1]?.pts || 0) : 0;
+
+  const { data: allPlayers } = await sb.from('players')
+    .select('id,name,score,answers')
+    .eq('room_id', state.room.id)
+    .order('score', { ascending: false });
+
+  const sorted = allPlayers || [];
+  const total = sorted.length;
+  const gotRight = sorted.filter(p =>
+    p.answers?.some(a => a.question_index === qi && a.correct === true)
+  ).length;
+  const pct = total > 0 ? Math.round((gotRight / total) * 100) : 0;
+  const barColor = pct >= 50 ? '#22c55e' : '#ef4444';
+
+  const hostInSorted = sorted.find(p => p.id === state.hostPlayer?.id);
+  const myRank = hostInSorted ? sorted.findIndex(p => p.id === state.hostPlayer?.id) + 1 : null;
+  const top3 = sorted.slice(0, 3);
+  const hostInTop3 = top3.some(p => p.id === state.hostPlayer?.id);
+  const myRow = hostInSorted && !hostInTop3 ? hostInSorted : null;
+
+  const lbColors = [['#2d1a4e','#c4b5fd'],['#1a2d1e','#86efac'],['#2d1a1a','#fca5a5'],['#1a2240','#93c5fd'],['#2d2000','#fcd34d'],['#1a2d2d','#5eead4']];
+  const lbRowHTML = (p, rank, isMe) => {
+    const initials = p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    let h = 0; for (const c of p.name) h = (h * 31 + c.charCodeAt(0)) & 0xff;
+    const [bg, fg] = lbColors[h % lbColors.length];
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${isMe ? `background:${!correct?'#fef2f2':'#f5f3ff'};margin-top:4px;` : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
+      <div style="font-size:12px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;font-weight:${rank<=3?'600':'400'};flex-shrink:0;">${rank}</div>
+      <div style="width:24px;height:24px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;">${initials}</div>
+      <div style="flex:1;font-size:12px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};">${p.name}${isMe?' (you)':''}</div>
+      <div style="font-size:12px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+    </div>`;
+  };
+
+  const lbHTML = [
+    ...top3.map((p, i) => lbRowHTML(p, i+1, p.id === state.hostPlayer?.id)),
+    ...(myRow ? [lbRowHTML(myRow, myRank, true)] : [])
+  ].join('');
+
+  const panelBg = timedOutNoAnswer ? '#f8f8ff' : correct ? '#f0fdf4' : '#fef2f2';
+  const panelBorder = timedOutNoAnswer ? '#a78bfa' : correct ? '#22c55e' : '#ef4444';
+  const verdictText = timedOutNoAnswer ? "Time's up!" : correct ? 'Correct!' : `Wrong — it was: ${q.opts[q.ans]}`;
+  const verdictColor = timedOutNoAnswer ? '#6d28d9' : correct ? '#166834' : '#991b1b';
+
   const statusEl = document.getElementById('hostPlayerStatus');
   if (statusEl) {
     statusEl.style.display = 'block';
-    if (timedOut && !state.hostAnswered) {
-      statusEl.style.color = '#9090b8';
-      statusEl.textContent = `Time's up! Answer: ${q.opts[q.ans]}`;
-    } else if (state.hostAnswer === q.ans) {
-      const pts = state.hostAnswers[state.hostAnswers.length - 1]?.pts || 10;
-      statusEl.style.color = '#166634';
-      statusEl.textContent = `Correct! +${pts} pts`;
-    } else {
-      statusEl.style.color = '#991b1b';
-      statusEl.textContent = `Wrong — answer was: ${q.opts[q.ans]}`;
-    }
+    statusEl.style.background = 'transparent';
+    statusEl.style.padding = '0';
+    statusEl.innerHTML = `
+      <div style="background:${panelBg};border:1.5px solid ${panelBorder};border-radius:14px;padding:14px 16px;margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:15px;font-weight:500;color:${verdictColor};">${verdictText}</div>
+          ${pts > 0 ? `<div style="font-size:13px;font-weight:600;background:${correct?'#dcfce7':'#fee2e2'};color:${verdictColor};padding:4px 12px;border-radius:20px;">+${pts} pts</div>` : ''}
+        </div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:4px;"><span style="font-weight:500;color:#1a1a2e;">${gotRight} of ${total}</span> players got it right</div>
+        <div style="height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:12px;">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .6s ease;"></div>
+        </div>
+        <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Leaderboard</div>
+        ${lbHTML}
+      </div>`;
   }
   // No auto-advance — game flow is controlled by startIngameTimer() and renderIngameSidebar()
 }
