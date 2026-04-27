@@ -74,6 +74,11 @@ let state = {
   clipTimeout: null,
 };
 
+const PLAYER_AUDIO_KEY = 'quizzli-player-audio';
+function playerAudioEnabled() {
+  return localStorage.getItem(PLAYER_AUDIO_KEY) === 'true';
+}
+
 const AVATAR_COLORS = [
   ['#2d1a4e','#c4b5fd'], ['#1a2d1e','#86efac'], ['#2d1a1a','#fca5a5'],
   ['#1a2240','#93c5fd'], ['#2d2000','#fcd34d'], ['#1a2d2d','#5eead4'],
@@ -213,6 +218,17 @@ function showLobby() {
           <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .0s infinite;"></div>
           <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
           <div style="width:6px;height:6px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e4e4f0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="togglePlayerAudio()">
+            <div style="text-align:left;">
+              <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Play music clips on this device</div>
+              <div style="font-size:11px;color:#9090b8;margin-top:2px;" id="audioToggleHint">${playerAudioEnabled() ? 'On — good for remote play' : 'Off — best when near the host device'}</div>
+            </div>
+            <div id="audioToggleTrack" style="width:44px;height:24px;border-radius:12px;background:${playerAudioEnabled() ? '#7c3aed' : '#e4e4f0'};position:relative;flex-shrink:0;transition:background .2s;">
+              <div id="audioToggleThumb" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${playerAudioEnabled() ? '23px' : '3px'};transition:left .2s;"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -359,6 +375,35 @@ const CLIP_DURATION = 10;
 const QUESTION_REVEAL_SECS = 3;
 const PLAYER_NAME_KEY = 'quizzli-player-name';
 
+function togglePlayerAudio() {
+  const enabled = !playerAudioEnabled();
+  localStorage.setItem(PLAYER_AUDIO_KEY, enabled);
+
+  document.querySelectorAll('#audioToggleTrack').forEach(el => {
+    el.style.background = enabled ? '#7c3aed' : '#e4e4f0';
+    const thumb = el.querySelector('#audioToggleThumb');
+    if (thumb) thumb.style.left = enabled ? (el.style.width === '32px' ? '16px' : '23px') : (el.style.width === '32px' ? '2px' : '3px');
+  });
+  document.querySelectorAll('#audioToggleHint').forEach(el => {
+    const isSmall = el.closest('[style*="padding:12px"]');
+    el.textContent = enabled
+      ? (isSmall ? 'Audio: on' : 'On — good for remote play')
+      : (isSmall ? 'Audio: off' : 'Off — best when near the host device');
+  });
+
+  const room = state.room;
+  const qi = room?.current_question_index;
+  const q = room?.questions?.[qi];
+  if (q?.preview_url) {
+    if (enabled) {
+      const elapsedSinceStart = (Date.now() - new Date(room.question_start_time).getTime()) / 1000;
+      if (elapsedSinceStart < CLIP_DURATION) playClip(q.preview_url);
+    } else {
+      stopClip();
+    }
+  }
+}
+
 function stopClip() {
   clearTimeout(state.clipTimeout);
   state.clipTimeout = null;
@@ -418,6 +463,12 @@ function showIngame() {
         ${waveformHTML()}
       </div>
       <div style="font-size:12px;color:#7c3aed;" id="clipStatus">Clip playing…</div>
+      <div style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;" onclick="togglePlayerAudio()">
+        <div style="font-size:11px;color:#9090b8;" id="audioToggleHint">${playerAudioEnabled() ? 'Audio: on' : 'Audio: off'}</div>
+        <div id="audioToggleTrack" style="width:32px;height:18px;border-radius:9px;background:${playerAudioEnabled() ? '#7c3aed' : '#e4e4f0'};position:relative;flex-shrink:0;transition:background .2s;">
+          <div id="audioToggleThumb" style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${playerAudioEnabled() ? '16px' : '2px'};transition:left .2s;"></div>
+        </div>
+      </div>
     </div>` : '';
 
   const imageBanner = isImage ? `
@@ -456,8 +507,10 @@ function showIngame() {
   `);
 
   if (isMusic) {
-    const elapsed = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
-    if (elapsed < CLIP_DURATION) playClip(q.preview_url);
+    const elapsedSinceStart = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
+    if (elapsedSinceStart < CLIP_DURATION && playerAudioEnabled()) {
+      playClip(q.preview_url);
+    }
   }
   startPlayerTimer(timerDuration, isMusic);
 
