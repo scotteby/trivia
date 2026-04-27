@@ -263,15 +263,16 @@ function startLobbyPoll() {
         .eq('id', state.room.id).maybeSingle();
       if (!data || data.status !== 'active') return;
       clearInterval(state.lobbyPollInterval);
-      setHTML(`<div style="text-align:center;padding:80px 20px;">
-        <div style="font-size:16px;font-weight:500;color:#7c3aed;margin-bottom:8px;">Game starting…</div>
-        <div style="font-size:13px;color:#9090b8;">Loading questions</div>
-      </div>`);
-      fetchFullRoom().then(() => {
-        state.hasAnswered = false;
-        state.selectedAnswer = null;
+      await fetchFullRoom();
+      state.hasAnswered = false;
+      state.selectedAnswer = null;
+      const qi = state.room?.current_question_index || 0;
+      const roundNum = Math.floor(qi / 5) + 1;
+      if (qi === 0) {
+        showRoundStarting(1);
+      } else {
         showIngame();
-      });
+      }
     } catch(e) {}
   }, 2000);
 }
