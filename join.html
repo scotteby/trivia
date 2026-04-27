@@ -337,7 +337,11 @@ function subscribeAsPlayer() {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
           state.selectedAnswer = null;
-          fetchFullRoom().then(() => showIngame());
+          fetchFullRoom().then(() => {
+            const qi = state.room.current_question_index || 0;
+            const roundNum = Math.floor(qi / 5) + 1;
+            showRoundStarting(roundNum);
+          });
         } else if (updated.current_question_index !== prev.current_question_index) {
           clearTimeout(state.roundLeaderboardTimeout);
           state.hasAnswered = false;
@@ -435,6 +439,55 @@ function waveformHTML() {
   return heights.map((h, i) =>
     `<div class="wave-bar" style="height:${h}px;animation-delay:${(i * 0.12).toFixed(2)}s;"></div>`
   ).join('');
+}
+
+async function showRoundStarting(roundNum) {
+  state.view = 'roundstarting';
+  stopClip();
+
+  setHTML(`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px;">
+      <div style="font-size:13px;color:#9090b8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">Get ready</div>
+      <div style="font-size:32px;font-weight:500;color:#1a1a2e;margin-bottom:6px;">Round ${roundNum}</div>
+      <div style="font-size:15px;color:#7c3aed;margin-bottom:40px;" id="roundCatLabel">Loading…</div>
+
+      <div style="position:relative;width:80px;height:80px;margin-bottom:32px;">
+        <svg viewBox="0 0 80 80" style="width:80px;height:80px;transform:rotate(-90deg);">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#e4e4f0" stroke-width="6"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#7c3aed" stroke-width="6"
+            stroke-dasharray="213" stroke-dashoffset="0"
+            id="countdownCircle" style="transition:stroke-dashoffset 1s linear;"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:500;color:#7c3aed;" id="countdownNum">3</div>
+      </div>
+
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+      <style>@keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}</style>
+    </div>
+  `);
+
+  const qi = state.room?.current_question_index || 0;
+  const q = state.room?.questions?.[qi];
+  const catEl = document.getElementById('roundCatLabel');
+  if (catEl && q?.cat) catEl.textContent = q.cat;
+  else if (catEl) catEl.textContent = '';
+
+  const circle = document.getElementById('countdownCircle');
+  const numEl = document.getElementById('countdownNum');
+  const circumference = 213;
+
+  for (let i = 3; i >= 1; i--) {
+    if (numEl) numEl.textContent = i;
+    if (circle) circle.style.strokeDashoffset = circumference * (1 - i/3);
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  if (circle) circle.style.strokeDashoffset = circumference;
+
+  showIngame();
 }
 
 function showIngame() {
