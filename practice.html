@@ -63,10 +63,14 @@ body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-syste
 .custom-suggestion:hover { background: #f5f5fa; }
 .custom-suggestion:last-child { border-bottom: none; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="app"><div id="root"></div></div>
 <script>
+const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const root = document.getElementById('root');
 function setHTML(h) { root.innerHTML = h; }
 
@@ -575,6 +579,7 @@ function unlockAudio() {
 }
 
 async function startPractice() {
+  practiceGameCounted = false;
   if (!state.categories.length) return;
   unlockAudio(); // must be first, before any await
   state.questions = [];
@@ -986,6 +991,7 @@ function showResults() {
 }
 
 async function practiceAgain() {
+  practiceGameCounted = false;
   unlockAudio();
   state.questions = [];
   state.currentIdx = 0;
