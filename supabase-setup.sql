@@ -124,3 +124,13 @@ JOIN pg_class  c ON c.relname = t.tablename
 WHERE t.schemaname = 'public'
   AND t.tablename IN ('highscores', 'game_rooms', 'players')
 ORDER BY t.tablename;
+
+CREATE TABLE game_stats (
+  id TEXT PRIMARY KEY,
+  count INT DEFAULT 0
+);
+
+INSERT INTO game_stats (id, count) VALUES ('total_games', 0);
+
+ALTER TABLE game_stats DISABLE ROW LEVEL SECURITY;
+
