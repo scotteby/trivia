@@ -1,179 +1,185 @@
-# Trivia Night SaaS
-Previously a solo daily trivia app, now evolving into a multiplayer trivia SaaS targeting bars and venues. Solo mode stays free as the acquisition channel. Multiplayer is the paid product.
+# Quizzli — Developer Reference
+
+Live at **quizzli.app** · Repo: github.com/scotteby/trivia
 
 ---
 
 ## Stack
-- **Frontend**: Vanilla JS, HTML files (index.html, host.html, join.html)
-- **API**: Vercel serverless functions at /api
-- **Database + Realtime**: Supabase
-- **AI**: Anthropic Claude API for question generation
-- **Music**: Spotify Preview API (free 30s clips, no auth required)
-- **Payments**: Stripe (Phase 3 — not built yet)
-- **Auth**: Supabase Auth (Phase 3 — not built yet)
+
+- **Frontend**: Vanilla HTML/JS — `index.html`, `host.html`, `join.html`, `practice.html`
+- **API**: Vercel serverless — `api/questions.js`, `api/rooms.js`
+- **Database + Realtime**: Supabase (`postgres_changes` subscriptions on `game_rooms` and `players`)
+- **AI**: Anthropic Claude API (`claude-sonnet-4-6`) for question generation
+- **Music**: iTunes Preview API (30s clips, no auth)
+- **Images**: Wikimedia Commons via Wikipedia API
 
 ---
 
 ## Supabase tables
 
-### highscores (existing)
-- date (text, unique) — local date YYYY-MM-DD
-- score (integer) — today's high score
-- set_at (text) — time string
-- questions (jsonb) — AI generated questions array
+### highscores
+- `date` (text, unique), `score` (int), `set_at` (text), `questions` (jsonb)
 
-### game_rooms (new)
-- id (uuid, primary key)
-- room_code (text, unique) — 5-letter code e.g. "PIZZA"
-- status (text) — "lobby", "active", "finished"
-- current_question_index (int, default 0)
-- question_start_time (timestamp) — used by all clients to sync countdown timer
-- config (jsonb) — rounds, categories, timer setting
-- questions (jsonb) — array of generated question objects
-- created_at (timestamp)
+### game_rooms
+- `id` (uuid), `room_code` (text), `status` ("lobby"|"active"|"finished")
+- `current_question_index` (int), `question_start_time` (timestamp)
+- `config` (jsonb), `questions` (jsonb)
 
-### players (new)
-- id (uuid, primary key)
-- room_id (uuid, foreign key → game_rooms)
-- name (text)
-- score (int, default 0)
-- answers (jsonb) — array of {question_index, answer_index, pts, time_taken}
-- joined_at (timestamp)
+### players
+- `id` (uuid), `room_id` (uuid FK), `name` (text), `score` (int)
+- `answers` (jsonb) — `[{question_index, answer_index, pts, correct, time_taken}]`
 
-Enable Supabase Realtime on both game_rooms and players tables.
+### game_stats
+- `id` (text PK) = "total_games", `count` (int)
+- Incremented on multiplayer game over, practice session end, daily quiz completion
 
 ---
 
-## Key decisions (existing)
-- Use `.maybeSingle()` not `.single()` to avoid 406 errors on missing rows
-- Date uses local time not UTC to avoid timezone issues
-- api/questions.js uses native https module, no node-fetch
-- API key stored as ANTHROPIC_API_KEY in Vercel env vars
+## Key patterns
 
-## Key decisions (multiplayer)
-- Synced timer: store `question_start_time` in Supabase when host starts a question. All clients calculate `timeLeft = timerDuration - (Date.now() - question_start_time)` so everyone counts down from the same moment
-- Room codes: 5-letter words from a curated list, avoid ambiguous chars (O, I, 0, 1). Check uniqueness before creating
-- Players never need an account — join with just a name and room code
-- Host device is always separate from player devices
-- Questions generated fresh by AI at game start — never pre-generated
-- Music questions get +10s added to timer automatically
-- Host controls pace — "next question" is always a manual button, timer auto-advances if host doesn't tap
+### Realtime
+All clients subscribe to `postgres_changes` on `game_rooms` (filtered by room id) and `players` (filtered by room_id). Use `.maybeSingle()` not `.single()` to avoid 406 errors.
 
----
+### Synced timer
+`question_start_time` is stored in `game_rooms`. All clients compute:
+```js
+timeLeft = timerDuration - Math.floor((Date.now() - new Date(question_start_time).getTime()) / 1000)
+```
+This keeps everyone in sync regardless of when they connect.
 
-## URLs
-- `/` or `/solo` — solo daily challenge (existing)
-- `/host` — game setup screen
-- `/join` — player join screen (enter room code)
+### Between-rounds countdown sync
+For between-round transitions, host sets `question_start_time = new Date(Date.now() + 3000)` **before** the countdown starts. This way join screens receive the realtime event immediately and run their 3s countdown in parallel with the host. When all devices call `showIngame()`, `question_start_time` is at or just past now — reveal delay is fresh everywhere.
 
----
+For round 1, host sets `question_start_time` **after** its countdown completes. Join screens go straight to `showIngame()` (no join-side countdown for round 1).
 
-## Question object structure
+### iOS audio unlock
+iOS Safari requires audio play from inside a user gesture. After async calls (e.g. Supabase), the gesture context expires. Fix:
+1. Call `unlockAudio()` synchronously at the start of the gesture handler (before any await)
+2. `unlockAudio()` creates `state.audio = new Audio(SILENT_WAV)` and calls `.play()`
+3. `playClip(url)` reuses the same element: `state.audio.src = url; state.audio.play()`
+4. `stopClip()` pauses but preserves `state.audio` (never nulls it)
 
-### Standard question
-```json
-{
-  "type": "standard",
-  "q": "Which element has the chemical symbol Au?",
-  "opts": ["Silver", "Copper", "Gold", "Aluminum"],
-  "ans": 2,
-  "cat": "Science"
-}
+```js
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAA...';
 ```
 
-### Music question
-```json
-{
-  "type": "music",
-  "preview_url": "https://p.scdn.co/...",
-  "artist": "Billie Eilish",
-  "song": "Birds of a Feather",
-  "year": 2024,
-  "q": "Who is this artist?",
-  "opts": ["Taylor Swift", "Olivia Rodrigo", "Billie Eilish", "Dua Lipa"],
-  "ans": 2,
-  "cat": "Current hits"
+### Question reveal phase
+After `showIngame()`, answer buttons are hidden for `QUESTION_REVEAL_SECS` (3s for general/image, clip duration for music). This gives players time to read the question before the timer starts.
+
+```js
+const elapsed = Math.floor((Date.now() - new Date(state.room.question_start_time).getTime()) / 1000);
+const revealRemaining = QUESTION_REVEAL_SECS - elapsed;
+if (revealRemaining > 0) {
+  setTimeout(showOptions, revealRemaining * 1000);
+} else {
+  showOptions();
 }
 ```
 
 ---
 
 ## Scoring
-- 10 pts for correct answer
-- Up to +5 speed bonus (proportional to how fast they answered)
-- 0 pts for wrong answer or timeout
-- Formula: `bonus = Math.round(5 * Math.max(0, (timerDuration - elapsed) / timerDuration))`
 
----
-
-## Design tokens
+Escalating by round:
+```js
+const questionsPerRound = 5;
+const roundNum = Math.floor(qi / questionsPerRound) + 1;
+const basePoints = 100 * roundNum;
+const maxBonus = 50 * roundNum;
+const bonus = Math.round(maxBonus * Math.max(0, (timerDuration - elapsed) / timerDuration));
+pts = basePoints + bonus;
 ```
-Background:     #0f0f1a
-Cards:          #16162a
-Borders:        #2a2a48
-Primary purple: #7c3aed
-Purple light:   #a78bfa
-Text primary:   #e8e8f0
-Text muted:     #888
-Correct:        #22c55e
-Wrong:          #ef4444
-Timer warning:  #f59e0b
-Music blue:     #378add
+Round 1 max = 150, Round 2 max = 300, Round 3 max = 450. 3-round game max = 4,500 pts.
+
+---
+
+## Image question pipeline
+
+1. Claude generates `image_file` — exact Wikimedia Commons filename (e.g. `Flag_of_Japan.svg`)
+2. Server calls Wikipedia API: `/w/api.php?action=query&titles=File:${filename}&prop=imageinfo&iiprop=url`
+3. Extracts `imageinfo[0].url` → CDN URL stored as `image_url`
+4. If URL resolution fails, question falls back to `type: "general"`
+5. Client renders `<img src="${q.image_url}">` with error fallback
+
+---
+
+## Music question pipeline
+
+1. Claude generates `artist` and `song` fields
+2. Server queries iTunes: `/search?term=${artist}+${song}&media=music&entity=song&limit=10`
+3. Scores results by artist/song name match, picks best `previewUrl`
+4. Stored as `preview_url` on the question object
+5. Music uniqueness: constraint (decade/tier/region), session seed, `avoidSongBlock` (previous songs), `getMusicConstraint()` randomisation
+
+---
+
+## Question format
+
+```json
+// General
+{ "type": "general", "q": "...", "opts": ["A","B","C","D"], "ans": 2, "cat": "Science" }
+
+// Music  
+{ "type": "music", "artist": "...", "song": "...", "preview_url": "https://...", "q": "Who is this artist?", "opts": [...], "ans": 0, "cat": "80s hits" }
+
+// Image
+{ "type": "image", "image_file": "Flag_of_Japan.svg", "image_url": "https://upload.wikimedia.org/...", "q": "Which country's flag is this?", "opts": [...], "ans": 1, "cat": "Flags", "hint": "..." }
 ```
 
-TV/host screens: questions 20px+, room code 48px+, readable from across a room.
-Player screens: answer buttons minimum 44px height for easy tapping on mobile.
+---
+
+## Category sets
+
+```js
+const MUSIC_CATS = new Set(['music', '80s hits', '80s music', '90s pop', '90s music',
+  'current hits', '60s & 70s classics', '2000s bangers', 'classic rock',
+  'hip hop', 'r&b & soul', 'country', 'music — all eras']);
+
+const IMAGE_CATS = new Set(['images', 'flags', 'landmarks', 'art & paintings',
+  'famous people', 'animals']);
+
+const KIDS_CATS = new Set(['kids', 'children', 'disney & pixar', 'animals & nature',
+  'cartoons & animation', 'books & stories', 'sports for kids',
+  'science & space', 'food & holidays']);
+```
 
 ---
 
-## Categories
+## Game presets (api/rooms.js)
 
-### General
-General knowledge, History, Science, Sports, Movies & TV, Food & drink, Geography, Pop culture
-
-### Music (has audio clips via Spotify Preview API)
-Music — all eras, 60s & 70s classics, 80s hits, 90s pop, 2000s bangers, Current hits, Classic rock, Hip hop, Country, R&B & soul
-
-### Music question types
-Name the artist, Name the song, Name the year, Name the album
-
----
-
-## Game setup options
-
-### Preset vibes
-| Preset | Categories |
-|--------|-----------|
-| Mixed bag | General, History, 90s music, Sports, Pop culture |
-| Music night | 80s hits, 90s pop, Current hits |
-| Sports bar | Sports, General, Pop culture |
-| Brainiac | Science, History, Geography |
-| Music + general mix | General, 90s music, Pop culture — mark as "Most popular" |
-
-### Rounds: 2 (~20 min), 3 (~30 min, default), 4 (~40 min)
-### Timer: 10s, 15s (default), 20s, 30s — music questions auto get +10s
+```js
+const PRESETS = {
+  mixed:    { categories: ['General knowledge', 'History', 'Sports', 'Pop culture', 'Science'] },
+  music:    { categories: ['80s hits', '90s pop', 'Current hits'] },
+  sports:   { categories: ['Sports', 'General knowledge', 'Pop culture'] },
+  brainiac: { categories: ['Science', 'History', 'Geography'] },
+  musicmix: { categories: ['General knowledge', '90s music', 'Pop culture'] },
+  kids:     { categories: ['Disney & Pixar', 'Animals & nature', 'Cartoons & animation', 'Books & stories', 'Science & space'] },
+  pictures: { categories: ['Flags', 'Landmarks', 'Art & Paintings', 'Famous people', 'Images'] },
+};
+```
 
 ---
 
-## Build order
-1. Home screen (solo / host / join paths)
-2. Supabase schema (game_rooms + players with Realtime)
-3. Host setup screen (quick start + vibe presets)
-4. Room creation + code generation
-5. Player join flow
-6. Lobby — host and player views with real-time player list
-7. In-game question display + synced timer
-8. Player answer flow (tap, lock in, reveal)
-9. Scoring and leaderboard
-10. End of game screens
-11. Music questions (Spotify Preview API)
-12. Auth + Stripe payments
+## Key decisions
+
+- `question_start_time` is the single source of truth for all timing across all clients
+- Room codes: 5-letter words from curated list, no ambiguous chars (O, I, 0, 1)
+- Players never need accounts — name + room code only
+- Host device is always separate from player devices (host.html vs join.html)
+- Questions generated fresh by AI at game start via `api/rooms.js` → `api/questions.js`
+- Daily questions cached in `highscores.questions` to avoid re-generating on reload
+- Date uses local time (not UTC) to avoid midnight timezone issues
+- `api/questions.js` uses native `https` module (no node-fetch)
+- API keys in Vercel env vars: `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`
+- Host player ID persisted to localStorage (`HOST_PLAYER_ID_KEY`, `HOST_PLAYER_NAME_KEY`)
+- Practice mode: `practiceGameCounted` flag prevents double-counting per session
 
 ---
 
 ## Git workflow
-After any code changes, always stage and commit with a descriptive message:
+
 ```bash
-git add .
+git add <files>
 git commit -m "Brief description of what changed"
 ```
