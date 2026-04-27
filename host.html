@@ -190,6 +190,7 @@ const PRESETS = {
   sports:   { name: 'Sports bar',          desc: 'Heavy on sports',         tags: [['Sports','green'],['General','green'],['Pop culture','green']] },
   brainiac: { name: 'Brainiac',            desc: 'Hard mode',               tags: [['Science','amber'],['History','amber'],['Geography','amber']] },
   musicmix: { name: 'Music + general mix', desc: 'Most popular',            tags: [['General','blue'],['90s music','blue'],['Pop culture','blue']], isMusic: true, popular: true },
+  kids:     { name: 'Kids night',          desc: 'Family friendly fun',     tags: [['Disney','amber'],['Animals','amber'],['Cartoons','amber']] },
 };
 
 const CATEGORY_DATA = [
@@ -230,6 +231,18 @@ const CATEGORY_DATA = [
   {
     name: 'Food & Drink', icon: '🍕',
     color: '#c2410c', border: '#fdba74', bg: '#fff7ed', music: false, subs: null,
+  },
+  {
+    name: 'Kids', icon: '⭐',
+    color: '#d97706', border: '#fcd34d', bg: '#fefce8', music: false, subs: [
+      'Disney & Pixar',
+      'Animals & nature',
+      'Cartoons & animation',
+      'Books & stories',
+      'Sports for kids',
+      'Science & space',
+      'Food & holidays',
+    ],
   },
   {
     name: 'Flags', icon: '🚩',

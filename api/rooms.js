@@ -9,6 +9,7 @@ const PRESETS = {
   sports:   { categories: ['Sports', 'General knowledge', 'Pop culture'] },
   brainiac: { categories: ['Science', 'History', 'Geography'] },
   musicmix: { categories: ['General knowledge', '90s music', 'Pop culture'] },
+  kids:     { categories: ['Disney & Pixar', 'Animals & nature', 'Cartoons & animation', 'Books & stories', 'Science & space'] },
 };
 
 const MUSIC_CATS = new Set([
@@ -19,6 +20,13 @@ const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
 const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
 const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
+
+const KIDS_CATS = new Set([
+  'kids', 'children', 'disney & pixar', 'animals & nature',
+  'cartoons & animation', 'books & stories', 'sports for kids',
+  'science & space', 'food & holidays',
+]);
+const isKidsCat = c => KIDS_CATS.has(c.toLowerCase().trim());
 
 // ─── HTTP helpers ─────────────────────────────────────────────
 function httpsReq(options, body) {
@@ -238,6 +246,14 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
   };
   const difficultyLine = difficultyInstructions[difficulty] || difficultyInstructions.mixed;
 
+  const kidsCats = categories.filter(isKidsCat);
+  const kidsLine = kidsCats.length > 0
+    ? `\nFor KIDS categories (${kidsCats.join(', ')}): questions must be appropriate for children aged 6-12. Use simple language, fun topics, and well-known characters or facts. Avoid anything scary, violent, or adult. Wrong answer options should also be child-friendly and recognisable. Keep questions short and clear.`
+    : '';
+  const effectiveDifficultyLine = kidsCats.length > 0
+    ? 'Difficulty: EASY — use well-known mainstream facts that children aged 6-12 would know.'
+    : difficultyLine;
+
   const { questions: recentQs, songs: recentSongs } = await getRecentQuestions();
   const allAvoidSongs = [...new Set([...recentSongs, ...avoidSongsExtra])];
   const avoidQBlock = recentQs.length > 0
@@ -262,7 +278,7 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
       content: `Generate exactly ${total} pub quiz questions: ${Math.round(total / categories.length)} questions per category, in this exact order: ${categories.map((c, i) => `[${Math.round(total / categories.length)} questions for "${c}"]`).join(', then ')}.
 IMPORTANT: Output ALL questions for the first category first, then ALL questions for the second category, and so on. Do NOT interleave categories.
 ${fmt}
-${difficultyLine}${avoidQBlock}
+${effectiveDifficultyLine}${kidsLine}${avoidQBlock}
 For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Every question must be unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
     }],

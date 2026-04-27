@@ -10,6 +10,13 @@ const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
 const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
 
+const KIDS_CATS = new Set([
+  'kids', 'children', 'disney & pixar', 'animals & nature',
+  'cartoons & animation', 'books & stories', 'sports for kids',
+  'science & space', 'food & holidays',
+]);
+const isKidsCat = c => KIDS_CATS.has(c.toLowerCase().trim());
+
 function callAnthropic(body) {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
@@ -189,6 +196,14 @@ module.exports = async function handler(req, res) {
     const musicCats   = cats.filter(isMusicCatEx);
     const imageCats   = cats.filter(c => !isMusicCatEx(c) && isImageCat(c));
     const generalCats = cats.filter(c => !isMusicCatEx(c) && !isImageCat(c));
+
+    const kidsCats = cats.filter(isKidsCat);
+    const kidsLine = kidsCats.length > 0
+      ? `\nFor KIDS categories (${kidsCats.join(', ')}): questions must be appropriate for children aged 6-12. Use simple language, fun topics, and well-known characters or facts. Avoid anything scary, violent, or adult. Wrong answer options should also be child-friendly and recognisable. Keep questions short and clear.`
+      : '';
+    const effectiveDifficultyLine = kidsCats.length > 0
+      ? 'Difficulty: EASY — use well-known mainstream facts that children aged 6-12 would know.'
+      : difficultyLine;
     const artistTypeCats = musicCats.filter(c => customCatsMeta[c]?.musicType === 'artist');
     const genreMusicCats = musicCats.filter(c => customCatsMeta[c]?.musicType !== 'artist');
 
@@ -237,7 +252,7 @@ IMAGE CATEGORY RULES — follow strictly:
           role: 'user',
           content: `Generate exactly ${totalCount} practice trivia questions: ${perCat} per category, in this order: ${cats.map(c => `"${c}"`).join(', ')}.
 ${fmtParts.join('\n\n')}
-${difficultyLine}${avoidQBlock}
+${effectiveDifficultyLine}${kidsLine}${avoidQBlock}
 For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
 Rules: "ans" is the 0-based index of the correct answer. Every question must be completely unique. Return ONLY a valid JSON array, no markdown, no extra text.`,
         }],
