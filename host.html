@@ -2006,7 +2006,7 @@ function showResults() {
     if (top3.length === 0) return '<div style="text-align:center;color:#9090b8;">No players</div>';
     const order = top3.length >= 2 ? [top3[1], top3[0], top3[2]].filter(Boolean) : [top3[0]];
     const heights = [70, 90, 55];
-    const labels = top3.length >= 2 ? ['🥈 2nd', '🥇 1st', '🥉 3rd'] : ['🥇 1st'];
+    const labels = top3.length >= 2 ? ['2nd', '1st', '3rd'] : ['1st'];
     const bgColors = ['#dcfce7', '#ede9fe', '#fee2e2'];
     return `<div class="podium">${order.map((p, i) => {
       const h = top3.length >= 2 ? heights[i] : 90;
