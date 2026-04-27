@@ -79,7 +79,7 @@ let _customInput = '';
 let _customMusicFlag = false;
 let _customMusicType = 'genre'; // 'genre' | 'artist' | 'soundtrack'
 
-const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
+const IMAGE_CATS = new Set(['images', 'flags', 'landmarks', 'art & paintings', 'famous people', 'animals']);
 const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
 
 const CATEGORY_DATA = [
@@ -99,9 +99,8 @@ const CATEGORY_DATA = [
   { name: 'Food & Drink',      icon: '🍕', color: '#c2410c', border: '#fb923c', bg: '#fff7ed', music: false, subs: null },
   { name: 'Kids',              icon: '⭐', color: '#d97706', border: '#fcd34d', bg: '#fefce8', music: false,
     subs: ['Disney & Pixar', 'Animals & nature', 'Cartoons & animation', 'Books & stories', 'Sports for kids', 'Science & space', 'Food & holidays'] },
-  { name: 'Flags',             icon: '🚩', color: '#0f766e', border: '#5eead4', bg: '#f0fdfa', music: false, subs: null, image: true },
-  { name: 'Landmarks',         icon: '🏛️', color: '#92400e', border: '#fcd34d', bg: '#fefce8', music: false, subs: null, image: true },
-  { name: 'Art & Paintings',   icon: '🎨', color: '#9d174d', border: '#f9a8d4', bg: '#fdf2f8', music: false, subs: null, image: true },
+  { name: 'Images', icon: '🖼️', color: '#0f766e', border: '#5eead4', bg: '#f0fdfa', music: false, image: true,
+    subs: ['Flags', 'Landmarks', 'Art & Paintings', 'Famous people', 'Animals'] },
 ];
 
 function findCatData(name) {

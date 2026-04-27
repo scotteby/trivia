@@ -7,7 +7,7 @@ const MUSIC_CATS = new Set([
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
-const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
+const IMAGE_CATS = new Set(['images', 'flags', 'landmarks', 'art & paintings', 'famous people', 'animals']);
 const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
 
 const KIDS_CATS = new Set([
@@ -239,7 +239,9 @@ IMAGE CATEGORY RULES — follow strictly:
 - "image_file" must be the EXACT filename as it appears on Wikimedia Commons (case-sensitive, include extension)
 - For FLAGS: use format "Flag_of_[Country].svg" e.g. "Flag_of_Japan.svg", "Flag_of_Brazil.svg"
 - For LANDMARKS: use well-known Wikipedia image filenames e.g. "Eiffel_Tower_7_Floors_Below.jpg"
-- For ART: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"
+- For ART & PAINTINGS: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg"
+- For FAMOUS PEOPLE: use Wikipedia portrait filenames e.g. "Albert_Einstein_Head.jpg", "Barack_Obama.jpg". Question format: "Who is this person?" or "What is this person famous for?" with 4 plausible name options.
+- For ANIMALS: use Wikimedia nature photography filenames e.g. "Proboscis_Monkey_in_Borneo.jpg". Question format: "What animal is this?" or "What species is this?" with 4 plausible animal options.
 - Only use images you are CERTAIN exist on Wikimedia Commons
 - Wrong answer options must be plausible alternatives in the same category`);
     }
@@ -290,7 +292,7 @@ Alternate "q" randomly between: "Who is this artist?" and "What is this song cal
 Music constraint (follow strictly): ${getMusicConstraint('music')}
 Session seed (ignore): ${Date.now()}-${Math.random()}
 
-For the image question — pick one of: flags, famous landmarks, or famous artworks:
+For the image question — pick one of: Flags, Landmarks, Art & Paintings, Famous people, or Animals:
 {"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"Which country's flag is this?","opts":["A","B","C","D"],"ans":0,"cat":"Images"}
 Use EXACT Wikimedia Commons filenames. For flags: "Flag_of_[Country].svg". For landmarks: exact Wikipedia image filenames. For art: exact Wikimedia filenames.
 Only use images you are CERTAIN exist on Wikimedia Commons.

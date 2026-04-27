@@ -18,7 +18,7 @@ const MUSIC_CATS = new Set([
 ]);
 const isMusicCat = c => MUSIC_CATS.has(c.toLowerCase().trim());
 
-const IMAGE_CATS = new Set(['flags', 'landmarks', 'art & paintings', 'images']);
+const IMAGE_CATS = new Set(['images', 'flags', 'landmarks', 'art & paintings', 'famous people', 'animals']);
 const isImageCat = c => IMAGE_CATS.has(c.toLowerCase().trim());
 
 const KIDS_CATS = new Set([
@@ -215,7 +215,9 @@ IMAGE CATEGORY RULES — follow strictly:
 - "image_file" must be the EXACT filename as it appears on Wikimedia Commons (case-sensitive, include extension)
 - For FLAGS: use format "Flag_of_[Country].svg" e.g. "Flag_of_Japan.svg", "Flag_of_Brazil.svg"
 - For LANDMARKS: use well-known Wikipedia image filenames e.g. "Eiffel_Tower_7_Floors_Below.jpg", "Colosseum_in_Rome-April_2007-1-_copie_2B.jpg"
-- For ART: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg", "The_Starry_Night_-_Vincent_van_Gogh.jpg"
+- For ART & PAINTINGS: use exact Wikimedia filenames e.g. "Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg", "The_Starry_Night_-_Vincent_van_Gogh.jpg"
+- For FAMOUS PEOPLE: use Wikipedia portrait filenames e.g. "Albert_Einstein_Head.jpg", "Barack_Obama.jpg". Question format: "Who is this person?" or "What is this person famous for?" with 4 plausible name options.
+- For ANIMALS: use Wikimedia nature photography filenames e.g. "Proboscis_Monkey_in_Borneo.jpg". Question format: "What animal is this?" or "What species is this?" with 4 plausible animal options.
 - Only use images you are CERTAIN exist on Wikimedia Commons
 - Wrong answer options must be plausible alternatives in the same category (other countries, other landmarks, other artists)
 - Questions should be "Which country's flag is this?", "What is this famous landmark?", "Who painted this?", "What is this painting called?"` : '';
