@@ -1152,16 +1152,19 @@ function showIngame() {
 
   const exitTvBtn = state.tvMode ? `
     <button onclick="toggleTvMode()" style="background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:11px;color:#555;cursor:pointer;">← Exit TV mode</button>` : `
-    <button onclick="newGame()" style="background:transparent;border:1.5px solid #d0d0e8;border-radius:8px;padding:6px 12px;font-size:12px;color:#6b6b9a;cursor:pointer;">✕ New game</button>`;
+    <button onclick="newGame()" style="background:transparent;border:1px solid #d0d0e8;border-radius:8px;padding:5px 10px;font-size:12px;color:#9090b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>`;
 
   const tvHint = `<div id="tv-hint" style="display:${state.tvMode ? 'block' : 'none'};font-size:11px;color:#555;text-align:center;margin-bottom:10px;">Press F11 for fullscreen · best for TV casting</div>`;
 
   setHTML(`
     <div class="fade-in">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;">
         ${exitTvBtn}
-        <div style="font-size:12px;color:#9090b8;">Round ${roundNum} · Question ${qInRound} of ${questionsPerRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
-        <div class="ingame-room-code" style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:20px;padding:4px 14px;font-size:13px;color:#6d28d9;font-weight:500;">Join: <span style="color:#1a1a2e;letter-spacing:.1em;">${room.room_code}</span></div>
+        <div style="text-align:center;flex:1;min-width:0;">
+          <div style="font-size:12px;color:#9090b8;white-space:nowrap;">Round ${roundNum} · Q${qInRound} of ${questionsPerRound}</div>
+          ${roundNum > 1 ? `<div style="margin-top:2px;"><span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 8px;font-weight:600;">${roundNum}× points</span></div>` : ''}
+        </div>
+        <div class="ingame-room-code" style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:20px;padding:4px 10px;font-size:12px;color:#6d28d9;font-weight:500;white-space:nowrap;flex-shrink:0;">Join: <span style="color:#1a1a2e;letter-spacing:.1em;">${room.room_code}</span></div>
       </div>
 
       ${tvBanner}
@@ -1374,9 +1377,12 @@ function showIngameAsPlayer() {
 
   setHTML(`
     <div class="fade-in">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div style="font-size:12px;color:#7c3aed;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
-        <div style="font-size:12px;color:#9090b8;" id="hostScoreDisplay">${state.hostScore} pts</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="text-align:left;">
+          <div style="font-size:12px;color:#7c3aed;white-space:nowrap;">Round ${roundNum} · Q${qInRound}</div>
+          ${roundNum > 1 ? `<div style="margin-top:2px;"><span style="background:#7c3aed;color:#fff;font-size:10px;border-radius:10px;padding:2px 8px;font-weight:600;">${roundNum}× points</span></div>` : ''}
+        </div>
+        <div style="font-size:12px;color:#9090b8;white-space:nowrap;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
       ${musicBanner}
