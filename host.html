@@ -747,9 +747,42 @@ async function createRoom() {
     return;
   }
   const btn = document.getElementById('createBtn');
-  const setStatus = t => { if (btn) btn.textContent = t; };
   if (btn) btn.disabled = true;
-  setStatus('Generating questions…');
+
+  setHTML(`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:24px;">🧠</div>
+      <div style="font-size:20px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Building your quiz…</div>
+      <div style="font-size:14px;color:#9090b8;margin-bottom:32px;" id="loadingMsg">Generating questions…</div>
+      <div style="width:100%;max-width:280px;height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:32px;">
+        <div id="loadingBar" style="height:100%;background:#7c3aed;border-radius:4px;width:0%;transition:width .6s ease;"></div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+      <style>@keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}</style>
+    </div>
+  `);
+
+  const createMessages = [
+    'Generating questions…',
+    'Searching for music clips…',
+    'Picking categories…',
+    'Tuning difficulty…',
+    'Almost ready…',
+  ];
+  let msgIdx = 0;
+  let progress = 0;
+  const loadingInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % createMessages.length;
+    progress = Math.min(progress + Math.random() * 18 + 8, 90);
+    const msgEl = document.getElementById('loadingMsg');
+    const barEl = document.getElementById('loadingBar');
+    if (msgEl) msgEl.textContent = createMessages[msgIdx];
+    if (barEl) barEl.style.width = progress + '%';
+  }, 2000);
 
   try {
     const customMusicCatObjs = state.customCats.filter(c => c.music);
@@ -778,13 +811,19 @@ async function createRoom() {
       }
       throw new Error(data.error || 'Failed to create room');
     }
+    clearInterval(loadingInterval);
+    const barEl = document.getElementById('loadingBar');
+    if (barEl) barEl.style.width = '100%';
+    await new Promise(r => setTimeout(r, 400));
+
     state.room = data;
     localStorage.setItem(HOST_ROOM_CODE_KEY, data.room_code);
     state.players = [];
     subscribeToRoom();
     showLobby();
   } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Create room and get code'; }
+    clearInterval(loadingInterval);
+    showSetup();
     showSetupError(e.message);
   }
 }
@@ -1677,10 +1716,40 @@ async function playAgain() {
   clearInterval(state.timerInterval);
   if (!state.room) { showSetup(); return; }
 
-  setHTML(`<div style="text-align:center;padding:100px 20px;">
-    <div style="font-size:16px;font-weight:500;color:#a78bfa;margin-bottom:8px;">Generating new questions…</div>
-    <div style="font-size:12px;color:#9090b8;">Same room code · fresh questions · ~10 seconds</div>
-  </div>`);
+  setHTML(`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:24px;">🧠</div>
+      <div style="font-size:20px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Building your quiz…</div>
+      <div style="font-size:14px;color:#9090b8;margin-bottom:32px;" id="loadingMsg">Generating new questions…</div>
+      <div style="width:100%;max-width:280px;height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:32px;">
+        <div id="loadingBar" style="height:100%;background:#7c3aed;border-radius:4px;width:0%;transition:width .6s ease;"></div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+      </div>
+      <style>@keyframes dot{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}</style>
+    </div>
+  `);
+
+  const playAgainMessages = [
+    'Generating new questions…',
+    'Finding fresh music clips…',
+    'Mixing up the categories…',
+    'Making it harder this time…',
+    'Almost ready…',
+  ];
+  let paIdx = 0;
+  let paProgress = 0;
+  const playAgainInterval = setInterval(() => {
+    paIdx = (paIdx + 1) % playAgainMessages.length;
+    paProgress = Math.min(paProgress + Math.random() * 18 + 8, 90);
+    const msgEl = document.getElementById('loadingMsg');
+    const barEl = document.getElementById('loadingBar');
+    if (msgEl) msgEl.textContent = playAgainMessages[paIdx];
+    if (barEl) barEl.style.width = paProgress + '%';
+  }, 2000);
 
   const cfg = state.room.config || {};
   const payload = { rounds: cfg.rounds || 3, timer: cfg.timer || 15, difficulty: cfg.difficulty || 'mixed' };
@@ -1739,6 +1808,11 @@ async function playAgain() {
       console.warn('Failed to re-create host player:', e);
     }
   }
+
+  clearInterval(playAgainInterval);
+  const paBarEl = document.getElementById('loadingBar');
+  if (paBarEl) paBarEl.style.width = '100%';
+  await new Promise(r => setTimeout(r, 400));
 
   subscribeToRoom();
   showLobby();
