@@ -1665,6 +1665,7 @@ async function startNextRound(roundNum) {
 // ─── GAME OVER SCREEN ────────────────────────────────────────────────────────
 function showGameOver() {
   clearInterval(state.timerInterval);
+  clearInterval(state.autoAdvanceTimeout);
   stopClip();
   document.body.classList.remove('tv-mode');
   state.view = 'gameover';
