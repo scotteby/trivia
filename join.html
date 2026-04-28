@@ -107,11 +107,11 @@ function lbRowHTML(p, rank, isMe) {
     : false;
   const bg = isMe ? (correct ? '#f5f3ff' : '#fef2f2') : 'transparent';
   const border = isMe ? 'none' : 'border-bottom:1px solid rgba(0,0,0,0.06);';
-  return `<div style="display:grid;grid-template-columns:20px 28px 1fr auto;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;background:${bg};${border}">
+  return `<div style="display:grid;grid-template-columns:20px 28px 1fr auto;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;background:${bg};${border}text-align:left;">
     <div style="font-size:13px;color:${rank<=3?'#7c3aed':'#9090b8'};font-weight:${rank<=3?'600':'400'};text-align:center;">${rank}</div>
     <div style="display:flex;align-items:center;justify-content:center;">${avatarHTML(p, 24)}</div>
-    <div style="font-size:13px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}${isMe?' (you)':''}</div>
-    <div style="font-size:13px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
+    <div style="font-size:13px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:13px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;text-align:right;">${p.score}</div>
   </div>`;
 }
 
