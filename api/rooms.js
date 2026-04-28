@@ -151,7 +151,7 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 // ─── Persistent song deduplication via played_songs table ────
 async function getPlayedSongs() {
   try {
-    const res = await sbReq('/played_songs?select=artist,song&order=played_at.desc&limit=1000');
+    const res = await sbReq('/played_songs?select=artist,song&order=played_at.desc&limit=2000&played_at=gte.' + new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
     if (!Array.isArray(res.data)) return [];
     return res.data.map(r => `${r.artist} - ${r.song}`);
   } catch {
@@ -165,9 +165,9 @@ async function savePlayedSongs(questions) {
     if (!musicQs.length) return;
     const rows = musicQs.map(q => ({ artist: q.artist, song: q.song }));
     await sbReq('/played_songs', 'POST', rows);
-    // Trim to keep only the most recent 1000 rows
-    const countRes = await sbReq('/played_songs?select=id&order=played_at.desc&limit=1000');
-    if (Array.isArray(countRes.data) && countRes.data.length >= 1000) {
+    // Trim to keep only the most recent 2000 rows
+    const countRes = await sbReq('/played_songs?select=id&order=played_at.desc&limit=2000');
+    if (Array.isArray(countRes.data) && countRes.data.length >= 2000) {
       const oldestKept = countRes.data[countRes.data.length - 1].id;
       await sbReq(`/played_songs?played_at=lt.(select played_at from played_songs where id=eq.${oldestKept})`, 'DELETE');
     }

@@ -188,7 +188,7 @@ function sbPost(path, body) {
 
 async function getPlayedSongs() {
   try {
-    const data = await sbGet('/played_songs?select=artist,song&order=played_at.desc&limit=1000');
+    const data = await sbGet('/played_songs?select=artist,song&order=played_at.desc&limit=2000&played_at=gte.' + new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
     if (!Array.isArray(data)) return [];
     return data.map(r => `${r.artist} - ${r.song}`);
   } catch {
