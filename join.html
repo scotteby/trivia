@@ -355,10 +355,10 @@ function renderLobbyList() {
   if (listEl) {
     listEl.innerHTML = state.players.map(p => {
       const isMe = p.id === state.player?.id;
-      return `<div class="player-chip" style="${isMe ? 'border-color:#7c3aed44;' : ''}">
-        ${avatarHTML(p, 28)}
-        <div style="flex:1;font-size:13px;color:${isMe ? '#c4b5fd' : '#1a1a2e'};">${p.name}</div>
-        ${isMe ? '<div style="font-size:10px;color:#7c3aed;">you</div>' : ''}
+      return `<div class="player-chip" style="${isMe ? 'border-color:#7c3aed;background:#f5f3ff;' : ''}">
+        <div style="flex-shrink:0;">${avatarHTML(p, 28)}</div>
+        <div style="flex:1;font-size:13px;color:${isMe ? '#5b21b6' : '#1a1a2e'};font-weight:${isMe ? '500' : '400'};">${p.name}</div>
+        ${isMe ? '<div style="background:#7c3aed;color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;">you</div>' : ''}
       </div>`;
     }).join('');
   }
