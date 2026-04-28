@@ -279,12 +279,16 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
     if (avoidSongBlock) fmt += avoidSongBlock;
   }
 
+  const basePerCat = Math.floor(total / categories.length);
+  const remainder = total % categories.length;
+  const perCatCounts = categories.map((_, i) => i < remainder ? basePerCat + 1 : basePerCat);
+
   const body = JSON.stringify({
     model: 'claude-sonnet-4-6',
     max_tokens: 3000,
     messages: [{
       role: 'user',
-      content: `Generate exactly ${total} pub quiz questions: ${Math.round(total / categories.length)} questions per category, in this exact order: ${categories.map((c, i) => `[${Math.round(total / categories.length)} questions for "${c}"]`).join(', then ')}.
+      content: `Generate exactly ${total} pub quiz questions: ${categories.map((c, i) => `${perCatCounts[i]} questions for "${c}"`).join(', then ')}, in this exact order: ${categories.map((c, i) => `[${perCatCounts[i]} questions for "${c}"]`).join(', then ')}.
 IMPORTANT: Output ALL questions for the first category first, then ALL questions for the second category, and so on. Do NOT interleave categories.
 ${fmt}
 ${effectiveDifficultyLine}${kidsLine}${avoidQBlock}
