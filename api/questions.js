@@ -134,20 +134,43 @@ async function enrichWithImages(questions) {
 }
 
 function getMusicConstraint(category) {
+  const cat = category.toLowerCase();
+
+  // Categories that already imply a specific era — don't add a decade constraint
+  const eraSpecific = [
+    '60s', '70s', '80s', '90s', '2000s', '2010s',
+    'current', 'classic rock', 'hip hop', 'r&b', 'country',
+  ];
+  const hasEra = eraSpecific.some(e => cat.includes(e));
+
   const decades = ['1965-1972','1973-1979','1980-1985','1986-1989','1990-1994','1995-1999','2000-2004','2005-2009','2010-2015','2016-2021'];
   const tiers = [
     'Avoid the 20 most famous songs. Pick album tracks or deep cuts true fans would know.',
     'Pick songs that reached #1 on the charts but are now slightly forgotten.',
     'Focus on one-hit wonders or artists who peaked quickly.',
-    'Pick songs from the middle of artists careers, not their most famous hits.',
+    'Pick songs from the middle of the artist\'s career, not their most famous hits.',
     'Focus on songs that were massive hits in their era but rarely appear in trivia today.',
   ];
-  const regions = ['UK artists','Australian or Canadian artists','American artists outside New York or LA','Motown artists','artists who got their start in the 80s but peaked in the 90s'];
+  const regions = [
+    'Focus on UK artists.',
+    'Focus on Australian or Canadian artists.',
+    'Focus on American artists outside New York or LA.',
+    'Focus on Motown artists.',
+    'Focus on artists who got their start in the 80s but peaked in the 90s.',
+  ];
+
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  if (hasEra) {
+    // Era already defined by category — only add variety via tier or region
+    return pick([pick(tiers), pick(regions)]);
+  }
+
+  // Broad category — all constraint types are fair game
   const constraints = [
     `Focus on songs from ${pick(decades)}.`,
     pick(tiers),
-    `Focus on ${pick(regions)}.`,
+    pick(regions),
   ];
   return pick(constraints);
 }
