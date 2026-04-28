@@ -893,13 +893,13 @@ function hostLbRowHTML(p, rank, isMe) {
   const correct = isMe
     ? (state.hostAnswer === state.room?.questions?.[qi]?.ans)
     : false;
-  return `<div style="display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;margin-bottom:1px;${isMe
-    ? `background:${correct ? '#f5f3ff' : '#fef2f2'};`
-    : 'border-bottom:1px solid rgba(0,0,0,0.06);'}">
-    <div style="font-size:11px;color:${rank<=3?'#7c3aed':'#9090b8'};width:16px;text-align:right;flex-shrink:0;font-weight:${rank<=3?'600':'400'};">${rank}</div>
-    <div style="flex-shrink:0;width:20px;height:20px;">${avatarHTML(p, 20)}</div>
-    <div style="flex:1;min-width:0;font-size:11px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}${isMe?' (you)':''}</div>
-    <div style="font-size:11px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;flex-shrink:0;">${p.score}</div>
+  const bg = isMe ? (correct ? '#f5f3ff' : '#fef2f2') : 'transparent';
+  const border = isMe ? 'none' : 'border-bottom:1px solid rgba(0,0,0,0.06);';
+  return `<div style="display:grid;grid-template-columns:18px 24px 1fr auto;align-items:center;gap:6px;padding:5px 4px;border-radius:6px;background:${bg};${border}">
+    <div style="font-size:11px;color:${rank<=3?'#7c3aed':'#9090b8'};font-weight:${rank<=3?'600':'400'};text-align:center;">${rank}</div>
+    <div style="display:flex;align-items:center;justify-content:center;">${avatarHTML(p, 20)}</div>
+    <div style="font-size:11px;color:${isMe?'#6d28d9':'#1a1a2e'};font-weight:${isMe?'500':'400'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}${isMe?' (you)':''}</div>
+    <div style="font-size:11px;color:${isMe&&!correct?'#ef4444':'#a78bfa'};font-weight:500;">${p.score}</div>
   </div>`;
 }
 
@@ -1752,7 +1752,7 @@ async function revealAnswerAsPlayer(timedOut) {
           <div id="revealBar" style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .6s ease;"></div>
         </div>
         <div style="font-size:10px;color:#9090b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Leaderboard</div>
-        <div id="revealLeaderboard">${lbHTML}</div>
+        <div id="revealLeaderboard" style="display:flex;flex-direction:column;gap:1px;">${lbHTML}</div>
       </div>`;
   }
 
