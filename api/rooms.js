@@ -148,23 +148,31 @@ async function getItunesPreview(artist, song) {
 // ─── Delay helper ────────────────────────────────────────────
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
-// ─── Fetch recently used question texts to avoid repeats ─────
-async function getRecentQuestions() {
+// ─── Persistent song deduplication via played_songs table ────
+async function getPlayedSongs() {
   try {
-    const res = await sbReq('/game_rooms?select=questions&order=created_at.desc&limit=8');
-    if (!Array.isArray(res.data)) return { questions: [], songs: [] };
-    const questions = [];
-    const songs = [];
-    res.data.forEach(row => {
-      const qs = Array.isArray(row.questions) ? row.questions : [];
-      qs.forEach(q => {
-        if (q.q) questions.push(q.q);
-        if (q.artist && q.song) songs.push(`${q.artist} - ${q.song}`);
-      });
-    });
-    return { questions, songs };
+    const res = await sbReq('/played_songs?select=artist,song&order=played_at.desc&limit=1000');
+    if (!Array.isArray(res.data)) return [];
+    return res.data.map(r => `${r.artist} - ${r.song}`);
   } catch {
-    return { questions: [], songs: [] };
+    return [];
+  }
+}
+
+async function savePlayedSongs(questions) {
+  try {
+    const musicQs = questions.filter(q => q.type === 'music' && q.artist && q.song);
+    if (!musicQs.length) return;
+    const rows = musicQs.map(q => ({ artist: q.artist, song: q.song }));
+    await sbReq('/played_songs', 'POST', rows);
+    // Trim to keep only the most recent 1000 rows
+    const countRes = await sbReq('/played_songs?select=id&order=played_at.desc&limit=1000');
+    if (Array.isArray(countRes.data) && countRes.data.length >= 1000) {
+      const oldestKept = countRes.data[countRes.data.length - 1].id;
+      await sbReq(`/played_songs?played_at=lt.(select played_at from played_songs where id=eq.${oldestKept})`, 'DELETE');
+    }
+  } catch(e) {
+    console.warn('[rooms] savePlayedSongs failed:', e.message);
   }
 }
 
@@ -257,13 +265,11 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
     ? 'Difficulty: EASY — use well-known mainstream facts that children aged 6-12 would know.'
     : difficultyLine;
 
-  const { questions: recentQs, songs: recentSongs } = await getRecentQuestions();
-  const allAvoidSongs = [...new Set([...recentSongs, ...avoidSongsExtra])];
-  const avoidQBlock = recentQs.length > 0
-    ? `\nDo NOT repeat any of these recently used questions:\n${recentQs.map(q => `- ${q}`).join('\n')}\n`
-    : '';
+  const playedSongs = await getPlayedSongs();
+  const allAvoidSongs = [...new Set([...playedSongs, ...avoidSongsExtra])];
+  const avoidQBlock = '';
   const avoidSongBlock = allAvoidSongs.length > 0
-    ? `\nDo NOT use any of these artist-song combinations:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}\n`
+    ? `\nDo NOT use any of these artist-song combinations — these have all been used recently:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}\n`
     : '';
 
   // Inject song avoid block and constraint into music format section
@@ -374,6 +380,7 @@ module.exports = async function handler(req, res) {
         const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient);
         let questions = await enrichWithPreviews(rawQuestions);
         questions = await enrichWithImages(questions);
+        await savePlayedSongs(questions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
       }
@@ -388,6 +395,7 @@ module.exports = async function handler(req, res) {
 
       let questions = await enrichWithPreviews(rawQuestions);
       questions = await enrichWithImages(questions);
+      await savePlayedSongs(questions);
       const musicCount = questions.filter(q => q.preview_url).length;
       const imageCount = questions.filter(q => q.image_url).length;
       console.log(`[rooms] Enrichment done — ${musicCount} music clips, ${imageCount} images`);

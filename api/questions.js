@@ -133,6 +133,78 @@ async function enrichWithImages(questions) {
   }));
 }
 
+const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
+
+function sbGet(path) {
+  return new Promise(resolve => {
+    try {
+      const req = https.request({
+        hostname: SUPABASE_URL.replace('https://', ''),
+        path: `/rest/v1${path}`,
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        },
+      }, res => {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          try { resolve(JSON.parse(raw)); } catch { resolve([]); }
+        });
+      });
+      req.on('error', () => resolve([]));
+      req.end();
+    } catch { resolve([]); }
+  });
+}
+
+function sbPost(path, body) {
+  return new Promise(resolve => {
+    try {
+      const bodyStr = JSON.stringify(body);
+      const req = https.request({
+        hostname: SUPABASE_URL.replace('https://', ''),
+        path: `/rest/v1${path}`,
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Content-Length': String(Buffer.byteLength(bodyStr)),
+          'Prefer': 'return=minimal',
+        },
+      }, res => {
+        res.on('data', () => {});
+        res.on('end', () => resolve(true));
+      });
+      req.on('error', () => resolve(false));
+      req.write(bodyStr);
+      req.end();
+    } catch { resolve(false); }
+  });
+}
+
+async function getPlayedSongs() {
+  try {
+    const data = await sbGet('/played_songs?select=artist,song&order=played_at.desc&limit=1000');
+    if (!Array.isArray(data)) return [];
+    return data.map(r => `${r.artist} - ${r.song}`);
+  } catch {
+    return [];
+  }
+}
+
+async function savePlayedSongs(questions) {
+  try {
+    const musicQs = questions.filter(q => q.type === 'music' && q.artist && q.song);
+    if (!musicQs.length) return;
+    const rows = musicQs.map(q => ({ artist: q.artist, song: q.song }));
+    await sbPost('/played_songs', rows);
+  } catch(e) {}
+}
+
 function getMusicConstraint(category) {
   const cat = category.toLowerCase();
 
@@ -197,8 +269,10 @@ module.exports = async function handler(req, res) {
     const avoidQBlock = avoidQuestions.length > 0
       ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidQuestions.map(q => `- ${q}`).join('\n')}\n`
       : '';
-    const avoidSongBlock = avoidSongs.length > 0
-      ? `Do NOT use any of these artist-song combinations:\n${avoidSongs.map(s => `- ${s}`).join('\n')}`
+    const playedSongs = await getPlayedSongs();
+    const allAvoidSongs = [...new Set([...playedSongs, ...avoidSongs])];
+    const avoidSongBlock = allAvoidSongs.length > 0
+      ? `Do NOT use any of these artist-song combinations:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}`
       : '';
 
     const difficultyInstructions = {
@@ -286,6 +360,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
       let questions = parseQuestions(json);
       questions = await enrichWithPreviews(questions);
       questions = await enrichWithImages(questions);
+      await savePlayedSongs(questions);
       return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
@@ -328,6 +403,7 @@ Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSO
     let questions = parseQuestions(json);
     questions = await enrichWithPreviews(questions);
     questions = await enrichWithImages(questions);
+    await savePlayedSongs(questions);
     return res.status(200).json({ questions });
   } catch(e) {
     return res.status(500).json({ error: 'Handler failed', detail: e.message });
