@@ -1377,52 +1377,6 @@ function playClip(url) {
   state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
 }
 
-let _fanfareCtx = null;
-
-function unlockFanfare() {
-  try {
-    if (!_fanfareCtx) {
-      _fanfareCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (_fanfareCtx.state === 'suspended') {
-      _fanfareCtx.resume();
-    }
-  } catch(e) {}
-}
-
-function playVictoryFanfare() {
-  try {
-    const ctx = _fanfareCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
-    const t = ctx.currentTime;
-
-    function playNote(freq, startTime, duration, gain = 0.28, type = 'triangle') {
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, startTime);
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.02);
-      gainNode.gain.setValueAtTime(gain, startTime + duration - 0.05);
-      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
-      osc.start(startTime);
-      osc.stop(startTime + duration + 0.05);
-    }
-
-    playNote(261.6, t + 0.0,  0.18);
-    playNote(329.6, t + 0.18, 0.18);
-    playNote(392.0, t + 0.36, 0.18);
-    playNote(523.2, t + 0.54, 0.6, 0.32);
-    playNote(392.0, t + 0.54, 0.6, 0.18, 'sine');
-    playNote(329.6, t + 0.54, 0.6, 0.12, 'sine');
-  } catch(e) {}
-}
-
-document.addEventListener('touchstart', unlockFanfare, { once: false, passive: true });
-document.addEventListener('click', unlockFanfare, { once: false, passive: true });
-
 function forcePlayClip(url) {
   if (state.audio) {
     state.audio.src = url;
@@ -1645,7 +1599,6 @@ async function submitHostAnswer(idx) {
 }
 
 function revealAnswer() {
-  unlockFanfare();
   if (state.revealed) return;
   clearInterval(state.timerInterval);
   state.revealed = true;
@@ -1983,7 +1936,6 @@ async function incrementGamesPlayed() {
 
 function showGameOver() {
   incrementGamesPlayed();
-  playVictoryFanfare();
   clearInterval(state.timerInterval);
   clearInterval(state.autoAdvanceTimeout);
   stopClip();
