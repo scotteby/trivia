@@ -493,16 +493,17 @@ async function showSummary() {
 }
 
 function shareResult() {
-  const text = `I scored ${score}/${TOTAL_MAX} on today's Quizzli! 🧠 Can you beat me?\nquizzli.app`;
+  const text = `I scored ${score}/${TOTAL_MAX} on today's Quizzli! 🧠 Can you beat me?`;
+  const url = 'https://quizzli.app';
   if (navigator.share) {
-    navigator.share({ title: 'Quizzli', text }).catch(() => {
-      navigator.clipboard?.writeText(text).then(() => {
+    navigator.share({ title: 'Quizzli', text, url }).catch(() => {
+      navigator.clipboard?.writeText(`${text}\n${url}`).then(() => {
         const btn = document.getElementById('shareBtn');
         if (btn) { const t = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = t, 2000); }
       });
     });
   } else {
-    navigator.clipboard?.writeText(text).then(() => {
+    navigator.clipboard?.writeText(`${text}\n${url}`).then(() => {
       const btn = document.getElementById('shareBtn');
       if (btn) { const t = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = t, 2000); }
     });
