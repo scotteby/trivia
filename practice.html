@@ -151,9 +151,23 @@ function stopClip() {
   document.querySelectorAll('.wave-bar').forEach(b => b.classList.add('stopped'));
 }
 
+let _fanfareCtx = null;
+
+function unlockFanfare() {
+  try {
+    if (!_fanfareCtx) {
+      _fanfareCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_fanfareCtx.state === 'suspended') {
+      _fanfareCtx.resume();
+    }
+  } catch(e) {}
+}
+
 function playVictoryFanfare() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = _fanfareCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
     const t = ctx.currentTime;
 
     function playNote(freq, startTime, duration, gain = 0.28, type = 'triangle') {
@@ -179,6 +193,9 @@ function playVictoryFanfare() {
     playNote(329.6, t + 0.54, 0.6, 0.12, 'sine');
   } catch(e) {}
 }
+
+document.addEventListener('touchstart', unlockFanfare, { once: false, passive: true });
+document.addEventListener('click', unlockFanfare, { once: false, passive: true });
 
 function playClip(url) {
   stopClip();
@@ -844,6 +861,7 @@ function revealMusicInfo(q) {
 }
 
 function submitAnswer(idx) {
+  unlockFanfare();
   if (state.hasAnswered) return;
   clearInterval(state.timerInterval);
   clearTimeout(state.clipPhaseTimeout);
@@ -870,6 +888,7 @@ function submitAnswer(idx) {
 }
 
 function timeUp() {
+  unlockFanfare();
   state.hasAnswered = true;
   clearTimeout(state.clipPhaseTimeout);
   state.clipPhaseTimeout = null;

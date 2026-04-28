@@ -283,9 +283,23 @@ function playClip(url) {
   } catch {}
 }
 
+let _fanfareCtx = null;
+
+function unlockFanfare() {
+  try {
+    if (!_fanfareCtx) {
+      _fanfareCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_fanfareCtx.state === 'suspended') {
+      _fanfareCtx.resume();
+    }
+  } catch(e) {}
+}
+
 function playVictoryFanfare() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = _fanfareCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
     const t = ctx.currentTime;
 
     function playNote(freq, startTime, duration, gain = 0.28, type = 'triangle') {
@@ -311,6 +325,9 @@ function playVictoryFanfare() {
     playNote(329.6, t + 0.54, 0.6, 0.12, 'sine');
   } catch(e) {}
 }
+
+document.addEventListener('touchstart', unlockFanfare, { once: false, passive: true });
+document.addEventListener('click', unlockFanfare, { once: false, passive: true });
 
 function waveformHTML() {
   return [0,0.15,0.3,0.45,0.6].map((d, i) => {
@@ -415,6 +432,7 @@ function beginQuestion() {
 }
 
 function handleAnswer(idx) {
+  unlockFanfare();
   if (answered) return;
   answered = true;
   clearInterval(timerInterval);
@@ -437,6 +455,7 @@ function handleAnswer(idx) {
 }
 
 function timeUp() {
+  unlockFanfare();
   if (answered) return;
   answered = true;
   clearTimeout(clipPhaseTimeout); clipPhaseTimeout = null;
