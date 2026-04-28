@@ -487,11 +487,26 @@ async function showSummary() {
       ${moreHint}
     </div>
     <div class="result-rows fade-in">${rowsHtml}</div>
-    <button class="share-btn" id="shareBtn">Share on X (Twitter)</button>
+    <button class="share-btn" id="shareBtn" onclick="shareResult()">Share my result</button>
     <button class="play-again-btn" onclick="showHome()" style="margin-top:.5rem;">← Back to Home</button>
   `);
-  const shareText = encodeURIComponent(`I just scored ${score}/${TOTAL_MAX} on Quizzli! ${emoji} Today's record is ${recordScore}. Can you beat it? #Quizzli`);
-  document.getElementById('shareBtn').onclick = () => window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank');
+}
+
+function shareResult() {
+  const text = `I scored ${score}/${TOTAL_MAX} on today's Quizzli! 🧠 Can you beat me?\nquizzli.app`;
+  if (navigator.share) {
+    navigator.share({ title: 'Quizzli', text }).catch(() => {
+      navigator.clipboard?.writeText(text).then(() => {
+        const btn = document.getElementById('shareBtn');
+        if (btn) { const t = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = t, 2000); }
+      });
+    });
+  } else {
+    navigator.clipboard?.writeText(text).then(() => {
+      const btn = document.getElementById('shareBtn');
+      if (btn) { const t = btn.textContent; btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = t, 2000); }
+    });
+  }
 }
 
 function startGame() {
