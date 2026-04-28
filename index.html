@@ -283,6 +283,35 @@ function playClip(url) {
   } catch {}
 }
 
+function playVictoryFanfare() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = ctx.currentTime;
+
+    function playNote(freq, startTime, duration, gain = 0.28, type = 'triangle') {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, startTime);
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.02);
+      gainNode.gain.setValueAtTime(gain, startTime + duration - 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.05);
+    }
+
+    playNote(261.6, t + 0.0,  0.18);
+    playNote(329.6, t + 0.18, 0.18);
+    playNote(392.0, t + 0.36, 0.18);
+    playNote(523.2, t + 0.54, 0.6, 0.32);
+    playNote(392.0, t + 0.54, 0.6, 0.18, 'sine');
+    playNote(329.6, t + 0.54, 0.6, 0.12, 'sine');
+  } catch(e) {}
+}
+
 function waveformHTML() {
   return [0,0.15,0.3,0.45,0.6].map((d, i) => {
     const h = [14,20,26,20,14][i];
@@ -421,8 +450,10 @@ function timeUp() {
 function advance() {
   stopClip();
   qi++;
-  if (qi >= QUESTIONS.length) showSummary();
-  else beginQuestion();
+  if (qi >= QUESTIONS.length) {
+    playVictoryFanfare();
+    showSummary();
+  } else beginQuestion();
 }
 
 async function saveHighScore(finalScore) {

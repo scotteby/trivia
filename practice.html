@@ -914,6 +914,7 @@ function showFeedback(correct, q, timedOut = false) {
 function nextQuestion() {
   state.currentIdx++;
   if (state.count !== 'endless' && state.currentIdx >= state.questions.length) {
+    playVictoryFanfare();
     showResults();
   } else if (state.count === 'endless' && state.currentIdx >= state.questions.length) {
     if (state.fetching) {
@@ -944,7 +945,6 @@ function showResults() {
     practiceGameCounted = true;
     incrementGamesPlayed();
   }
-  playVictoryFanfare();
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'results';
