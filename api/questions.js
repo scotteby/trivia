@@ -1,7 +1,7 @@
 const https = require('https');
 
 const MUSIC_CATS = new Set([
-  'music', '80s hits', '80s music', '90s pop', '90s music', 'current hits',
+  'music', '80s hits', '80s music', '90s pop', '90s music', '90s rock', 'current hits',
   '60s & 70s classics', '2000s bangers', 'classic rock', 'hip hop', 'r&b & soul', 'country',
   'music — all eras',
 ]);
