@@ -28,7 +28,7 @@
 body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
 #app { max-width: 440px; margin: 0 auto; padding: 1.5rem 1rem; }
 .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 500; }
 .badge-purple { background: rgba(14,165,233,0.15); color: #38bdf8; }
 .badge-green { background: rgba(52,211,153,0.15); color: #34d399; }
 .btn-primary { background: #0ea5e9; border: none; border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; min-height: 50px; }
@@ -42,7 +42,7 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .option-btn.correct { border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.15); }
 .option-btn.wrong { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); }
 .player-chip { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
 .timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 15px; font-weight: 600; display: inline-block; border: 1px solid #334155; }
 .timer-ok { color: #38bdf8; border-color: #0ea5e9; background: rgba(14,165,233,0.15); }
 .timer-warn { color: #fcd34d; border-color: #fcd34d; background: rgba(252,211,77,0.15); }
@@ -167,7 +167,7 @@ function showJoin(prefill = '', namePrefill = '') {
       </div>
 
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Room code</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Room code</div>
         <input id="codeInput" type="text" maxlength="5" placeholder="e.g. PIZZA"
           value="${prefill}"
           autocomplete="off" spellcheck="false"
@@ -177,7 +177,7 @@ function showJoin(prefill = '', namePrefill = '') {
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">Your name</div>
         <input id="nameInput" type="text" maxlength="20" placeholder="Enter your name"
           value="${namePrefill}"
           style="background:#0f172a;border:1px solid #475569;border-radius:10px;padding:12px 16px;font-size:17px;color:#e2e8f0;width:100%;"
@@ -185,7 +185,7 @@ function showJoin(prefill = '', namePrefill = '') {
       </div>
 
       <button class="btn-primary" id="joinBtn" onclick="joinGame()">Join room</button>
-      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
       <div id="joinError" style="margin-top:10px;text-align:center;font-size:13px;color:#f87171;min-height:20px;"></div>
     </div>
   `);
@@ -275,9 +275,9 @@ function showLobby() {
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:8px;">You're in!</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">You're in!</div>
         <div style="font-size:42px;font-weight:500;color:#38bdf8;" id="lobbyCount">…</div>
-        <div style="font-size:12px;color:#94a3b8;">players in lobby</div>
+        <div style="font-size:13px;color:#94a3b8;">players in lobby</div>
       </div>
 
       <div id="lobbyList" style="margin-bottom:16px;"></div>
@@ -293,7 +293,7 @@ function showLobby() {
           <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="togglePlayerAudio()">
             <div style="text-align:left;">
               <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Play music clips on this device</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px;" id="audioToggleHint">${playerAudioEnabled() ? 'On — good for remote play' : 'Off — best when near the host device'}</div>
+              <div style="font-size:13px;color:#94a3b8;margin-top:2px;" id="audioToggleHint">${playerAudioEnabled() ? 'On — good for remote play' : 'Off — best when near the host device'}</div>
             </div>
             <div id="audioToggleTrack" style="width:44px;height:24px;border-radius:12px;background:${playerAudioEnabled() ? '#0ea5e9' : '#334155'};position:relative;flex-shrink:0;transition:background .2s;">
               <div id="audioToggleThumb" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${playerAudioEnabled() ? '23px' : '3px'};transition:left .2s;"></div>
@@ -302,7 +302,7 @@ function showLobby() {
         </div>
       </div>
       <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
-        <div style="font-size:12px;color:#94a3b8;text-align:center;margin-bottom:8px;">Know someone who wants to join?</div>
+        <div style="font-size:13px;color:#94a3b8;text-align:center;margin-bottom:8px;">Know someone who wants to join?</div>
         <button onclick="shareJoinLinkPlayer()"
           style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:500;color:#0ea5e9;cursor:pointer;width:100%;">
           Share join link →
@@ -609,9 +609,9 @@ function showIngame() {
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
         ${waveformHTML()}
       </div>
-      <div style="font-size:12px;color:#0ea5e9;" id="clipStatus">Clip playing…</div>
+      <div style="font-size:13px;color:#0ea5e9;" id="clipStatus">Clip playing…</div>
       <div style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;" onclick="togglePlayerAudio()">
-        <div style="font-size:11px;color:#94a3b8;" id="audioToggleHint">${playerAudioEnabled() ? 'Audio: on' : 'Audio: off'}</div>
+        <div style="font-size:13px;color:#94a3b8;" id="audioToggleHint">${playerAudioEnabled() ? 'Audio: on' : 'Audio: off'}</div>
         <div id="audioToggleTrack" style="width:32px;height:18px;border-radius:9px;background:${playerAudioEnabled() ? '#0ea5e9' : '#334155'};position:relative;flex-shrink:0;transition:background .2s;">
           <div id="audioToggleThumb" style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:2px;left:${playerAudioEnabled() ? '16px' : '2px'};transition:left .2s;"></div>
         </div>
@@ -629,16 +629,16 @@ function showIngame() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:12px;color:#0ea5e9;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#0ea5e9;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
+        <div style="font-size:13px;color:#0ea5e9;">Round ${roundNum} · Q${qInRound}${roundNum > 1 ? ` <span style="background:#0ea5e9;color:#fff;font-size:10px;border-radius:10px;padding:2px 7px;font-weight:600;">${roundNum}x pts</span>` : ''}</div>
         <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
-        <div style="font-size:12px;color:#94a3b8;" id="scoreDisplay">${state.localScore} pts</div>
+        <div style="font-size:13px;color:#94a3b8;" id="scoreDisplay">${state.localScore} pts</div>
       </div>
 
       ${musicBanner}
       ${imageBanner}
 
       <div style="background:rgba(14,165,233,0.15);border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block;">
-        <span style="font-size:12px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+        <span style="font-size:13px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
       <div class="card" style="margin-bottom:10px;padding:12px 14px;">
@@ -890,7 +890,7 @@ async function showRoundLeaderboard(completedRound) {
   setHTML(`
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
-        <div style="font-size:11px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
+        <div style="font-size:13px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
         <div style="font-size:22px;font-weight:500;color:#e2e8f0;">${isLastRound ? 'Final scores' : 'Leaderboard'}</div>
         ${myRank > 0 ? `<div style="font-size:13px;color:#94a3b8;margin-top:4px;">You're #${myRank} with ${state.localScore} pts</div>` : ''}
       </div>
@@ -899,7 +899,7 @@ async function showRoundLeaderboard(completedRound) {
 
       ${!isLastRound ? `<div style="background:rgba(14,165,233,0.1);border:1px solid #0284c7;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:12px;">
         <div style="font-size:13px;color:#38bdf8;font-weight:500;">Round ${completedRound + 1} is worth ${completedRound + 1}× points</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
       </div>` : ''}
 
       <div style="background:#334155;border-radius:10px;padding:10px 16px;text-align:center;font-size:13px;color:#94a3b8;">
@@ -967,7 +967,7 @@ async function showPlayerResults() {
       <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
         <div style="font-size:${myRank === 1 ? '56px' : '36px'};line-height:1;margin-bottom:8px;">${emoji}</div>
         <div style="font-size:22px;font-weight:500;color:#e2e8f0;margin-bottom:4px;">${msg}</div>
-        <div style="font-size:12px;color:#94a3b8;">Room ${state.room.room_code}</div>
+        <div style="font-size:13px;color:#94a3b8;">Room ${state.room.room_code}</div>
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:14px;">
@@ -976,18 +976,18 @@ async function showPlayerResults() {
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Final standings</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em;">Final standings</div>
         ${lbRows}
       </div>
 
       <div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 16px;margin-bottom:12px;">
         <div style="font-size:13px;color:#e2e8f0;font-weight:500;margin-bottom:3px;">Want a rematch?</div>
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">Rejoin with the same code or share with someone new</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:10px;">Rejoin with the same code or share with someone new</div>
         <button class="btn-primary" style="font-size:13px;padding:10px;margin-bottom:8px;" onclick="rejoinRoom()">Rejoin room ${state.room?.room_code || ''}</button>
         <button class="btn-outline" style="font-size:13px;padding:10px;" onclick="shareRoom()">Share join link</button>
       </div>
 
-      <a href="index.html" style="display:block;text-align:center;font-size:12px;color:#94a3b8;text-decoration:none;padding:8px;">← Back to home</a>
+      <a href="index.html" style="display:block;text-align:center;font-size:13px;color:#94a3b8;text-decoration:none;padding:8px;">← Back to home</a>
     </div>
   `);
 }
@@ -1028,7 +1028,7 @@ function showWaitingForHost(code, name) {
     <div class="fade-in" style="text-align:center;padding:80px 20px;">
       <div style="font-size:22px;color:#38bdf8;margin-bottom:8px;">Almost there…</div>
       <div style="font-size:14px;color:#e2e8f0;margin-bottom:4px;">Waiting for host to start a new game</div>
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:28px;">Room <strong style="color:#e2e8f0;">${code}</strong> · ${name}</div>
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:28px;">Room <strong style="color:#e2e8f0;">${code}</strong> · ${name}</div>
       <div style="display:flex;justify-content:center;gap:4px;">
         <div style="width:7px;height:7px;border-radius:50%;background:#0ea5e9;animation:dot 1.2s .0s infinite;"></div>
         <div style="width:7px;height:7px;border-radius:50%;background:#0ea5e9;animation:dot 1.2s .4s infinite;"></div>

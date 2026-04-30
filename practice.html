@@ -304,10 +304,10 @@ function buildCustomSection() {
     return `<div onclick="toggleCustomCatSel('${en}');event.stopPropagation();"
       style="display:flex;align-items:center;gap:4px;background:${chipBg};border:1px solid ${chipBorder};border-radius:20px;padding:5px 10px 5px 8px;cursor:pointer;transition:border-color .15s;">
       ${icon ? `<span style="font-size:10px;">${icon}</span>` : ''}
-      <span style="font-size:12px;color:${chipColor};">${c.name}</span>
+      <span style="font-size:13px;color:${chipColor};">${c.name}</span>
       ${sel ? '<span style="font-size:10px;color:#0ea5e9;margin-left:2px;">✓</span>' : ''}
       <button onclick="event.stopPropagation();removeCustomCat('${en}')"
-        style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:12px;padding:0 0 0 4px;line-height:1;flex-shrink:0;">✕</button>
+        style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:13px;padding:0 0 0 4px;line-height:1;flex-shrink:0;">✕</button>
     </div>`;
   }).join('');
 
@@ -318,7 +318,7 @@ function buildCustomSection() {
 
   const typeSelector = `
     <div id="musicTypeRow" style="display:${_customMusicFlag ? 'block' : 'none'};margin-top:10px;padding-top:10px;border-top:1px solid #0ea5e944;">
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">Category type:</div>
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:6px;">Category type:</div>
       <div style="display:flex;gap:6px;">
         ${[
           { type: 'artist',     icon: '🎤', label: 'Artist',     ex: 'e.g. Taylor Swift' },
@@ -329,7 +329,7 @@ function buildCustomSection() {
           return `<div id="customType_${type}" onclick="setCustomMusicType('${type}')"
             style="flex:1;background:${sel ? 'rgba(14,165,233,0.15)' : '#334155'};border:1px solid ${sel ? '#0ea5e9' : '#475569'};border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;">
             <div style="font-size:16px;">${icon}</div>
-            <div class="type-label" style="font-size:12px;color:${sel ? '#38bdf8' : '#94a3b8'};margin-top:2px;">${label}</div>
+            <div class="type-label" style="font-size:13px;color:${sel ? '#38bdf8' : '#94a3b8'};margin-top:2px;">${label}</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${ex}</div>
           </div>`;
         }).join('')}
@@ -351,8 +351,8 @@ function buildCustomSection() {
       <div style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:8px;padding:10px 12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="flex:1;">
-            <div style="font-size:12px;color:#38bdf8;">🎵 Music category — find a clip and identify the artist or song</div>
-            <div id="musicHint" style="font-size:11px;color:#38bdf866;margin-top:3px;">${hintText}</div>
+            <div style="font-size:13px;color:#38bdf8;">🎵 Music category — find a clip and identify the artist or song</div>
+            <div id="musicHint" style="font-size:13px;color:#38bdf866;margin-top:3px;">${hintText}</div>
           </div>
           <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" id="musicToggleThumb" style="left:${_customMusicFlag ? '23px' : '3px'};"></div>
@@ -360,7 +360,7 @@ function buildCustomSection() {
         </div>
         ${typeSelector}
       </div>
-    </div>` : `<div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
+    </div>` : `<div style="font-size:13px;color:#94a3b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
 
   return `
     <div style="margin-bottom:20px;">
@@ -379,7 +379,7 @@ function renderSetup() {
     const hasAnySel = directSel || selectedSubs.length > 0;
 
     const chevron = hasSubs
-      ? `<div style="color:#94a3b8;font-size:12px;transition:transform .2s;transform:rotate(${expanded ? 90 : 0}deg);">▶</div>`
+      ? `<div style="color:#94a3b8;font-size:13px;transition:transform .2s;transform:rotate(${expanded ? 90 : 0}deg);">▶</div>`
       : '';
     const check = directSel
       ? `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#fff;">✓</div>`
@@ -432,10 +432,10 @@ function renderSetup() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
-        <a href="index.html" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;text-decoration:none;">← Home</a>
+        <a href="index.html" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;text-decoration:none;">← Home</a>
         <div>
           <div style="font-size:20px;font-weight:700;color:#e2e8f0;text-transform:uppercase;letter-spacing:.06em;">Practice Mode</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Solo · no account needed · session only</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Solo · no account needed · session only</div>
         </div>
       </div>
 
@@ -461,7 +461,7 @@ function renderSetup() {
             { key: 'mixed', label: 'Mixed', sub: 'balanced' },
             { key: 'hard',  label: 'Hard',  sub: 'obscure details' },
           ].map(d => `<div class="rt-btn${state.difficulty===d.key?' sel':''}" onclick="setDifficulty('${d.key}')" style="flex:1;text-align:center;">
-            ${d.label}<div style="font-size:11px;color:${state.difficulty===d.key?'#38bdf8':'#94a3b8'};margin-top:2px;">${d.sub}</div>
+            ${d.label}<div style="font-size:13px;color:${state.difficulty===d.key?'#38bdf8':'#94a3b8'};margin-top:2px;">${d.sub}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -611,7 +611,7 @@ async function startPractice() {
   } catch(e) {
     clearInterval(loadingInterval);
     setHTML(`<div style="text-align:center;padding:60px 20px;">
-      <div style="color:#f87171;margin-bottom:16px;">Failed to load questions.<br><span style="font-size:12px;color:#94a3b8;">${e.message}</span></div>
+      <div style="color:#f87171;margin-bottom:16px;">Failed to load questions.<br><span style="font-size:13px;color:#94a3b8;">${e.message}</span></div>
       <button class="btn-outline" onclick="showSetup()">← Back</button>
     </div>`);
   }
@@ -733,7 +733,7 @@ function showQuestion() {
       <div id="musicInfo">
         ${hasClip
           ? `<div style="font-size:13px;font-weight:500;color:#38bdf8;">Playing audio clip…</div>
-             <div style="font-size:12px;color:#38bdf8;margin-top:2px;">Listen and pick your answer</div>`
+             <div style="font-size:13px;color:#38bdf8;margin-top:2px;">Listen and pick your answer</div>`
           : `<div style="font-size:13px;color:#94a3b8;">No preview available</div>`}
       </div>
     </div>` : '';
@@ -820,7 +820,7 @@ function revealMusicInfo(q) {
   const el = document.getElementById('musicInfo');
   if (!el || !q.artist) return;
   el.innerHTML = `<div style="font-size:13px;font-weight:500;color:#38bdf8;">${q.artist}</div>
-    <div style="font-size:12px;color:#38bdf8;margin-top:2px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>`;
+    <div style="font-size:13px;color:#38bdf8;margin-top:2px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>`;
 }
 
 function submitAnswer(idx) {
@@ -873,7 +873,7 @@ function showFeedback(correct, q, timedOut = false) {
 
   const explanationHTML = state.explainEnabled && q.explanation
     ? `<div class="explanation-card">
-        <div style="font-size:12px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Did you know</div>
+        <div style="font-size:13px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Did you know</div>
         <div style="font-size:15px;color:#38bdf8;line-height:1.5;">${q.explanation}</div>
       </div>`
     : '';
@@ -949,9 +949,9 @@ function showResults() {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
           <div style="font-size:13px;color:#94a3b8;">${catData?.icon || ''} ${cat}</div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:12px;color:#94a3b8;">${s.correct}/${s.total}</div>
+            <div style="font-size:13px;color:#94a3b8;">${s.correct}/${s.total}</div>
             <div style="font-size:13px;font-weight:600;color:${barColor};">${catPct}%</div>
-            ${isWeak ? `<span style="background:rgba(248,113,113,0.15);color:#f87171;border-radius:12px;padding:1px 8px;font-size:12px;">Weak spot</span>` : ''}
+            ${isWeak ? `<span style="background:rgba(248,113,113,0.15);color:#f87171;border-radius:12px;padding:1px 8px;font-size:13px;">Weak spot</span>` : ''}
           </div>
         </div>
         <div style="height:5px;background:#334155;border-radius:3px;overflow:hidden;">
@@ -963,7 +963,7 @@ function showResults() {
   const weakSpots = Object.entries(catMap).filter(([, s]) => Math.round(s.correct / s.total * 100) < 60).map(([c]) => c);
   const weakMsg = weakSpots.length > 0
     ? `<div style="background:rgba(248,113,113,0.12);border:1px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        <div style="font-size:12px;color:#f87171;font-weight:500;margin-bottom:4px;">Keep practising</div>
+        <div style="font-size:13px;color:#f87171;font-weight:500;margin-bottom:4px;">Keep practising</div>
         <div style="font-size:13px;color:#94a3b8;">${weakSpots.join(', ')}</div>
       </div>`
     : '';
@@ -980,9 +980,9 @@ function showResults() {
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">Overall accuracy</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:4px;">Overall accuracy</div>
         <div style="font-size:52px;font-weight:500;color:#0ea5e9;line-height:1;margin-bottom:4px;">${pct}%</div>
-        <div style="font-size:12px;color:#94a3b8;">${correct} correct out of ${total} questions</div>
+        <div style="font-size:13px;color:#94a3b8;">${correct} correct out of ${total} questions</div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
@@ -994,7 +994,7 @@ function showResults() {
 
       <button class="btn-primary" onclick="practiceAgain()" style="margin-bottom:10px;">Practice again</button>
       <button class="btn-outline" onclick="showSetup()">Change settings</button>
-      <div style="text-align:center;margin-top:12px;"><a href="index.html" style="font-size:12px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:12px;"><a href="index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
     </div>
   `);
 }

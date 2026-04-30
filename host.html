@@ -64,11 +64,11 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
 .card.featured { border-color: #0284c7; background: rgba(14,165,233,0.08); }
 .card.music { border-color: #0284c7; background: rgba(14,165,233,0.08); }
-.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 500; }
+.badge { display: inline-block; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 500; }
 .badge-purple { background: rgba(14,165,233,0.15); color: #38bdf8; }
 .badge-blue { background: rgba(14,165,233,0.1); color: #38bdf8; }
 .badge-green { background: rgba(52,211,153,0.15); color: #34d399; }
-.tag { display: inline-block; background: #334155; border-radius: 20px; padding: 3px 10px; font-size: 11px; color: #94a3b8; margin: 2px; }
+.tag { display: inline-block; background: #334155; border-radius: 20px; padding: 3px 10px; font-size: 13px; color: #94a3b8; margin: 2px; }
 .tag-purple { background: rgba(14,165,233,0.15); color: #38bdf8; }
 .tag-blue { background: rgba(14,165,233,0.1); color: #38bdf8; }
 .tag-green { background: rgba(52,211,153,0.15); color: #34d399; }
@@ -78,15 +78,15 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .btn-primary:disabled { opacity: .5; cursor: default; }
 .btn-outline { background: transparent; border: 1px solid #475569; border-radius: 10px; padding: 10px 16px; font-size: 13px; color: #94a3b8; cursor: pointer; transition: border-color .2s, color .2s; }
 .btn-outline:hover { border-color: #0ea5e988; color: #0ea5e9; }
-.rt-btn { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; font-size: 12px; color: #94a3b8; text-align: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.rt-btn { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #94a3b8; text-align: center; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
 .rt-btn.sel { background: rgba(14,165,233,0.15); border-color: #0ea5e9; color: #38bdf8; }
 .divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; }
 .divider-line { flex: 1; border-top: 1px solid #334155; }
-.divider-text { font-size: 11px; color: #94a3b8; }
+.divider-text { font-size: 13px; color: #94a3b8; }
 .fade-in { animation: fadeUp .35s ease forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .player-chip { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500; flex-shrink: 0; }
 .lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; }
 .lb-row-first { background: rgba(14,165,233,0.1); }
 .timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 500; display: inline-block; border: 1px solid #334155; }
@@ -96,7 +96,7 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .option-btn-host { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px 16px; font-size: 15px; color: #e2e8f0; text-align: left; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 .option-btn-host.correct { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; }
 .option-btn-host.wrong { background: rgba(248,113,113,0.15); border-color: #f87171; color: #f87171; }
-.sub-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.sub-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
 hr { border: none; border-top: 1px solid #334155; margin: 14px 0; }
 
 /* Preset grid */
@@ -322,7 +322,7 @@ function toggleTvMode() {
           exitBtn.onclick = () => toggleTvMode();
         } else {
           exitBtn.textContent = '✕ New game';
-          exitBtn.style.cssText = 'background:transparent;border:1.5px solid #475569;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;';
+          exitBtn.style.cssText = 'background:transparent;border:1.5px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;';
           exitBtn.onclick = () => newGame();
         }
       }
@@ -454,7 +454,7 @@ function showSetup() {
             <div style="font-size:28px;flex-shrink:0;">${p.icon}</div>
             <div style="flex:1;">
               <div style="font-size:13px;font-weight:500;color:${nameColor};">${p.name}</div>
-              <div style="font-size:11px;color:${descColor};margin-top:2px;">${p.desc}</div>
+              <div style="font-size:13px;color:${descColor};margin-top:2px;">${p.desc}</div>
               ${popularBadge}
             </div>
             ${check}
@@ -470,7 +470,7 @@ function showSetup() {
           ${check}
         </div>
         <div style="font-size:13px;font-weight:500;color:${nameColor};">${p.name}</div>
-        <div style="font-size:11px;color:${descColor};margin-top:2px;">${p.desc}</div>
+        <div style="font-size:13px;color:${descColor};margin-top:2px;">${p.desc}</div>
       </div>`;
   }).join('');
 
@@ -500,7 +500,7 @@ function showSetup() {
 
   setHTML(`
     <div class="fade-in">
-      <a href="index.html" style="font-size:12px;color:#94a3b8;text-decoration:none;display:block;margin-bottom:6px;">← Home</a>
+      <a href="index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;display:block;margin-bottom:6px;">← Home</a>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;">
         <div style="font-size:20px;font-weight:500;color:#e2e8f0;">Start a game</div>
         <div style="display:flex;gap:8px;">${roundBtns}</div>
@@ -511,14 +511,14 @@ function showSetup() {
         <div style="width:44px;height:44px;border-radius:10px;background:#0ea5e9;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">⚡</div>
         <div style="flex:1;">
           <div style="font-size:15px;font-weight:500;color:#e2e8f0;">Quick start</div>
-          <div style="font-size:12px;color:#38bdf8;margin-top:2px;">AI picks everything · room code in ~10 seconds</div>
+          <div style="font-size:13px;color:#38bdf8;margin-top:2px;">AI picks everything · room code in ~10 seconds</div>
         </div>
         <span class="badge badge-purple">One tap</span>
       </div>
-      <div style="font-size:11px;color:#94a3b8;text-align:center;margin-bottom:16px;">AI mixes categories and difficulty for a balanced game</div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-bottom:16px;">AI mixes categories and difficulty for a balanced game</div>
 
       <div class="divider"><div class="divider-line"></div><div class="divider-text">or pick a vibe</div><div class="divider-line"></div></div>
-      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Preset game nights</div>
+      <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Preset game nights</div>
       <div class="preset-grid">${presetCards}</div>
 
       <div class="divider"><div class="divider-line"></div><div class="divider-text">or build your own</div><div class="divider-line"></div></div>
@@ -526,16 +526,16 @@ function showSetup() {
         <div style="width:38px;height:38px;border-radius:50%;background:${state.customMode ? 'rgba(14,165,233,0.15)' : '#334155'};display:flex;align-items:center;justify-content:center;font-size:20px;">🎯</div>
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:500;color:${state.customMode ? '#38bdf8' : '#e2e8f0'};">Custom game</div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${state.customMode && state.customCategories.filter(Boolean).length > 0 ? state.customCategories.filter(Boolean).join(' · ') : 'Pick a specific category for each round'}</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:2px;">${state.customMode && state.customCategories.filter(Boolean).length > 0 ? state.customCategories.filter(Boolean).join(' · ') : 'Pick a specific category for each round'}</div>
         </div>
-        <span style="font-size:12px;color:#0ea5e9;">→</span>
+        <span style="font-size:13px;color:#0ea5e9;">→</span>
       </div>
 
       <!-- Timer selector -->
       <div class="card" style="margin-bottom:16px;">
         <div class="sub-label">Timer per question</div>
         <div style="display:flex;gap:8px;">${timerBtns}</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:8px;">Longer timers give players more time to think</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:8px;">Longer timers give players more time to think</div>
       </div>
 
       <!-- Difficulty selector -->
@@ -548,7 +548,7 @@ function showSetup() {
       <div class="card" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="setAutoAdvance(${!state.autoAdvance})">
         <div>
           <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Auto-advance questions</div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Move to next question automatically when timer ends or all players answer</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Move to next question automatically when timer ends or all players answer</div>
         </div>
         <div style="width:44px;height:24px;border-radius:12px;background:${state.autoAdvance ? '#0ea5e9' : '#334155'};position:relative;flex-shrink:0;transition:background .2s;">
           <div style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:${state.autoAdvance ? '23px' : '3px'};transition:left .2s;"></div>
@@ -560,7 +560,7 @@ function showSetup() {
         <div style="font-size:13px;color:#94a3b8;font-weight:500;">${presetName} · ${state.rounds} rounds · ${total} questions · ${state.difficulty} · ~${state.rounds*10} min</div>
       </div>
       <button class="btn-primary" id="createBtn" onclick="createRoom()">Create room and get code</button>
-      <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Questions are generated fresh when room is created</div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-top:8px;">Questions are generated fresh when room is created</div>
     </div>
   `);
 }
@@ -591,32 +591,32 @@ function showCustomSetup() {
       <div onclick="openCategoryPicker(${i})" style="background:${bg};border:${border};border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;">
         <div style="width:32px;height:32px;border-radius:8px;background:#334155;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${icon || (i + 1)}</div>
         <div style="flex:1;">
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Round ${i + 1}</div>
+          <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;">Round ${i + 1}</div>
           <div style="font-size:14px;font-weight:500;color:#38bdf8;margin-top:2px;">${cat || '<span style="color:#94a3b8;">Tap to pick category</span>'}</div>
         </div>
-        <div style="font-size:12px;color:#94a3b8;">→</div>
+        <div style="font-size:13px;color:#94a3b8;">→</div>
       </div>`;
   }).join('');
 
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <button onclick="state.customMode=false;showSetup()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;">← Back</button>
+        <button onclick="state.customMode=false;showSetup()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;">← Back</button>
         <div>
           <div style="font-size:18px;font-weight:500;color:#e2e8f0;">Custom game</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:2px;">${state.rounds} rounds · ${state.timer}s timer · ${state.difficulty}</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:2px;">${state.rounds} rounds · ${state.timer}s timer · ${state.difficulty}</div>
         </div>
       </div>
 
-      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pick a category for each round</div>
+      <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Pick a category for each round</div>
       ${slots}
 
-      <div style="font-size:11px;color:#94a3b8;margin-bottom:16px;margin-top:4px;">Each round is 5 questions from that category</div>
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:16px;margin-top:4px;">Each round is 5 questions from that category</div>
 
       <button class="btn-primary" id="createBtn" ${allFilled ? '' : 'disabled'} onclick="createRoom()" style="${allFilled ? '' : 'opacity:.4;'}">
         ${allFilled ? 'Create game →' : 'Pick all ' + state.rounds + ' rounds to continue'}
       </button>
-      <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Questions generated fresh by AI</div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-top:8px;">Questions generated fresh by AI</div>
     </div>
   `);
 }
@@ -648,7 +648,7 @@ function pickerHTML() {
         onmouseout="this.style.borderColor='#334155'">
         <div style="font-size:24px;margin-bottom:6px;">${c.icon}</div>
         <div style="font-size:13px;font-weight:500;color:#e2e8f0;">${c.name}</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:3px;">${c.subs ? c.subs.length + ' options' : 'Tap to pick'}</div>
       </div>`).join('');
 
     const TYPE_ICONS_HOST = { artist: '🎤', genre: '🎵', soundtrack: '🎬' };
@@ -662,7 +662,7 @@ function pickerHTML() {
           onmouseout="this.style.borderColor='#334155'">
           <div style="font-size:22px;margin-bottom:6px;">${icon}</div>
           <div style="font-size:13px;font-weight:500;color:#e2e8f0;">${c.name}</div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:3px;">${c.music ? '🎵 Music clip' : '💬 Custom'}</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:3px;">${c.music ? '🎵 Music clip' : '💬 Custom'}</div>
         </div>
         <button onclick="event.stopPropagation();removeCustomCatHost('${en}')"
           style="position:absolute;top:6px;right:6px;background:#334155;border:1px solid #475569;border-radius:50%;width:20px;height:20px;font-size:10px;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
@@ -676,10 +676,10 @@ function pickerHTML() {
 
     const customSection = `
       <div style="margin-top:20px;">
-        <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
+        <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Custom categories</div>
         ${state.customCats.length > 0
           ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start;margin-bottom:12px;">${customCards}</div>`
-          : `<div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">No custom categories yet — add one below</div>`}
+          : `<div style="font-size:13px;color:#94a3b8;margin-bottom:12px;">No custom categories yet — add one below</div>`}
         ${state.customCats.length < 10 ? `
           <div style="position:relative;">
             <div style="display:flex;gap:8px;">
@@ -694,8 +694,8 @@ function pickerHTML() {
           <div id="hostMusicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
             <div style="display:flex;align-items:center;gap:12px;background:rgba(14,165,233,0.1);border:1px solid #0284c7;border-radius:8px;padding:10px 12px;">
               <div style="flex:1;">
-                <div style="font-size:12px;color:#38bdf8;">🎵 Music category — find a clip and identify the artist or song</div>
-                <div id="hostMusicHint" style="font-size:11px;color:#7dd3fc;margin-top:3px;">${hintText}</div>
+                <div style="font-size:13px;color:#38bdf8;">🎵 Music category — find a clip and identify the artist or song</div>
+                <div id="hostMusicHint" style="font-size:13px;color:#7dd3fc;margin-top:3px;">${hintText}</div>
               </div>
               <div onclick="toggleMusicFlagHost()" id="hostMusicToggleTrack"
                 style="width:44px;height:24px;border-radius:12px;position:relative;flex-shrink:0;cursor:pointer;transition:background .2s;background:${_hostCustomMusicFlag ? '#0ea5e9' : '#334155'};">
@@ -708,13 +708,13 @@ function pickerHTML() {
                   <div id="hostCustomType_${type}" onclick="setHostCustomMusicType('${type}')"
                     style="background:${_hostCustomMusicType===type?'rgba(14,165,233,0.08)':'#1e293b'};border:1px solid ${_hostCustomMusicType===type?'#0ea5e9':'#334155'};border-radius:8px;padding:8px 6px;cursor:pointer;text-align:center;">
                     <div style="font-size:16px;">${icon}</div>
-                    <div class="type-label" style="font-size:11px;font-weight:500;color:${_hostCustomMusicType===type?'#38bdf8':'#94a3b8'};margin-top:2px;">${label}</div>
+                    <div class="type-label" style="font-size:13px;font-weight:500;color:${_hostCustomMusicType===type?'#38bdf8':'#94a3b8'};margin-top:2px;">${label}</div>
                     <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${ex}</div>
                   </div>`).join('')}
               </div>
             </div>
           </div>
-        ` : `<div style="font-size:11px;color:#94a3b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`}
+        ` : `<div style="font-size:13px;color:#94a3b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`}
       </div>`;
 
     return `
@@ -740,7 +740,7 @@ function pickerHTML() {
         <button onclick="backToCats()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;">← Back</button>
         <div>
           <div style="font-size:15px;font-weight:500;color:#e2e8f0;">${cat.icon} ${cat.name}</div>
-          <div style="font-size:11px;color:#94a3b8;">Round ${roundIdx + 1}</div>
+          <div style="font-size:13px;color:#94a3b8;">Round ${roundIdx + 1}</div>
         </div>
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px;background:#0f172a;">
@@ -887,10 +887,10 @@ function showDevError() {
         The <code style="background:rgba(14,165,233,0.15);padding:2px 6px;border-radius:4px;color:#38bdf8;">/api/rooms</code> serverless function won't work that way.
       </div>
       <div class="card" style="text-align:left;margin-bottom:20px;">
-        <div style="font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Run locally with Vercel CLI</div>
+        <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Run locally with Vercel CLI</div>
         <div style="background:#334155;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#38bdf8;margin-bottom:8px;">npm i -g vercel</div>
         <div style="background:#334155;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;color:#38bdf8;margin-bottom:12px;">vercel dev</div>
-        <div style="font-size:12px;color:#94a3b8;">Then open <span style="color:#0ea5e9;">http://localhost:3000/host.html</span></div>
+        <div style="font-size:13px;color:#94a3b8;">Then open <span style="color:#0ea5e9;">http://localhost:3000/host.html</span></div>
       </div>
       <a href="index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;">← Back to home</a>
     </div>
@@ -981,24 +981,24 @@ function showLobby() {
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;margin-top:8px;">
         <div>
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Room code</div>
+          <div style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Room code</div>
           <div style="font-size:52px;font-weight:700;color:#0ea5e9;letter-spacing:.12em;line-height:1;">${room.room_code}</div>
         </div>
-        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;margin-top:4px;white-space:nowrap;">✕ New game</button>
+        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;margin-top:4px;white-space:nowrap;">✕ New game</button>
       </div>
 
       <div style="margin-bottom:12px;">
-        <button onclick="resetRoomCode()" style="background:none;border:none;font-size:11px;color:#38bdf8;cursor:pointer;text-decoration:underline;padding:0;">Use a different code next time</button>
+        <button onclick="resetRoomCode()" style="background:none;border:none;font-size:13px;color:#38bdf8;cursor:pointer;text-decoration:underline;padding:0;">Use a different code next time</button>
       </div>
 
       <div style="background:rgba(14,165,233,0.08);border:1.5px solid #0284c7;border-radius:12px;padding:12px 16px;margin-bottom:10px;text-align:center;">
         <div style="font-size:13px;color:#38bdf8;font-weight:500;margin-bottom:2px;">Invite players to join</div>
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;">Send them the link or have them type the code above</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:10px;">Send them the link or have them type the code above</div>
         <button onclick="shareJoinLink('${joinUrl}?code=${room.room_code}')"
           style="background:#0ea5e9;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:500;color:#fff;cursor:pointer;width:100%;margin-bottom:6px;">
           Share join link →
         </button>
-        <div style="font-size:11px;color:#94a3b8;">Opens iMessage, WhatsApp, and more</div>
+        <div style="font-size:13px;color:#94a3b8;">Opens iMessage, WhatsApp, and more</div>
       </div>
 
       <div class="card" style="margin-bottom:10px;">
@@ -1011,7 +1011,7 @@ function showLobby() {
 
       <div class="card" style="margin-bottom:10px;">
         <div style="font-size:13px;font-weight:500;color:#e2e8f0;margin-bottom:2px;">Play along as host?</div>
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;">Enter your name to join as a player on this device</div>
+        <div style="font-size:13px;color:#94a3b8;margin-bottom:10px;">Enter your name to join as a player on this device</div>
         <div style="display:flex;gap:8px;">
           <input id="hostNameInput" type="text" maxlength="20"
             placeholder="Your name…"
@@ -1023,13 +1023,13 @@ function showLobby() {
             Join
           </button>
         </div>
-        <div id="hostJoinStatus" style="font-size:12px;color:#0ea5e9;margin-top:8px;min-height:18px;"></div>
+        <div id="hostJoinStatus" style="font-size:13px;color:#0ea5e9;margin-top:8px;min-height:18px;"></div>
       </div>
 
       <button class="btn-primary" id="startBtn" style="font-size:16px;padding:14px;" onclick="startGame()" disabled>
         Start game (waiting for players…)
       </button>
-      <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:6px;">Need at least 1 player to start</div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-top:6px;">Need at least 1 player to start</div>
     </div>
   `);
   renderLobbyPlayers();
@@ -1258,7 +1258,7 @@ function showIngame() {
   const musicBanner = isMusic ? `
     <div style="display:flex;align-items:center;gap:12px;padding:10px 0 6px;">
       ${waveformHTML()}
-      <div class="clip-status" style="font-size:12px;color:#0ea5e9;" id="clipStatus">Playing 10s clip…</div>
+      <div class="clip-status" style="font-size:13px;color:#0ea5e9;" id="clipStatus">Playing 10s clip…</div>
     </div>` : '';
 
   const imageBanner = isImage ? `
@@ -1273,16 +1273,16 @@ function showIngame() {
     <div id="tv-banner" style="display:${state.tvMode ? 'none' : 'flex'};background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:10px;padding:10px 16px;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div>
         <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Connected to a TV?</div>
-        <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Switch to full-screen dark mode for casting</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Switch to full-screen dark mode for casting</div>
       </div>
-      <button onclick="toggleTvMode()" style="display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;color:#38bdf8;cursor:pointer;">
+      <button onclick="toggleTvMode()" style="display:inline-flex;align-items:center;gap:7px;background:#0f172a;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;color:#38bdf8;cursor:pointer;">
         📺 TV mode
       </button>
     </div>`;
 
   const exitTvBtn = state.tvMode ? `
     <button onclick="toggleTvMode()" style="background:#1e1e35;border:1px solid #2a2a48;border-radius:8px;padding:6px 12px;font-size:11px;color:#555;cursor:pointer;">← Exit TV mode</button>` : `
-    <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:5px 10px;font-size:12px;color:#94a3b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>`;
+    <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:5px 10px;font-size:13px;color:#94a3b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>`;
 
   const tvHint = `<div id="tv-hint" style="display:${state.tvMode ? 'block' : 'none'};font-size:11px;color:#555;text-align:center;margin-bottom:10px;">Press F11 for fullscreen · best for TV casting</div>`;
 
@@ -1291,10 +1291,10 @@ function showIngame() {
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px;">
         ${exitTvBtn}
         <div style="text-align:center;flex:1;min-width:0;">
-          <div style="font-size:12px;color:#94a3b8;white-space:nowrap;">Round ${roundNum} · Q${qInRound} of ${questionsPerRound}</div>
+          <div style="font-size:13px;color:#94a3b8;white-space:nowrap;">Round ${roundNum} · Q${qInRound} of ${questionsPerRound}</div>
           ${roundNum > 1 ? `<div style="margin-top:2px;"><span style="background:#0ea5e9;color:#fff;font-size:10px;border-radius:10px;padding:2px 8px;font-weight:600;">${roundNum}× points</span></div>` : ''}
         </div>
-        <div class="ingame-room-code" style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:20px;padding:4px 10px;font-size:12px;color:#38bdf8;font-weight:500;white-space:nowrap;flex-shrink:0;">Join: <span style="color:#e2e8f0;letter-spacing:.1em;">${room.room_code}</span></div>
+        <div class="ingame-room-code" style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:20px;padding:4px 10px;font-size:13px;color:#38bdf8;font-weight:500;white-space:nowrap;flex-shrink:0;">Join: <span style="color:#e2e8f0;letter-spacing:.1em;">${room.room_code}</span></div>
       </div>
 
       ${tvBanner}
@@ -1303,12 +1303,12 @@ function showIngame() {
       <div class="ingame-layout">
         <div>
           <div class="card ingame-card" style="margin-bottom:14px;">
-            <div class="ingame-cat" style="font-size:11px;margin-bottom:8px;">${q.cat}</div>
+            <div class="ingame-cat" style="font-size:13px;margin-bottom:8px;">${q.cat}</div>
             ${musicBanner}
             ${imageBanner}
             <div class="ingame-question" style="font-size:${questionSize};font-weight:500;line-height:1.4;margin-bottom:14px;">${q.q}</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="font-size:12px;color:#94a3b8;">${state.players.length} players</div>
+              <div style="font-size:13px;color:#94a3b8;">${state.players.length} players</div>
               <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
             </div>
           </div>
@@ -1316,7 +1316,7 @@ function showIngame() {
             ${q.opts.map((o,i) => `<div class="option-btn-host" id="opt${i}" style="font-size:${optionSize};">${String.fromCharCode(65+i)} &nbsp; ${o}</div>`).join('')}
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="ingame-sidebar-label" style="font-size:12px;" id="responseStatus">Waiting for answers...</div>
+            <div class="ingame-sidebar-label" style="font-size:13px;" id="responseStatus">Waiting for answers...</div>
             <div id="advanceBtn"></div>
           </div>
         </div>
@@ -1328,7 +1328,7 @@ function showIngame() {
           <div class="sub-label ingame-sidebar-label">Responses</div>
           <div class="card ingame-resp" style="text-align:center;" id="responseCard">
             <div style="font-size:28px;font-weight:500;color:#38bdf8;" id="responseCount">0 / ${state.players.length}</div>
-            <div style="font-size:12px;color:#94a3b8;margin-top:4px;">players answered</div>
+            <div style="font-size:13px;color:#94a3b8;margin-top:4px;">players answered</div>
             <div class="ingame-resp-bar-track" style="background:#334155;border-radius:4px;height:4px;margin-top:10px;overflow:hidden;"><div id="responseBar" style="background:#0ea5e9;height:100%;width:0%;border-radius:4px;transition:width .3s;"></div></div>
           </div>
         </div>
@@ -1369,7 +1369,7 @@ function playClip(url) {
     state.audio.volume = 1;
     state.audio.play().catch(() => {
       if (cs) cs.innerHTML = `<button onclick="forcePlayClip('${url}')"
-        style="background:#0ea5e9;border:none;border-radius:8px;padding:6px 14px;font-size:12px;color:#fff;cursor:pointer;">
+        style="background:#0ea5e9;border:none;border-radius:8px;padding:6px 14px;font-size:13px;color:#fff;cursor:pointer;">
         ▶ Tap to play clip
       </button>`;
     });
@@ -1378,7 +1378,7 @@ function playClip(url) {
     state.audio.volume = 1;
     state.audio.play().catch(() => {
       if (cs) cs.innerHTML = `<button onclick="forcePlayClip('${url}')"
-        style="background:#0ea5e9;border:none;border-radius:8px;padding:6px 14px;font-size:12px;color:#fff;cursor:pointer;">
+        style="background:#0ea5e9;border:none;border-radius:8px;padding:6px 14px;font-size:13px;color:#fff;cursor:pointer;">
         ▶ Tap to play clip
       </button>`;
     });
@@ -1493,7 +1493,7 @@ function showIngameAsPlayer() {
       <div style="display:flex;align-items:center;justify-content:center;gap:3px;height:28px;margin-bottom:6px;">
         ${waveformHTML()}
       </div>
-      <div style="font-size:12px;color:#0ea5e9;" id="clipStatus">Clip playing…</div>
+      <div style="font-size:13px;color:#0ea5e9;" id="clipStatus">Clip playing…</div>
     </div>` : '';
 
   const imageBanner = isImage ? `
@@ -1507,19 +1507,19 @@ function showIngameAsPlayer() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;">
-        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:5px 10px;font-size:12px;color:#94a3b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>
+        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:5px 10px;font-size:13px;color:#94a3b8;cursor:pointer;white-space:nowrap;flex-shrink:0;">✕ End</button>
         <div style="text-align:center;flex:1;min-width:0;">
-          <div style="font-size:12px;color:#0ea5e9;white-space:nowrap;">Round ${roundNum} · Q${qInRound}</div>
+          <div style="font-size:13px;color:#0ea5e9;white-space:nowrap;">Round ${roundNum} · Q${qInRound}</div>
           ${roundNum > 1 ? `<div style="margin-top:2px;"><span style="background:#0ea5e9;color:#fff;font-size:10px;border-radius:10px;padding:2px 8px;font-weight:600;">${roundNum}× points</span></div>` : ''}
         </div>
-        <div style="font-size:12px;color:#94a3b8;white-space:nowrap;" id="hostScoreDisplay">${state.hostScore} pts</div>
+        <div style="font-size:13px;color:#94a3b8;white-space:nowrap;" id="hostScoreDisplay">${state.hostScore} pts</div>
       </div>
 
       ${musicBanner}
       ${imageBanner}
 
       <div style="background:rgba(14,165,233,0.15);border-radius:8px;padding:4px 10px;margin-bottom:8px;display:inline-block;">
-        <span style="font-size:12px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+        <span style="font-size:13px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
       <div class="card" style="margin-bottom:12px;">
@@ -1537,7 +1537,7 @@ function showIngameAsPlayer() {
       <div id="hostPlayerStatus" style="background:#334155;border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;color:#94a3b8;margin-top:4px;display:none;"></div>
 
       <div style="margin-top:10px;padding-top:8px;border-top:1px solid #334155;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:12px;color:#94a3b8;" id="hostPlayerResponseStatus">Waiting for answers…</div>
+        <div style="font-size:13px;color:#94a3b8;" id="hostPlayerResponseStatus">Waiting for answers…</div>
         <span class="timer-badge timer-ok" id="timerBadge" style="${isMusic ? '' : 'display:none;'}">${isMusic ? '♫' : ''}</span>
       </div>
     </div>
@@ -1839,17 +1839,17 @@ function showRoundLeaderboard(completedRound) {
         setHTML(`
           <div class="fade-in">
             <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-              <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;">✕ End game</button>
+              <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;">✕ End game</button>
             </div>
             <div style="text-align:center;margin-bottom:20px;margin-top:16px;">
-              <div style="font-size:11px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
+              <div style="font-size:13px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Round ${completedRound} complete</div>
               <div style="font-size:22px;font-weight:500;color:#e2e8f0;">Leaderboard</div>
               ${myRank > 0 ? `<div style="font-size:13px;color:#94a3b8;margin-top:4px;">You're #${myRank}</div>` : ''}
             </div>
             <div class="card" style="margin-bottom:16px;">${lbRows}</div>
             <div style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:16px;">
               <div style="font-size:13px;color:#38bdf8;font-weight:500;">Round ${nextRound} is worth ${nextRound}× points</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
+              <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
             </div>
             <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
               Start round ${nextRound} — ${nextRoundCat} →
@@ -1863,10 +1863,10 @@ function showRoundLeaderboard(completedRound) {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;cursor:pointer;">✕ End game</button>
+        <button onclick="newGame()" style="background:transparent;border:1px solid #475569;border-radius:8px;padding:6px 12px;font-size:13px;color:#94a3b8;cursor:pointer;">✕ End game</button>
       </div>
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:12px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Round ${completedRound} complete</div>
+        <div style="font-size:13px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;">Round ${completedRound} complete</div>
         <div style="font-size:24px;font-weight:500;color:#e2e8f0;">Leaderboard</div>
       </div>
 
@@ -1877,13 +1877,13 @@ function showRoundLeaderboard(completedRound) {
 
       <div style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:10px;padding:10px 16px;text-align:center;margin-bottom:16px;">
         <div style="font-size:13px;color:#38bdf8;font-weight:500;">Round ${nextRound} is worth ${nextRound}× points</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
+        <div style="font-size:13px;color:#94a3b8;margin-top:2px;">Time to catch up — or pull ahead</div>
       </div>
 
       <button class="btn-primary" style="font-size:16px;padding:14px;" onclick="startNextRound(${nextRound})">
         Start round ${nextRound} — ${nextRoundCat} →
       </button>
-      <div style="font-size:12px;color:#94a3b8;text-align:center;margin-top:8px;">Players are waiting on the leaderboard screen</div>
+      <div style="font-size:13px;color:#94a3b8;text-align:center;margin-top:8px;">Players are waiting on the leaderboard screen</div>
     </div>
   `);
 }
@@ -2029,7 +2029,7 @@ function showResults() {
       </div>
 
       <button class="btn-primary" onclick="playAgain()">Play again</button>
-      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:12px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:10px;"><a href="index.html" style="font-size:13px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
     </div>
   `);
 }
