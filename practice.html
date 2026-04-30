@@ -402,7 +402,7 @@ function renderSetup() {
       </div>` : '';
 
     return `
-      <div style="background:#1e293b;border:2px solid ${hasAnySel ? '#0ea5e9' : '#334155'};border-radius:10px;align-self:start;">
+      <div style="background:#1e293b;border:2px solid ${hasAnySel ? '#0ea5e9' : '#334155'};border-radius:10px;align-self:start;${expanded ? 'grid-column:span 2;' : ''}">
         <div class="cat-row" onclick="${onclick}" style="background:transparent;border:none;margin-bottom:0;">
           <span style="font-size:20px;">${c.icon}</span>
           <div style="flex:1;">
