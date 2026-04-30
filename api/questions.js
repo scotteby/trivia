@@ -205,6 +205,26 @@ async function savePlayedSongs(questions) {
   } catch(e) {}
 }
 
+async function getPlayedQuestions() {
+  try {
+    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const data = await sbGet(`/played_questions?select=question&order=played_at.desc&limit=500&played_at=gte.${cutoff}`);
+    if (!Array.isArray(data)) return [];
+    return data.map(r => r.question);
+  } catch {
+    return [];
+  }
+}
+
+async function savePlayedQuestions(questions) {
+  try {
+    const qs = questions.filter(q => q.q && (q.type === 'general' || q.type === 'image'));
+    if (!qs.length) return;
+    const rows = qs.map(q => ({ question: q.q, type: q.type }));
+    await sbPost('/played_questions', rows);
+  } catch(e) {}
+}
+
 function getMusicConstraint(category) {
   const cat = category.toLowerCase();
 
@@ -266,14 +286,17 @@ module.exports = async function handler(req, res) {
     const avoidList = avoidRaw ? avoidRaw.split('||').map(s => s.trim()).filter(Boolean) : [];
     const avoidSongs = avoidList.filter(s => s.includes(' - '));
     const avoidQuestions = avoidList.filter(s => !s.includes(' - '));
-    const avoidQBlock = avoidQuestions.length > 0
-      ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidQuestions.map(q => `- ${q}`).join('\n')}\n`
-      : '';
     const playedSongs = await getPlayedSongs();
+    const playedQuestions = await getPlayedQuestions();
     const allAvoidSongs = [...new Set([...playedSongs, ...avoidSongs])];
     const avoidSongBlock = allAvoidSongs.length > 0
       ? `Do NOT use any of these artist-song combinations:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}`
       : '';
+    const avoidQBlock = playedQuestions.length > 0
+      ? `\nDo NOT repeat or closely resemble any of these recently used questions:\n${playedQuestions.map(q => `- ${q}`).join('\n')}\n`
+      : avoidQuestions.length > 0
+        ? `\nDo NOT repeat or closely resemble any of these already-asked questions:\n${avoidQuestions.map(q => `- ${q}`).join('\n')}\n`
+        : '';
 
     const difficultyInstructions = {
       easy:  'Difficulty: EASY — use well-known mainstream facts that most adults would recognise. Avoid niche or obscure details.',
@@ -361,6 +384,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
       questions = await enrichWithPreviews(questions);
       questions = await enrichWithImages(questions);
       await savePlayedSongs(questions);
+      await savePlayedQuestions(questions);
       return res.status(200).json({ questions });
     } catch(e) {
       return res.status(500).json({ error: e.message });
@@ -404,6 +428,7 @@ Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSO
     questions = await enrichWithPreviews(questions);
     questions = await enrichWithImages(questions);
     await savePlayedSongs(questions);
+    await savePlayedQuestions(questions);
     return res.status(200).json({ questions });
   } catch(e) {
     return res.status(500).json({ error: 'Handler failed', detail: e.message });

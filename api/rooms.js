@@ -176,6 +176,28 @@ async function savePlayedSongs(questions) {
   }
 }
 
+async function getPlayedQuestions() {
+  try {
+    const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await sbReq(`/played_questions?select=question&order=played_at.desc&limit=500&played_at=gte.${cutoff}`);
+    if (!Array.isArray(res.data)) return [];
+    return res.data.map(r => r.question);
+  } catch {
+    return [];
+  }
+}
+
+async function savePlayedQuestions(questions) {
+  try {
+    const qs = questions.filter(q => q.q && (q.type === 'general' || q.type === 'image'));
+    if (!qs.length) return;
+    const rows = qs.map(q => ({ question: q.q, type: q.type }));
+    await sbReq('/played_questions', 'POST', rows);
+  } catch(e) {
+    console.warn('[rooms] savePlayedQuestions failed:', e.message);
+  }
+}
+
 // ─── Music randomization constraint ──────────────────────────
 function getMusicConstraint(category) {
   const decades = ['1965-1972','1973-1979','1980-1985','1986-1989','1990-1994','1995-1999','2000-2004','2005-2009','2010-2015','2016-2021'];
@@ -266,8 +288,11 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
     : difficultyLine;
 
   const playedSongs = await getPlayedSongs();
+  const playedQuestions = await getPlayedQuestions();
   const allAvoidSongs = [...new Set([...playedSongs, ...avoidSongsExtra])];
-  const avoidQBlock = '';
+  const avoidQBlock = playedQuestions.length > 0
+    ? `\nDo NOT repeat or closely resemble any of these recently used questions:\n${playedQuestions.map(q => `- ${q}`).join('\n')}\n`
+    : '';
   const avoidSongBlock = allAvoidSongs.length > 0
     ? `\nDo NOT use any of these artist-song combinations — these have all been used recently:\n${allAvoidSongs.map(s => `- ${s}`).join('\n')}\n`
     : '';
@@ -385,6 +410,7 @@ module.exports = async function handler(req, res) {
         let questions = await enrichWithPreviews(rawQuestions);
         questions = await enrichWithImages(questions);
         await savePlayedSongs(questions);
+        await savePlayedQuestions(questions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
         return res.status(200).json({ questions });
       }
@@ -400,6 +426,7 @@ module.exports = async function handler(req, res) {
       let questions = await enrichWithPreviews(rawQuestions);
       questions = await enrichWithImages(questions);
       await savePlayedSongs(questions);
+      await savePlayedQuestions(questions);
       const musicCount = questions.filter(q => q.preview_url).length;
       const imageCount = questions.filter(q => q.image_url).length;
       console.log(`[rooms] Enrichment done — ${musicCount} music clips, ${imageCount} images`);
