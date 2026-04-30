@@ -33,14 +33,14 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .btn-primary:disabled { opacity: .4; cursor: default; }
 .btn-outline { background: transparent; border: 1px solid #334155; border-radius: 10px; padding: 11px 16px; font-size: 13px; color: #94a3b8; cursor: pointer; width: 100%; transition: border-color .2s, color .2s; }
 .btn-outline:hover { border-color: #0ea5e988; color: #0ea5e9; }
-.option-btn { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 14px; font-size: 16px; color: #e2e8f0; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 52px; display: block; margin-bottom: 10px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.option-btn { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 14px; font-size: 17px; color: #e2e8f0; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 52px; display: block; margin-bottom: 10px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 .option-btn:active:not([disabled]) { transform: scale(.98); }
 .option-btn[disabled] { cursor: default; }
 .option-btn.correct { border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.15); }
 .option-btn.wrong { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); }
-.rt-btn { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #94a3b8; cursor: pointer; transition: background .2s, border-color .2s, color .2s; text-align: center; flex: 1; }
+.rt-btn { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; font-size: 14px; color: #94a3b8; cursor: pointer; transition: background .2s, border-color .2s, color .2s; text-align: center; flex: 1; }
 .rt-btn.sel { background: rgba(14,165,233,0.15); border-color: #0ea5e9; color: #38bdf8; }
-.sub-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.sub-label { font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
 .fade-in { animation: fadeUp .3s ease forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid transparent; }
@@ -60,7 +60,7 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 .cat-row.has-sel { border-color: #0ea5e944; }
 .cat-row.direct-sel { border-color: #0ea5e9; }
 .cat-subs { padding: 6px 10px 10px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-.sub-pill { border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; border: 1px solid #475569; color: #94a3b8; background: #334155; transition: border-color .15s, color .15s, background .15s; }
+.sub-pill { border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; border: 1px solid #475569; color: #94a3b8; background: #334155; transition: border-color .15s, color .15s, background .15s; }
 .sub-pill.sel { border-color: #0ea5e9; color: #38bdf8; background: rgba(14,165,233,0.15); }
 /* Music waveform */
 .music-banner { background: rgba(14,165,233,0.08); border: 1px solid #0284c7; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
@@ -385,7 +385,7 @@ function renderSetup() {
       ? `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#fff;">✓</div>`
       : '';
     const selCount = hasSubs && selectedSubs.length > 0
-      ? `<div style="background:rgba(14,165,233,0.15);color:#38bdf8;border-radius:12px;padding:1px 8px;font-size:12px;white-space:nowrap;">${selectedSubs.length} selected</div>`
+      ? `<div style="background:rgba(14,165,233,0.15);color:#38bdf8;border-radius:12px;padding:1px 8px;font-size:13px;white-space:nowrap;">${selectedSubs.length} selected</div>`
       : '';
 
     const onclick = hasSubs
@@ -406,8 +406,8 @@ function renderSetup() {
         <div class="cat-row" onclick="${onclick}" style="background:transparent;border:none;margin-bottom:0;">
           <span style="font-size:20px;">${c.icon}</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:#e2e8f0;">${c.name}</div>
-            ${hasSubs ? `<div style="font-size:12px;color:#94a3b8;">${c.subs.length} subcategories</div>` : ''}
+            <div style="font-size:15px;font-weight:500;color:#e2e8f0;">${c.name}</div>
+            ${hasSubs ? `<div style="font-size:13px;color:#94a3b8;">${c.subs.length} subcategories</div>` : ''}
           </div>
           ${selCount}${check}${chevron}
         </div>
@@ -442,8 +442,8 @@ function renderSetup() {
       <div class="sub-label">Pick your categories</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start;margin-bottom:6px;">${catList}</div>
       <div style="display:flex;gap:8px;margin-bottom:20px;">
-        <button class="btn-outline" style="font-size:12px;padding:7px;" onclick="selectAll()">Select all</button>
-        <button class="btn-outline" style="font-size:12px;padding:7px;" onclick="clearAll()">Clear</button>
+        <button class="btn-outline" style="font-size:13px;padding:7px;" onclick="selectAll()">Select all</button>
+        <button class="btn-outline" style="font-size:13px;padding:7px;" onclick="clearAll()">Clear</button>
       </div>
 
       ${buildCustomSection()}
@@ -469,8 +469,8 @@ function renderSetup() {
       <div class="card" style="margin-bottom:12px;">
         <div class="toggle-row" onclick="toggleTimer()" style="cursor:pointer;">
           <div>
-            <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Timer</div>
-            <div style="font-size:12px;color:#94a3b8;">Adds time pressure to each question</div>
+            <div style="font-size:15px;color:#e2e8f0;font-weight:500;">Timer</div>
+            <div style="font-size:13px;color:#94a3b8;">Adds time pressure to each question</div>
           </div>
           <div class="toggle-track" style="background:${timerOn ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" style="left:${timerOn ? '23px' : '3px'};"></div>
@@ -482,8 +482,8 @@ function renderSetup() {
       <div class="card" style="margin-bottom:20px;">
         <div class="toggle-row" onclick="toggleExplain()" style="cursor:pointer;">
           <div>
-            <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Show explanations</div>
-            <div style="font-size:12px;color:#94a3b8;">Brief fact after each answer</div>
+            <div style="font-size:15px;color:#e2e8f0;font-weight:500;">Show explanations</div>
+            <div style="font-size:13px;color:#94a3b8;">Brief fact after each answer</div>
           </div>
           <div class="toggle-track" style="background:${state.explainEnabled ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" style="left:${state.explainEnabled ? '23px' : '3px'};"></div>
@@ -745,12 +745,12 @@ function showQuestion() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:12px;color:#94a3b8;">
+        <div style="font-size:13px;color:#94a3b8;">
           ${total ? `Question ${state.currentIdx + 1} of ${total}` : `Question ${state.currentIdx + 1}`}
         </div>
         ${timerHTML}
         ${state.count === 'endless'
-          ? `<button onclick="showResults()" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:12px;color:#94a3b8;cursor:pointer;">End session</button>`
+          ? `<button onclick="showResults()" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:13px;color:#94a3b8;cursor:pointer;">End session</button>`
           : `<div></div>`}
       </div>
 
@@ -759,7 +759,7 @@ function showQuestion() {
       ${musicBanner}
 
       <div style="display:inline-block;background:rgba(14,165,233,0.15);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
-        <span style="font-size:12px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+        <span style="font-size:13px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
       ${q.type === 'image' && q.image_url ? `
@@ -874,7 +874,7 @@ function showFeedback(correct, q, timedOut = false) {
   const explanationHTML = state.explainEnabled && q.explanation
     ? `<div class="explanation-card">
         <div style="font-size:12px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Did you know</div>
-        <div style="font-size:14px;color:#38bdf8;line-height:1.5;">${q.explanation}</div>
+        <div style="font-size:15px;color:#38bdf8;line-height:1.5;">${q.explanation}</div>
       </div>`
     : '';
 
@@ -885,7 +885,7 @@ function showFeedback(correct, q, timedOut = false) {
 
   feedbackEl.style.display = 'block';
   feedbackEl.innerHTML = `
-    <div style="font-size:15px;font-weight:500;color:${statusColor};text-align:center;margin-bottom:8px;">${statusText}</div>
+    <div style="font-size:16px;font-weight:500;color:${statusColor};text-align:center;margin-bottom:8px;">${statusText}</div>
     ${explanationHTML}
     <button class="btn-primary" onclick="nextQuestion()" style="margin-top:12px;">${nextLabel}</button>
   `;
