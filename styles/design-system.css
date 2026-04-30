@@ -1,0 +1,17 @@
+:root {
+  --bg:           #0f172a;
+  --surface:      #1e293b;
+  --surface-alt:  #334155;
+  --border:       #334155;
+  --border-input: #475569;
+  --primary:      #0ea5e9;
+  --primary-hover:#0284c7;
+  --accent:       #38bdf8;
+  --text:         #e2e8f0;
+  --text-sec:     #94a3b8;
+  --text-muted:   #64748b;
+  --correct-bg:   rgba(52,211,153,0.15);
+  --correct-text: #34d399;
+  --wrong-bg:     rgba(248,113,113,0.15);
+  --wrong-text:   #f87171;
+}

@@ -14,53 +14,54 @@
 <meta name="twitter:description" content="Solo trivia practice with AI-generated questions. Pick your categories, set your difficulty, and sharpen your trivia skills." />
 <meta name="twitter:image" content="https://quizzli.app/og-image.png" />
 <title>Practice Mode — Quizzli</title>
+<link rel="stylesheet" href="styles/design-system.css">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #f5f5fa; color: #1a1a2e; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
+body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
 #app { max-width: 480px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-.card { background: #ffffff; border: 1px solid #e4e4f0; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(100,100,200,0.06); }
-.btn-primary { background: #7c3aed; border: none; border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; }
-.btn-primary:hover:not(:disabled) { background: #6d28d9; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.btn-primary { background: #0ea5e9; border: none; border-radius: 10px; padding: 14px 16px; font-size: 15px; font-weight: 500; color: #fff; width: 100%; cursor: pointer; transition: background .2s; }
+.btn-primary:hover:not(:disabled) { background: #0284c7; }
 .btn-primary:disabled { opacity: .4; cursor: default; }
-.btn-outline { background: transparent; border: 1px solid #e4e4f0; border-radius: 10px; padding: 11px 16px; font-size: 13px; color: #9090b8; cursor: pointer; width: 100%; transition: border-color .2s, color .2s; }
-.btn-outline:hover { border-color: #7c3aed88; color: #7c3aed; }
-.option-btn { background: #ffffff; border: 2px solid #e4e4f0; border-radius: 12px; padding: 14px; font-size: 16px; color: #2a2a4a; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 52px; display: block; margin-bottom: 10px; line-height: 1.4; box-shadow: 0 1px 3px rgba(100,100,200,0.05); }
+.btn-outline { background: transparent; border: 1px solid #334155; border-radius: 10px; padding: 11px 16px; font-size: 13px; color: #94a3b8; cursor: pointer; width: 100%; transition: border-color .2s, color .2s; }
+.btn-outline:hover { border-color: #0ea5e988; color: #0ea5e9; }
+.option-btn { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 14px; font-size: 16px; color: #e2e8f0; width: 100%; text-align: left; cursor: pointer; transition: all .15s; min-height: 52px; display: block; margin-bottom: 10px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 .option-btn:active:not([disabled]) { transform: scale(.98); }
 .option-btn[disabled] { cursor: default; }
-.option-btn.correct { border-color: #22c55e; color: #166534; background: #f0fdf4; }
-.option-btn.wrong { border-color: #ef4444; color: #991b1b; background: #fef2f2; }
-.rt-btn { background: #f0f0fa; border: 1px solid #d0d0e8; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #9090b8; cursor: pointer; transition: background .2s, border-color .2s, color .2s; text-align: center; flex: 1; }
-.rt-btn.sel { background: #ede9fe; border-color: #7c3aed; color: #6d28d9; }
-.sub-label { font-size: 12px; color: #9090b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+.option-btn.correct { border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.15); }
+.option-btn.wrong { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); }
+.rt-btn { background: #334155; border: 1px solid #475569; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #94a3b8; cursor: pointer; transition: background .2s, border-color .2s, color .2s; text-align: center; flex: 1; }
+.rt-btn.sel { background: rgba(14,165,233,0.15); border-color: #0ea5e9; color: #38bdf8; }
+.sub-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
 .fade-in { animation: fadeUp .3s ease forwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .timer-badge { border-radius: 20px; padding: 4px 14px; font-size: 14px; font-weight: 600; display: inline-block; border: 1px solid transparent; }
-.timer-ok { color: #6d28d9; border-color: #c4b5fd; background: #ede9fe; }
-.timer-warn { color: #92400e; border-color: #fcd34d; background: #fef3c7; }
-.timer-danger { color: #991b1b; border-color: #fca5a5; background: #fee2e2; }
-.timer-music { color: #6d28d9; border-color: #c4b5fd; background: #f5f3ff; animation: musicPulse 1.4s ease-in-out infinite; }
+.timer-ok { color: #38bdf8; border-color: #0ea5e9; background: rgba(14,165,233,0.15); }
+.timer-warn { color: #fcd34d; border-color: #fcd34d; background: rgba(252,211,77,0.15); }
+.timer-danger { color: #f87171; border-color: #f87171; background: rgba(248,113,113,0.15); }
+.timer-music { color: #38bdf8; border-color: #0ea5e9; background: rgba(14,165,233,0.15); animation: musicPulse 1.4s ease-in-out infinite; }
 @keyframes musicPulse { 0%,100% { opacity:1; } 50% { opacity:.55; } }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
 .toggle-track { width: 44px; height: 24px; border-radius: 12px; position: relative; flex-shrink: 0; cursor: pointer; transition: background .2s; }
 .toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; transition: left .2s; }
-.progress-track { height: 3px; background: #e4e4f0; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
-.progress-fill { height: 100%; background: #7c3aed; border-radius: 3px; transition: width .4s; }
-.explanation-card { background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+.progress-track { height: 3px; background: #334155; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+.progress-fill { height: 100%; background: #0ea5e9; border-radius: 3px; transition: width .4s; }
+.explanation-card { background: rgba(14,165,233,0.08); border: 1px solid #0284c7; border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
 /* Category accordion */
 .cat-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: border-color .15s, background .15s; margin-bottom: 4px; }
-.cat-row.has-sel { border-color: #7c3aed44; }
-.cat-row.direct-sel { border-color: #7c3aed; }
+.cat-row.has-sel { border-color: #0ea5e944; }
+.cat-row.direct-sel { border-color: #0ea5e9; }
 .cat-subs { padding: 6px 10px 10px 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-.sub-pill { border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; border: 1px solid #d0d0e8; color: #9090b8; background: #f5f5fa; transition: border-color .15s, color .15s, background .15s; }
-.sub-pill.sel { border-color: #7c3aed; color: #6d28d9; background: #ede9fe; }
+.sub-pill { border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; border: 1px solid #475569; color: #94a3b8; background: #334155; transition: border-color .15s, color .15s, background .15s; }
+.sub-pill.sel { border-color: #0ea5e9; color: #38bdf8; background: rgba(14,165,233,0.15); }
 /* Music waveform */
-.music-banner { background: #f5f3ff; border: 1px solid #c4b5fd; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
-.wave-bar { width: 4px; border-radius: 2px; background: #7c3aed; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
+.music-banner { background: rgba(14,165,233,0.08); border: 1px solid #0284c7; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.wave-bar { width: 4px; border-radius: 2px; background: #0ea5e9; transform-origin: center; animation: wave 1.1s ease-in-out infinite; }
 @keyframes wave { 0%,100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
 .wave-bar.stopped { animation: none; transform: scaleY(0.25); opacity: .4; }
 /* Custom categories */
-.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #1a1a2e; cursor: pointer; border-bottom: 1px solid #e4e4f0; transition: background .1s; }
-.custom-suggestion:hover { background: #f5f5fa; }
+.custom-suggestion { padding: 9px 12px; font-size: 13px; color: #e2e8f0; cursor: pointer; border-bottom: 1px solid #334155; transition: background .1s; }
+.custom-suggestion:hover { background: #334155; }
 .custom-suggestion:last-child { border-bottom: none; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -255,15 +256,15 @@ function setCustomMusicType(t) {
     const el = document.getElementById('customType_' + type);
     if (!el) return;
     const sel = type === t;
-    el.style.background = sel ? '#ede9fe' : '#f5f5fa';
-    el.style.borderColor = sel ? '#7c3aed' : '#d0d0e8';
-    el.querySelector('.type-label').style.color = sel ? '#6d28d9' : '#9090b8';
+    el.style.background = sel ? 'rgba(14,165,233,0.15)' : '#334155';
+    el.style.borderColor = sel ? '#0ea5e9' : '#475569';
+    el.querySelector('.type-label').style.color = sel ? '#38bdf8' : '#94a3b8';
   });
 }
 function updateMusicToggleUI() {
   const track = document.getElementById('musicToggleTrack');
   const thumb = document.getElementById('musicToggleThumb');
-  if (track) track.style.background = _customMusicFlag ? '#378add' : '#d0d0e8';
+  if (track) track.style.background = _customMusicFlag ? '#0ea5e9' : '#334155';
   if (thumb) thumb.style.left = _customMusicFlag ? '23px' : '3px';
 }
 function updateMusicHint(name) {
@@ -289,16 +290,16 @@ function buildCustomSection() {
     const sel = state.categories.includes(c.name);
     const en = c.name.replace(/'/g, "\\'");
     const icon = c.music ? (TYPE_ICONS[c.musicType] || '🎵') : '';
-    const chipBg = c.music ? '#eff6ff' : (sel ? '#ede9fe' : '#f5f5fa');
-    const chipBorder = c.music ? (sel ? '#93c5fd' : '#93c5fd66') : (sel ? '#a78bfa' : '#d0d0e8');
-    const chipColor = c.music ? (sel ? '#1d4ed8' : '#6090c8') : (sel ? '#6d28d9' : '#9090b8');
+    const chipBg = c.music ? 'rgba(14,165,233,0.12)' : (sel ? 'rgba(14,165,233,0.08)' : '#334155');
+    const chipBorder = c.music ? (sel ? '#0ea5e9' : '#0ea5e966') : (sel ? '#0ea5e9' : '#475569');
+    const chipColor = c.music ? (sel ? '#38bdf8' : '#94a3b8') : (sel ? '#38bdf8' : '#94a3b8');
     return `<div onclick="toggleCustomCatSel('${en}');event.stopPropagation();"
       style="display:flex;align-items:center;gap:4px;background:${chipBg};border:1px solid ${chipBorder};border-radius:20px;padding:5px 10px 5px 8px;cursor:pointer;transition:border-color .15s;">
       ${icon ? `<span style="font-size:10px;">${icon}</span>` : ''}
       <span style="font-size:12px;color:${chipColor};">${c.name}</span>
-      ${sel ? '<span style="font-size:10px;color:#7c3aed;margin-left:2px;">✓</span>' : ''}
+      ${sel ? '<span style="font-size:10px;color:#0ea5e9;margin-left:2px;">✓</span>' : ''}
       <button onclick="event.stopPropagation();removeCustomCat('${en}')"
-        style="background:none;border:none;color:#9090b8;cursor:pointer;font-size:12px;padding:0 0 0 4px;line-height:1;flex-shrink:0;">✕</button>
+        style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:12px;padding:0 0 0 4px;line-height:1;flex-shrink:0;">✕</button>
     </div>`;
   }).join('');
 
@@ -308,8 +309,8 @@ function buildCustomSection() {
   const escapedVal = _customInput.replace(/"/g, '&quot;');
 
   const typeSelector = `
-    <div id="musicTypeRow" style="display:${_customMusicFlag ? 'block' : 'none'};margin-top:10px;padding-top:10px;border-top:1px solid #c4b5fd44;">
-      <div style="font-size:12px;color:#9090b8;margin-bottom:6px;">Category type:</div>
+    <div id="musicTypeRow" style="display:${_customMusicFlag ? 'block' : 'none'};margin-top:10px;padding-top:10px;border-top:1px solid #0ea5e944;">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;">Category type:</div>
       <div style="display:flex;gap:6px;">
         ${[
           { type: 'artist',     icon: '🎤', label: 'Artist',     ex: 'e.g. Taylor Swift' },
@@ -318,10 +319,10 @@ function buildCustomSection() {
         ].map(({ type, icon, label, ex }) => {
           const sel = _customMusicType === type;
           return `<div id="customType_${type}" onclick="setCustomMusicType('${type}')"
-            style="flex:1;background:${sel ? '#ede9fe' : '#f5f5fa'};border:1px solid ${sel ? '#7c3aed' : '#d0d0e8'};border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;">
+            style="flex:1;background:${sel ? 'rgba(14,165,233,0.15)' : '#334155'};border:1px solid ${sel ? '#0ea5e9' : '#475569'};border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;">
             <div style="font-size:16px;">${icon}</div>
-            <div class="type-label" style="font-size:12px;color:${sel ? '#6d28d9' : '#9090b8'};margin-top:2px;">${label}</div>
-            <div style="font-size:10px;color:#9090b8;margin-top:1px;">${ex}</div>
+            <div class="type-label" style="font-size:12px;color:${sel ? '#38bdf8' : '#94a3b8'};margin-top:2px;">${label}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${ex}</div>
           </div>`;
         }).join('')}
       </div>
@@ -331,27 +332,27 @@ function buildCustomSection() {
     <div style="position:relative;">
       <div style="display:flex;gap:8px;">
         <input id="customCatInput" type="text" value="${escapedVal}" placeholder="Type a category… e.g. Taylor Swift"
-          style="flex:1;background:#ffffff;border:1px solid #d0d0e8;border-radius:8px;padding:9px 12px;font-size:13px;color:#1a1a2e;outline:none;"
+          style="flex:1;background:#0f172a;border:1px solid #475569;border-radius:8px;padding:9px 12px;font-size:13px;color:#e2e8f0;outline:none;"
           oninput="onCustomInput(this.value)" onkeydown="if(event.key==='Enter')tryAddCustomCat()" maxlength="50">
         <button id="customAddBtn" onclick="tryAddCustomCat()"
-          style="background:#ffffff;border:1px solid #7c3aed44;border-radius:8px;padding:9px 14px;font-size:13px;color:#7c3aed;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
+          style="background:#1e293b;border:1px solid #0ea5e944;border-radius:8px;padding:9px 14px;font-size:13px;color:#0ea5e9;white-space:nowrap;${addBtnActive ? 'cursor:pointer;' : 'cursor:default;opacity:.4;pointer-events:none;'}">+ Add</button>
       </div>
-      <div id="customSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:68px;background:#ffffff;border:1px solid #e4e4f0;border-radius:8px;z-index:10;overflow:hidden;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(100,100,200,0.12);"></div>
+      <div id="customSuggestions" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:68px;background:#1e293b;border:1px solid #334155;border-radius:8px;z-index:10;overflow:hidden;max-height:200px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.4);"></div>
     </div>
     <div id="musicToggleRow" style="display:${showToggle ? 'block' : 'none'};margin-top:6px;">
-      <div style="background:#f5f3ff;border:1px solid #c4b5fd;border-radius:8px;padding:10px 12px;">
+      <div style="background:rgba(14,165,233,0.08);border:1px solid #0284c7;border-radius:8px;padding:10px 12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="flex:1;">
-            <div style="font-size:12px;color:#6d28d9;">🎵 Music category — find a clip and identify the artist or song</div>
-            <div id="musicHint" style="font-size:11px;color:#6d28d966;margin-top:3px;">${hintText}</div>
+            <div style="font-size:12px;color:#38bdf8;">🎵 Music category — find a clip and identify the artist or song</div>
+            <div id="musicHint" style="font-size:11px;color:#38bdf866;margin-top:3px;">${hintText}</div>
           </div>
-          <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#378add' : '#d0d0e8'};">
+          <div onclick="toggleMusicFlag()" class="toggle-track" id="musicToggleTrack" style="background:${_customMusicFlag ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" id="musicToggleThumb" style="left:${_customMusicFlag ? '23px' : '3px'};"></div>
           </div>
         </div>
         ${typeSelector}
       </div>
-    </div>` : `<div style="font-size:12px;color:#9090b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
+    </div>` : `<div style="font-size:12px;color:#94a3b8;text-align:center;padding:8px 0;">Maximum 10 custom categories saved</div>`;
 
   return `
     <div style="margin-bottom:20px;">
@@ -370,13 +371,13 @@ function renderSetup() {
     const hasAnySel = directSel || selectedSubs.length > 0;
 
     const chevron = hasSubs
-      ? `<div style="color:#9090b8;font-size:12px;transition:transform .2s;transform:rotate(${expanded ? 90 : 0}deg);">▶</div>`
+      ? `<div style="color:#94a3b8;font-size:12px;transition:transform .2s;transform:rotate(${expanded ? 90 : 0}deg);">▶</div>`
       : '';
     const check = directSel
-      ? `<div style="width:18px;height:18px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#fff;">✓</div>`
+      ? `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#fff;">✓</div>`
       : '';
     const selCount = hasSubs && selectedSubs.length > 0
-      ? `<div style="background:#ede9fe;color:#6d28d9;border-radius:12px;padding:1px 8px;font-size:12px;white-space:nowrap;">${selectedSubs.length} selected</div>`
+      ? `<div style="background:rgba(14,165,233,0.15);color:#38bdf8;border-radius:12px;padding:1px 8px;font-size:12px;white-space:nowrap;">${selectedSubs.length} selected</div>`
       : '';
 
     const onclick = hasSubs
@@ -393,12 +394,12 @@ function renderSetup() {
       </div>` : '';
 
     return `
-      <div style="background:#ffffff;border:2px solid ${hasAnySel ? '#7c3aed' : '#e4e4f0'};border-radius:10px;align-self:start;">
+      <div style="background:#1e293b;border:2px solid ${hasAnySel ? '#0ea5e9' : '#334155'};border-radius:10px;align-self:start;">
         <div class="cat-row" onclick="${onclick}" style="background:transparent;border:none;margin-bottom:0;">
           <span style="font-size:20px;">${c.icon}</span>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:#1a1a2e;">${c.name}</div>
-            ${hasSubs ? `<div style="font-size:12px;color:#9090b8;">${c.subs.length} subcategories</div>` : ''}
+            <div style="font-size:13px;font-weight:500;color:#e2e8f0;">${c.name}</div>
+            ${hasSubs ? `<div style="font-size:12px;color:#94a3b8;">${c.subs.length} subcategories</div>` : ''}
           </div>
           ${selCount}${check}${chevron}
         </div>
@@ -423,10 +424,10 @@ function renderSetup() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
-        <a href="index.html" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:6px 12px;font-size:12px;color:#9090b8;text-decoration:none;">← Home</a>
+        <a href="index.html" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:6px 12px;font-size:12px;color:#94a3b8;text-decoration:none;">← Home</a>
         <div>
-          <div style="font-size:20px;font-weight:500;color:#1a1a2e;">Practice Mode</div>
-          <div style="font-size:12px;color:#9090b8;margin-top:2px;">Solo · no account needed · session only</div>
+          <div style="font-size:20px;font-weight:500;color:#e2e8f0;">Practice Mode</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Solo · no account needed · session only</div>
         </div>
       </div>
 
@@ -452,7 +453,7 @@ function renderSetup() {
             { key: 'mixed', label: 'Mixed', sub: 'balanced' },
             { key: 'hard',  label: 'Hard',  sub: 'obscure details' },
           ].map(d => `<div class="rt-btn${state.difficulty===d.key?' sel':''}" onclick="setDifficulty('${d.key}')" style="flex:1;text-align:center;">
-            ${d.label}<div style="font-size:11px;color:${state.difficulty===d.key?'#7c3aed':'#9090b8'};margin-top:2px;">${d.sub}</div>
+            ${d.label}<div style="font-size:11px;color:${state.difficulty===d.key?'#38bdf8':'#94a3b8'};margin-top:2px;">${d.sub}</div>
           </div>`).join('')}
         </div>
       </div>
@@ -460,10 +461,10 @@ function renderSetup() {
       <div class="card" style="margin-bottom:12px;">
         <div class="toggle-row" onclick="toggleTimer()" style="cursor:pointer;">
           <div>
-            <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Timer</div>
-            <div style="font-size:12px;color:#9090b8;">Adds time pressure to each question</div>
+            <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Timer</div>
+            <div style="font-size:12px;color:#94a3b8;">Adds time pressure to each question</div>
           </div>
-          <div class="toggle-track" style="background:${timerOn ? '#7c3aed' : '#d0d0e8'};">
+          <div class="toggle-track" style="background:${timerOn ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" style="left:${timerOn ? '23px' : '3px'};"></div>
           </div>
         </div>
@@ -473,10 +474,10 @@ function renderSetup() {
       <div class="card" style="margin-bottom:20px;">
         <div class="toggle-row" onclick="toggleExplain()" style="cursor:pointer;">
           <div>
-            <div style="font-size:13px;color:#1a1a2e;font-weight:500;">Show explanations</div>
-            <div style="font-size:12px;color:#9090b8;">Brief fact after each answer</div>
+            <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Show explanations</div>
+            <div style="font-size:12px;color:#94a3b8;">Brief fact after each answer</div>
           </div>
-          <div class="toggle-track" style="background:${state.explainEnabled ? '#7c3aed' : '#d0d0e8'};">
+          <div class="toggle-track" style="background:${state.explainEnabled ? '#0ea5e9' : '#334155'};">
             <div class="toggle-thumb" style="left:${state.explainEnabled ? '23px' : '3px'};"></div>
           </div>
         </div>
@@ -602,7 +603,7 @@ async function startPractice() {
   } catch(e) {
     clearInterval(loadingInterval);
     setHTML(`<div style="text-align:center;padding:60px 20px;">
-      <div style="color:#ef4444;margin-bottom:16px;">Failed to load questions.<br><span style="font-size:12px;color:#9090b8;">${e.message}</span></div>
+      <div style="color:#f87171;margin-bottom:16px;">Failed to load questions.<br><span style="font-size:12px;color:#94a3b8;">${e.message}</span></div>
       <button class="btn-outline" onclick="showSetup()">← Back</button>
     </div>`);
   }
@@ -613,37 +614,37 @@ function showLoading(hasMusicCat) {
   setHTML(`
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;padding:40px 20px;text-align:center;">
       <div style="font-size:32px;margin-bottom:24px;animation:bounce 1.5s ease-in-out infinite;">🧠</div>
-      <div style="font-size:20px;font-weight:500;color:#1a1a2e;margin-bottom:8px;">Building your quiz…</div>
-      <div style="font-size:14px;color:#9090b8;margin-bottom:32px;" id="loadingMsg">Generating questions…</div>
+      <div style="font-size:20px;font-weight:500;color:#e2e8f0;margin-bottom:8px;">Building your quiz…</div>
+      <div style="font-size:14px;color:#94a3b8;margin-bottom:32px;" id="loadingMsg">Generating questions…</div>
 
-      <div style="width:100%;max-width:280px;height:4px;background:#e4e4f0;border-radius:4px;overflow:hidden;margin-bottom:32px;">
-        <div id="loadingBar" style="height:100%;background:#7c3aed;border-radius:4px;width:0%;transition:width .6s ease;"></div>
+      <div style="width:100%;max-width:280px;height:4px;background:#334155;border-radius:4px;overflow:hidden;margin-bottom:32px;">
+        <div id="loadingBar" style="height:100%;background:#0ea5e9;border-radius:4px;width:0%;transition:width .6s ease;"></div>
       </div>
 
       <div style="display:flex;gap:6px;justify-content:center;margin-bottom:40px;">
-        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s 0s infinite;"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .4s infinite;"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:#7c3aed;animation:dot 1.2s .8s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;animation:dot 1.2s 0s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;animation:dot 1.2s .4s infinite;"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;animation:dot 1.2s .8s infinite;"></div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;">
         <div id="step1" style="display:flex;align-items:center;gap:10px;">
-          <div style="width:20px;height:20px;border-radius:50%;background:#7c3aed;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <div style="width:6px;height:6px;border-radius:50%;background:white;"></div>
           </div>
-          <div style="font-size:13px;color:#6d28d9;">Writing questions</div>
+          <div style="font-size:13px;color:#38bdf8;">Writing questions</div>
         </div>
         <div id="step2" style="display:flex;align-items:center;gap:10px;opacity:0.3;">
-          <div style="width:20px;height:20px;border-radius:50%;background:#e4e4f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#9090b8;"></div>
+          <div style="width:20px;height:20px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#94a3b8;"></div>
           </div>
-          <div style="font-size:13px;color:#9090b8;">${step2Label}</div>
+          <div style="font-size:13px;color:#94a3b8;">${step2Label}</div>
         </div>
         <div id="step3" style="display:flex;align-items:center;gap:10px;opacity:0.3;">
-          <div style="width:20px;height:20px;border-radius:50%;background:#e4e4f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#9090b8;"></div>
+          <div style="width:20px;height:20px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#94a3b8;"></div>
           </div>
-          <div style="font-size:13px;color:#9090b8;">Getting ready</div>
+          <div style="font-size:13px;color:#94a3b8;">Getting ready</div>
         </div>
       </div>
 
@@ -679,16 +680,16 @@ function showLoading(hasMusicCat) {
     if (stepIdx < steps.length - 1 && progress > (stepIdx + 1) * 30) {
       if (steps[stepIdx]) {
         steps[stepIdx].style.opacity = '0.5';
-        steps[stepIdx].querySelector('div').style.background = '#ede9fe';
-        steps[stepIdx].querySelector('div div').style.background = '#7c3aed';
-        steps[stepIdx].querySelector('div + div').style.color = '#a78bfa';
+        steps[stepIdx].querySelector('div').style.background = 'rgba(14,165,233,0.2)';
+        steps[stepIdx].querySelector('div div').style.background = '#0ea5e9';
+        steps[stepIdx].querySelector('div + div').style.color = '#38bdf8';
       }
       stepIdx++;
       if (steps[stepIdx]) {
         steps[stepIdx].style.opacity = '1';
-        steps[stepIdx].querySelector('div').style.background = '#7c3aed';
+        steps[stepIdx].querySelector('div').style.background = '#0ea5e9';
         steps[stepIdx].querySelector('div div').style.background = 'white';
-        steps[stepIdx].querySelector('div + div').style.color = '#6d28d9';
+        steps[stepIdx].querySelector('div + div').style.color = '#38bdf8';
       }
     }
   }, 2000);
@@ -723,9 +724,9 @@ function showQuestion() {
       <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">${hasClip ? waveformHTML() : '<div style="font-size:22px;opacity:.4;">♪</div>'}</div>
       <div id="musicInfo">
         ${hasClip
-          ? `<div style="font-size:13px;font-weight:500;color:#6d28d9;">Playing audio clip…</div>
-             <div style="font-size:12px;color:#6d28d9;margin-top:2px;">Listen and pick your answer</div>`
-          : `<div style="font-size:13px;color:#9090b8;">No preview available</div>`}
+          ? `<div style="font-size:13px;font-weight:500;color:#38bdf8;">Playing audio clip…</div>
+             <div style="font-size:12px;color:#38bdf8;margin-top:2px;">Listen and pick your answer</div>`
+          : `<div style="font-size:13px;color:#94a3b8;">No preview available</div>`}
       </div>
     </div>` : '';
 
@@ -736,12 +737,12 @@ function showQuestion() {
   setHTML(`
     <div class="fade-in">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:12px;color:#9090b8;">
+        <div style="font-size:12px;color:#94a3b8;">
           ${total ? `Question ${state.currentIdx + 1} of ${total}` : `Question ${state.currentIdx + 1}`}
         </div>
         ${timerHTML}
         ${state.count === 'endless'
-          ? `<button onclick="showResults()" style="background:transparent;border:1px solid #e4e4f0;border-radius:8px;padding:5px 10px;font-size:12px;color:#9090b8;cursor:pointer;">End session</button>`
+          ? `<button onclick="showResults()" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:12px;color:#94a3b8;cursor:pointer;">End session</button>`
           : `<div></div>`}
       </div>
 
@@ -749,20 +750,20 @@ function showQuestion() {
 
       ${musicBanner}
 
-      <div style="display:inline-block;background:#ede9fe;border-radius:8px;padding:5px 12px;margin-bottom:10px;">
-        <span style="font-size:12px;color:#6d28d9;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
+      <div style="display:inline-block;background:rgba(14,165,233,0.15);border-radius:8px;padding:5px 12px;margin-bottom:10px;">
+        <span style="font-size:12px;color:#38bdf8;font-weight:500;text-transform:uppercase;letter-spacing:.06em;">${q.cat}</span>
       </div>
 
       ${q.type === 'image' && q.image_url ? `
-      <div style="margin-bottom:14px;border-radius:12px;overflow:hidden;border:1px solid #e4e4f0;background:#f5f5fa;text-align:center;">
+      <div style="margin-bottom:14px;border-radius:12px;overflow:hidden;border:1px solid #334155;background:#1e293b;text-align:center;">
         <img src="${q.image_url}"
           style="max-width:100%;max-height:260px;object-fit:contain;display:block;margin:0 auto;"
-          onerror="this.parentElement.innerHTML='<div style=padding:20px;color:#9090b8;font-size:13px;>Image unavailable</div>'"
+          onerror="this.parentElement.innerHTML='<div style=padding:20px;color:#94a3b8;font-size:13px;>Image unavailable</div>'"
         />
       </div>` : ''}
 
       <div class="card" style="margin-bottom:14px;">
-        <div style="font-size:17px;font-weight:500;color:#1a1a2e;line-height:1.5;">${q.q}</div>
+        <div style="font-size:17px;font-weight:500;color:#e2e8f0;line-height:1.5;">${q.q}</div>
       </div>
 
       <div id="optionGrid">
@@ -810,8 +811,8 @@ function startPracticeTimer(duration) {
 function revealMusicInfo(q) {
   const el = document.getElementById('musicInfo');
   if (!el || !q.artist) return;
-  el.innerHTML = `<div style="font-size:13px;font-weight:500;color:#6d28d9;">${q.artist}</div>
-    <div style="font-size:12px;color:#6d28d9;margin-top:2px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>`;
+  el.innerHTML = `<div style="font-size:13px;font-weight:500;color:#38bdf8;">${q.artist}</div>
+    <div style="font-size:12px;color:#38bdf8;margin-top:2px;">${q.song || ''}${q.year ? ' · ' + q.year : ''}</div>`;
 }
 
 function submitAnswer(idx) {
@@ -864,12 +865,12 @@ function showFeedback(correct, q, timedOut = false) {
 
   const explanationHTML = state.explainEnabled && q.explanation
     ? `<div class="explanation-card">
-        <div style="font-size:12px;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Did you know</div>
-        <div style="font-size:14px;color:#5b21b6;line-height:1.5;">${q.explanation}</div>
+        <div style="font-size:12px;color:#0ea5e9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Did you know</div>
+        <div style="font-size:14px;color:#38bdf8;line-height:1.5;">${q.explanation}</div>
       </div>`
     : '';
 
-  const statusColor = correct ? '#166534' : '#991b1b';
+  const statusColor = timedOut ? '#38bdf8' : correct ? '#34d399' : '#f87171';
   const statusText = timedOut
     ? `Time's up! The answer was: ${q.opts[q.ans]}`
     : correct ? 'Correct!' : `Wrong — the answer was: ${q.opts[q.ans]}`;
@@ -888,7 +889,7 @@ function nextQuestion() {
     showResults();
   } else if (state.count === 'endless' && state.currentIdx >= state.questions.length) {
     if (state.fetching) {
-      setHTML(`<div style="text-align:center;padding:60px 20px;font-size:14px;color:#7c3aed;">Loading more questions…</div>`);
+      setHTML(`<div style="text-align:center;padding:60px 20px;font-size:14px;color:#0ea5e9;">Loading more questions…</div>`);
       const wait = setInterval(() => {
         if (!state.fetching) { clearInterval(wait); showQuestion(); }
       }, 300);
@@ -933,19 +934,19 @@ function showResults() {
   const catRows = Object.entries(catMap).map(([cat, s]) => {
     const catPct = Math.round(s.correct / s.total * 100);
     const isWeak = catPct < 60;
-    const barColor = catPct >= 80 ? '#22c55e' : catPct >= 60 ? '#7c3aed' : '#ef4444';
+    const barColor = catPct >= 80 ? '#34d399' : catPct >= 60 ? '#0ea5e9' : '#f87171';
     const catData = findCatData(cat);
     return `
       <div style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <div style="font-size:13px;color:${catData?.color || '#7c3aed'};">${catData?.icon || ''} ${cat}</div>
+          <div style="font-size:13px;color:#94a3b8;">${catData?.icon || ''} ${cat}</div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:12px;color:#9090b8;">${s.correct}/${s.total}</div>
+            <div style="font-size:12px;color:#94a3b8;">${s.correct}/${s.total}</div>
             <div style="font-size:13px;font-weight:600;color:${barColor};">${catPct}%</div>
-            ${isWeak ? `<span style="background:#fef2f2;color:#dc2626;border-radius:12px;padding:1px 8px;font-size:12px;">Weak spot</span>` : ''}
+            ${isWeak ? `<span style="background:rgba(248,113,113,0.15);color:#f87171;border-radius:12px;padding:1px 8px;font-size:12px;">Weak spot</span>` : ''}
           </div>
         </div>
-        <div style="height:5px;background:#e4e4f0;border-radius:3px;overflow:hidden;">
+        <div style="height:5px;background:#334155;border-radius:3px;overflow:hidden;">
           <div style="height:100%;width:${catPct}%;background:${barColor};border-radius:3px;transition:width .6s;"></div>
         </div>
       </div>`;
@@ -953,9 +954,9 @@ function showResults() {
 
   const weakSpots = Object.entries(catMap).filter(([, s]) => Math.round(s.correct / s.total * 100) < 60).map(([c]) => c);
   const weakMsg = weakSpots.length > 0
-    ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
-        <div style="font-size:12px;color:#dc2626;font-weight:500;margin-bottom:4px;">Keep practising</div>
-        <div style="font-size:13px;color:#9090b8;">${weakSpots.join(', ')}</div>
+    ? `<div style="background:rgba(248,113,113,0.12);border:1px solid #f87171;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:12px;color:#f87171;font-weight:500;margin-bottom:4px;">Keep practising</div>
+        <div style="font-size:13px;color:#94a3b8;">${weakSpots.join(', ')}</div>
       </div>`
     : '';
 
@@ -966,26 +967,26 @@ function showResults() {
     <div class="fade-in">
       <div style="text-align:center;margin-bottom:24px;margin-top:8px;">
         <div style="font-size:36px;margin-bottom:8px;">${emoji}</div>
-        <div style="font-size:22px;font-weight:500;color:#1a1a2e;margin-bottom:4px;">${msg}</div>
-        <div style="font-size:13px;color:#9090b8;">Practice session complete</div>
+        <div style="font-size:22px;font-weight:500;color:#e2e8f0;margin-bottom:4px;">${msg}</div>
+        <div style="font-size:13px;color:#94a3b8;">Practice session complete</div>
       </div>
 
       <div class="card" style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:12px;color:#9090b8;margin-bottom:4px;">Overall accuracy</div>
-        <div style="font-size:52px;font-weight:500;color:#7c3aed;line-height:1;margin-bottom:4px;">${pct}%</div>
-        <div style="font-size:12px;color:#9090b8;">${correct} correct out of ${total} questions</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">Overall accuracy</div>
+        <div style="font-size:52px;font-weight:500;color:#0ea5e9;line-height:1;margin-bottom:4px;">${pct}%</div>
+        <div style="font-size:12px;color:#94a3b8;">${correct} correct out of ${total} questions</div>
       </div>
 
       <div class="card" style="margin-bottom:16px;">
         <div class="sub-label">By category</div>
-        ${catRows || '<div style="font-size:13px;color:#9090b8;">No answers recorded</div>'}
+        ${catRows || '<div style="font-size:13px;color:#94a3b8;">No answers recorded</div>'}
       </div>
 
       ${weakMsg}
 
       <button class="btn-primary" onclick="practiceAgain()" style="margin-bottom:10px;">Practice again</button>
       <button class="btn-outline" onclick="showSetup()">Change settings</button>
-      <div style="text-align:center;margin-top:12px;"><a href="index.html" style="font-size:12px;color:#9090b8;text-decoration:none;">← Back to home</a></div>
+      <div style="text-align:center;margin-top:12px;"><a href="index.html" style="font-size:12px;color:#94a3b8;text-decoration:none;">← Back to home</a></div>
     </div>
   `);
 }
