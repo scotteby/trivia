@@ -195,6 +195,7 @@ function showJoin(prefill = '', namePrefill = '') {
 }
 
 async function joinGame() {
+  unlockAudio();
   const code = (document.getElementById('codeInput')?.value || '').trim().toUpperCase();
   const name = (document.getElementById('nameInput')?.value || '').trim();
   const errEl = document.getElementById('joinError');
@@ -483,13 +484,7 @@ function togglePlayerAudio() {
   const enabled = !playerAudioEnabled();
   localStorage.setItem(PLAYER_AUDIO_KEY, enabled);
 
-  if (enabled) {
-    try {
-      const silent = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-      silent.volume = 0;
-      silent.play().catch(() => {});
-    } catch(e) {}
-  }
+  if (enabled) unlockAudio();
 
   document.querySelectorAll('#audioToggleTrack').forEach(el => {
     el.style.background = enabled ? '#0ea5e9' : '#334155';
@@ -516,6 +511,18 @@ function togglePlayerAudio() {
   }
 }
 
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
+function unlockAudio() {
+  try {
+    if (!state.audio) {
+      state.audio = new Audio(SILENT_AUDIO);
+      state.audio.volume = 0;
+      state.audio.play().catch(() => {});
+    }
+  } catch(e) {}
+}
+
 function stopClip() {
   clearTimeout(state.clipTimeout);
   state.clipTimeout = null;
@@ -529,16 +536,21 @@ function stopClip() {
 function playClip(url) {
   stopClip();
   if (!url) return;
-  if (!state.audio) {
-    state.audio = new Audio(url);
-  } else {
+  if (state.audio) {
     state.audio.src = url;
+    state.audio.volume = 1;
+    state.audio.play().catch(() => {
+      const cs = document.getElementById('clipStatus');
+      if (cs) cs.textContent = 'Tap to play';
+    });
+  } else {
+    state.audio = new Audio(url);
+    state.audio.volume = 1;
+    state.audio.play().catch(() => {
+      const cs = document.getElementById('clipStatus');
+      if (cs) cs.textContent = 'Tap to play';
+    });
   }
-  state.audio.volume = 1;
-  state.audio.play().catch(() => {
-    const cs = document.getElementById('clipStatus');
-    if (cs) cs.textContent = 'Tap to play';
-  });
   state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
 }
 
@@ -668,8 +680,7 @@ function showIngame() {
   if (isMusic) {
     const elapsedSinceStart = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
     if (elapsedSinceStart < CLIP_DURATION && playerAudioEnabled()) {
-      const clipDelay = state.audio ? 0 : 500;
-      setTimeout(() => playClip(q.preview_url), clipDelay);
+      playClip(q.preview_url);
     }
   }
   startPlayerTimer(timerDuration, isMusic);
