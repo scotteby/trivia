@@ -749,9 +749,10 @@ function showQuestion() {
           ${total ? `Question ${state.currentIdx + 1} of ${total}` : `Question ${state.currentIdx + 1}`}
         </div>
         ${timerHTML}
-        ${state.count === 'endless'
-          ? `<button onclick="showResults()" style="background:transparent;border:1px solid #334155;border-radius:8px;padding:5px 10px;font-size:13px;color:#94a3b8;cursor:pointer;">End session</button>`
-          : `<div></div>`}
+        <div style="display:flex;gap:6px;">
+          <button onclick="showResults()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:5px 10px;font-size:12px;color:#6080a0;cursor:pointer;">End session</button>
+          <a href="index.html" style="background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:5px 10px;font-size:12px;color:#6080a0;text-decoration:none;display:flex;align-items:center;">← Home</a>
+        </div>
       </div>
 
       ${progress !== null ? `<div class="progress-track"><div class="progress-fill" style="width:${progress}%;"></div></div>` : ''}
