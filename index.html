@@ -128,8 +128,8 @@ const DATE_STR = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long
 
 // ─── Solo game state ─────────────────────────────────────────────────────────
 let QUESTIONS = [];
-const MAX_TIME = 15, BASE = 10, MAX_BONUS = 5, CLIP_DURATION = 10;
-let TOTAL_MAX = 75;
+const MAX_TIME = 15, BASE = 15, MAX_BONUS = 5, CLIP_DURATION = 10;
+let TOTAL_MAX = 100;
 let qi = 0, score = 0, timeLeft = MAX_TIME;
 let answered = false, results = [], timerInterval = null;
 let audio = null, clipTimeout = null, clipPhaseTimeout = null;
@@ -267,7 +267,7 @@ function showSoloStart() {
       <div style="font-size:13px;color:#0ea5e9;margin-bottom:1.5rem;">${DATE_STR}</div>
       ${hsBannerHTML()}
       <div class="rules-grid">
-        <div class="rule-card"><strong>10 pts</strong>Correct answer</div>
+        <div class="rule-card"><strong>15 pts</strong>Correct answer</div>
         <div class="rule-card"><strong>+5 bonus</strong>Answer fast!</div>
         <div class="rule-card"><strong>15 sec</strong>Per question</div>
         <div class="rule-card"><strong>${TOTAL_MAX} pts</strong>Max score</div>
