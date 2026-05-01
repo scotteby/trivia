@@ -488,7 +488,6 @@ function togglePlayerAudio() {
       const silent = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
       silent.volume = 0;
       silent.play().catch(() => {});
-      if (!state.audio) state.audio = silent;
     } catch(e) {}
   }
 
@@ -530,18 +529,17 @@ function stopClip() {
 function playClip(url) {
   stopClip();
   if (!url) return;
-  if (state.audio) {
-    state.audio.src = url;
-    state.audio.volume = 1;
-  } else {
+  if (!state.audio) {
     state.audio = new Audio(url);
-    state.audio.volume = 1;
+  } else {
+    state.audio.src = url;
   }
+  state.audio.volume = 1;
   state.audio.play().catch(() => {
     const cs = document.getElementById('clipStatus');
     if (cs) cs.textContent = 'Tap to play';
   });
-  state.clipTimeout = setTimeout(() => stopClip(), 10 * 1000);
+  state.clipTimeout = setTimeout(() => stopClip(), CLIP_DURATION * 1000);
 }
 
 function waveformHTML() {
@@ -670,7 +668,8 @@ function showIngame() {
   if (isMusic) {
     const elapsedSinceStart = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
     if (elapsedSinceStart < CLIP_DURATION && playerAudioEnabled()) {
-      setTimeout(() => playClip(q.preview_url), 300);
+      const clipDelay = state.audio ? 0 : 500;
+      setTimeout(() => playClip(q.preview_url), clipDelay);
     }
   }
   startPlayerTimer(timerDuration, isMusic);
