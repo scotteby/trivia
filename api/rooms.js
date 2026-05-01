@@ -308,6 +308,13 @@ For genre/era music categories, alternate "q" randomly between "Who is this arti
   const remainder = total % categories.length;
   const perCatCounts = categories.map((_, i) => i < remainder ? basePerCat + 1 : basePerCat);
 
+  const countSum = perCatCounts.reduce((a, b) => a + b, 0);
+  if (countSum !== total) {
+    console.error(`[rooms] perCatCounts sum ${countSum} !== total ${total} — fixing`);
+    perCatCounts[perCatCounts.length - 1] += total - countSum;
+  }
+  console.log(`[rooms] Generating ${total} questions across ${categories.length} categories: ${perCatCounts.join(', ')}`);
+
   const body = JSON.stringify({
     model: 'claude-sonnet-4-6',
     max_tokens: 3000,
@@ -350,7 +357,12 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
 
   const text = result.data.content[0].text.trim()
     .replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/```$/, '').trim();
-  return JSON.parse(text);
+  let parsed = JSON.parse(text);
+  if (parsed.length !== total) {
+    console.warn(`[rooms] Claude returned ${parsed.length} questions, expected ${total} — truncating`);
+    parsed = parsed.slice(0, total);
+  }
+  return parsed;
 }
 
 // ─── iTunes enrichment — all lookups in parallel ──────────────
@@ -409,6 +421,10 @@ module.exports = async function handler(req, res) {
         const rawQuestions = await generateQuestions(categories, total, difficulty, customMusicCats, customCatsMeta, avoidSongsFromClient);
         let questions = await enrichWithPreviews(rawQuestions);
         questions = await enrichWithImages(questions);
+        if (questions.length !== total) {
+          console.warn(`[rooms] Question count mismatch — expected ${total}, got ${questions.length}. Truncating.`);
+          questions = questions.slice(0, total);
+        }
         await savePlayedSongs(questions);
         await savePlayedQuestions(questions);
         console.log(`[rooms] Regenerated ${questions.length} questions`);
@@ -425,6 +441,10 @@ module.exports = async function handler(req, res) {
 
       let questions = await enrichWithPreviews(rawQuestions);
       questions = await enrichWithImages(questions);
+      if (questions.length !== total) {
+        console.warn(`[rooms] Question count mismatch — expected ${total}, got ${questions.length}. Truncating.`);
+        questions = questions.slice(0, total);
+      }
       await savePlayedSongs(questions);
       await savePlayedQuestions(questions);
       const musicCount = questions.filter(q => q.preview_url).length;
