@@ -439,12 +439,12 @@ function showSetup() {
   const presetCards = Object.entries(PRESETS).map(([key, p]) => {
     const isSelected = state.preset === key;
     const isFull = key === 'musicmix';
-    const borderColor = isSelected ? '#0ea5e9' : p.isMusic ? '#0284c7' : '#334155';
-    const bg = isSelected ? 'rgba(14,165,233,0.08)' : p.isMusic ? 'rgba(14,165,233,0.08)' : '#1e293b';
-    const nameColor = isSelected ? '#38bdf8' : p.isMusic ? '#38bdf8' : '#e2e8f0';
-    const descColor = isSelected ? '#0ea5e9' : p.isMusic ? '#0284c7' : '#94a3b8';
+    const borderColor = isSelected ? '#0ea5e9' : p.isMusic ? '#6d4aff' : '#334155';
+    const bg = isSelected ? 'rgba(14,165,233,0.08)' : p.isMusic ? 'rgba(109,74,255,0.08)' : '#1e293b';
+    const nameColor = isSelected ? '#38bdf8' : p.isMusic ? '#a78bfa' : '#e2e8f0';
+    const descColor = isSelected ? '#0ea5e9' : p.isMusic ? '#7c6ad0' : '#94a3b8';
     const check = isSelected ? `<div style="width:18px;height:18px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0;">✓</div>` : '';
-    const popularBadge = p.popular ? `<div style="display:inline-block;background:rgba(14,165,233,0.1);color:#38bdf8;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:6px;">Most popular</div>` : '';
+    const popularBadge = p.popular ? `<div style="display:inline-block;background:rgba(109,74,255,0.12);color:#a78bfa;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:6px;">Most popular</div>` : '';
 
     if (isFull) {
       return `
