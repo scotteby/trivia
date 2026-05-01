@@ -81,7 +81,6 @@ let state = {
   selectedAnswer: null,
   audio: null,
   clipTimeout: null,
-  audioKeepAlive: null,
 };
 
 const PLAYER_AUDIO_KEY = 'quizzli-player-audio';
@@ -268,23 +267,6 @@ async function joinGame() {
 // ─── LOBBY SCREEN ─────────────────────────────────────────────────────────────
 function showLobby() {
   state.view = 'lobby';
-
-  if (state.audioKeepAlive) clearInterval(state.audioKeepAlive);
-  state.audioKeepAlive = setInterval(() => {
-    if (state.view !== 'lobby') {
-      clearInterval(state.audioKeepAlive);
-      state.audioKeepAlive = null;
-      return;
-    }
-    try {
-      if (state.audio) {
-        state.audio.src = SILENT_AUDIO;
-        state.audio.volume = 0;
-        state.audio.play().catch(() => {});
-      }
-    } catch(e) {}
-  }, 20000);
-
   const room = state.room;
   setHTML(`
     <div class="fade-in">
@@ -547,7 +529,6 @@ function stopClip() {
   if (state.audio) {
     state.audio.pause();
     state.audio.src = '';
-    state.audio = null;
   }
 }
 
@@ -623,8 +604,6 @@ async function showRoundStarting(roundNum) {
 }
 
 function showIngame() {
-  clearInterval(state.audioKeepAlive);
-  state.audioKeepAlive = null;
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'ingame';
@@ -700,14 +679,7 @@ function showIngame() {
   if (isMusic) {
     const elapsedSinceStart = (Date.now() - new Date(state.room.question_start_time).getTime()) / 1000;
     if (elapsedSinceStart < CLIP_DURATION && playerAudioEnabled()) {
-      if (state.audio) {
-        state.audio.src = SILENT_AUDIO;
-        state.audio.volume = 0;
-        state.audio.play().catch(() => {});
-        setTimeout(() => playClip(q.preview_url), 150);
-      } else {
-        playClip(q.preview_url);
-      }
+      playClip(q.preview_url);
     }
   }
   startPlayerTimer(timerDuration, isMusic);
@@ -917,8 +889,6 @@ async function revealPlayerAnswer(idx, correct, pts) {
 
 // ─── ROUND LEADERBOARD ────────────────────────────────────────────────────────
 async function showRoundLeaderboard(completedRound) {
-  clearInterval(state.audioKeepAlive);
-  state.audioKeepAlive = null;
   clearInterval(state.timerInterval);
   stopClip();
   state.view = 'roundleaderboard';
@@ -969,8 +939,6 @@ async function showRoundLeaderboard(completedRound) {
 
 // ─── RESULTS SCREEN ───────────────────────────────────────────────────────────
 async function showPlayerResults() {
-  clearInterval(state.audioKeepAlive);
-  state.audioKeepAlive = null;
   clearInterval(state.timerInterval);
   stopClip();
   if (state.subscription) state.subscription.unsubscribe();
