@@ -396,6 +396,11 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
+  const dailyPlayedQuestions = await getPlayedQuestions();
+  const dailyAvoidQBlock = dailyPlayedQuestions.length > 0
+    ? `\nDo NOT repeat or closely resemble any of these recently used questions:\n${dailyPlayedQuestions.map(q => `- ${q}`).join('\n')}\n`
+    : '';
+
   try {
     const json = await callAnthropic({
       model: 'claude-sonnet-4-6',
@@ -420,7 +425,7 @@ Use EXACT Wikimedia Commons filenames. For flags: "Flag_of_[Country].svg". For l
 Only use images you are CERTAIN exist on Wikimedia Commons.
 
 For general questions: avoid obvious textbook questions, capitals of countries, and questions that appear on every trivia app. Pick interesting, specific, and unexpected angles on each topic. Seed: ${Math.random().toString(36).slice(2)}
-Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array of exactly 5 questions, no markdown, no extra text.`,
+${dailyAvoidQBlock}Rules: "ans" is the 0-based index of the correct answer. Return ONLY a valid JSON array of exactly 5 questions, no markdown, no extra text.`,
       }],
     });
 
