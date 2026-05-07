@@ -396,7 +396,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
-  const dailyPlayedQuestions = await getPlayedQuestions();
+  const dailyPlayedQuestions = (await getPlayedQuestions()).slice(0, 75);
   const dailyAvoidQBlock = dailyPlayedQuestions.length > 0
     ? `\nDo NOT repeat or closely resemble any of these recently used questions:\n${dailyPlayedQuestions.map(q => `- ${q}`).join('\n')}\n`
     : '';
@@ -404,7 +404,7 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
   try {
     const json = await callAnthropic({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1500,
+      max_tokens: 2000,
       messages: [{
         role: 'user',
         content: `Generate exactly 5 trivia questions for ${DATE_STR}: 3 general, 1 music, and 1 image question, mixed in any order.
