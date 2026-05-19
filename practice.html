@@ -76,6 +76,9 @@ body { background: #0f172a; color: #e2e8f0; font-family: system-ui, -apple-syste
 </head>
 <body>
 <div id="app"><div id="root"></div></div>
+<div id="stickyNext" style="display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,#0f172a 70%,transparent);z-index:100;">
+  <button class="btn-primary" id="stickyNextBtn" onclick="nextQuestion()" style="font-size:16px;padding:14px;"></button>
+</div>
 <script>
 const SUPABASE_URL = 'https://hfyanydnihumfcsgsxzf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmeWFueWRuaWh1bWZjc2dzeHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NDI5MTIsImV4cCI6MjA5MjExODkxMn0.LimVOp7XksHiCSxAA_Bil7ruw8Vm0YRdOvuOQy03Gdc';
@@ -888,11 +891,26 @@ function showFeedback(correct, q, timedOut = false) {
   feedbackEl.innerHTML = `
     <div style="font-size:16px;font-weight:500;color:${statusColor};text-align:center;margin-bottom:8px;">${statusText}</div>
     ${explanationHTML}
-    <button class="btn-primary" onclick="nextQuestion()" style="margin-top:12px;">${nextLabel}</button>
   `;
+
+  // Show sticky Next button
+  const stickyNext = document.getElementById('stickyNext');
+  const stickyNextBtn = document.getElementById('stickyNextBtn');
+  if (stickyNext && stickyNextBtn) {
+    stickyNextBtn.textContent = nextLabel;
+    stickyNext.style.display = 'block';
+    // Add bottom padding so sticky bar doesn't cover content
+    document.getElementById('root').style.paddingBottom = '80px';
+  }
 }
 
 function nextQuestion() {
+  // Hide sticky Next button and remove padding
+  const stickyNext = document.getElementById('stickyNext');
+  if (stickyNext) stickyNext.style.display = 'none';
+  const root = document.getElementById('root');
+  if (root) root.style.paddingBottom = '';
+
   state.currentIdx++;
   if (state.count !== 'endless' && state.currentIdx >= state.questions.length) {
     showResults();
