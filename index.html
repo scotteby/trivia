@@ -135,6 +135,7 @@ let answered = false, results = [], timerInterval = null;
 let audio = null, clipTimeout = null, clipPhaseTimeout = null;
 let todayHS = null;
 let currentView = 'home';
+const SILENT_AUDIO = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
 // ─── HOME SCREEN ─────────────────────────────────────────────────────────────
 async function showHome() {
@@ -277,17 +278,36 @@ function showSoloStart() {
   `);
 }
 
+function unlockAudio() {
+  if (!audio) {
+    audio = new Audio(SILENT_AUDIO);
+    audio.volume = 0;
+    audio.play().catch(() => {});
+  }
+}
+
 function stopClip() {
-  if (audio) { audio.pause(); audio = null; }
+  if (audio) {
+    audio.pause();
+    audio.src = '';
+    // Don't null audio — preserve the unlocked element for reuse
+  }
   clearTimeout(clipTimeout); clearTimeout(clipPhaseTimeout);
   clipTimeout = null; clipPhaseTimeout = null;
 }
 
 function playClip(url) {
+  stopClip();
   try {
-    audio = new Audio(url);
-    audio.volume = 0.85;
-    audio.play().catch(() => {});
+    if (audio) {
+      audio.src = url;
+      audio.volume = 0.85;
+      audio.play().catch(() => {});
+    } else {
+      audio = new Audio(url);
+      audio.volume = 0.85;
+      audio.play().catch(() => {});
+    }
     clipTimeout = setTimeout(() => stopClip(), (CLIP_DURATION + 30) * 1000);
   } catch {}
 }
@@ -520,6 +540,7 @@ function shareResult() {
 }
 
 function startGame() {
+  unlockAudio(); // must be first, before any await — unlocks iOS audio context
   stopClip();
   qi = 0; score = 0; results = []; answered = false;
   beginQuestion();
