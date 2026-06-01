@@ -396,9 +396,15 @@ Rules: "ans" is the 0-based index of the correct answer. Every question must be 
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
-  const dailyPlayedQuestions = (await getPlayedQuestions()).slice(0, 75);
+  const [dailyPlayedQuestions, dailyPlayedSongs] = await Promise.all([
+    getPlayedQuestions().then(r => r.slice(0, 75)),
+    getPlayedSongs(),
+  ]);
   const dailyAvoidQBlock = dailyPlayedQuestions.length > 0
     ? `\nDo NOT repeat or closely resemble any of these recently used questions:\n${dailyPlayedQuestions.map(q => `- ${q}`).join('\n')}\n`
+    : '';
+  const dailyAvoidSongBlock = dailyPlayedSongs.length > 0
+    ? `\nDo NOT use any of these recently played songs:\n${dailyPlayedSongs.map(s => `- ${s}`).join('\n')}\n`
     : '';
 
   try {
@@ -417,7 +423,7 @@ For the music question:
 {"type":"music","artist":"Artist Name","song":"Song Title","q":"Who is this artist?","opts":["A","B","C","D"],"ans":0,"cat":"Music"}
 Alternate "q" randomly between: "Who is this artist?" and "What is this song called?"
 Music constraint (follow strictly): ${getMusicConstraint('music')}
-Session seed (ignore): ${Date.now()}-${Math.random()}
+Session seed (ignore): ${Date.now()}-${Math.random()}${dailyAvoidSongBlock}
 
 For the image question — pick one of: Flags, Landmarks, Art & Paintings, Famous people, or Animals:
 {"type":"image","image_file":"Exact_Wikimedia_Commons_filename.jpg","q":"Which country's flag is this?","opts":["A","B","C","D"],"ans":0,"cat":"Images"}
