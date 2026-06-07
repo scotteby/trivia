@@ -1,0 +1,72 @@
+[
+  {
+    "type": "general",
+    "q": "What technology do modern stadiums use to track exactly where every player is on the field at all times?",
+    "opts": ["GPS watches only", "Computer vision cameras", "Radio signals", "Laser beams"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What is 'Hawk-Eye' technology used for in tennis and cricket?",
+    "opts": ["Watching birds near the stadium", "Tracking the exact path of the ball", "Counting fans in seats", "Finding lost items"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What is VAR in soccer?",
+    "opts": ["A type of running play", "Video Assistant Referee using camera technology", "A player position name", "A type of stadium roof"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What can AI cameras track about a basketball player during a game?",
+    "opts": ["Only their jersey number", "Speed, position, and body movements", "What they are thinking", "Only how tall they are"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What does a 'heat map' show coaches after a game?",
+    "opts": ["The temperature of the field", "Areas where players spent the most time", "The weather forecast", "Player injury locations"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "How quickly can AI systems measure the speed of a baseball after it is pitched?",
+    "opts": ["They cannot — it moves too fast", "About 10 seconds after the pitch", "Almost instantly, within milliseconds", "Only after the game ends"],
+    "ans": 2,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What is 'pose estimation' used for in sports AI?",
+    "opts": ["Taking photos for social media", "Analyzing a player's body position and movement", "Choosing team uniforms", "Scheduling game times"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What can AI crowd analytics help stadium managers understand?",
+    "opts": ["Players' heart rates", "How many fans are in each section", "What food fans are eating", "Which team will win"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "Why do stadiums need many cameras from different angles instead of just one?",
+    "opts": ["To make the broadcast look nicer", "So AI can build an accurate 3D picture of the whole field", "To record every fan individually", "Because one camera breaks often"],
+    "ans": 1,
+    "cat": "AI Vision"
+  },
+  {
+    "type": "general",
+    "q": "What does 'goal-line technology' use to decide if a ball fully crossed the line?",
+    "opts": ["A referee's best guess", "Multiple high-speed cameras and AI", "A sensor chip inside the ball only", "A single camera behind the goal"],
+    "ans": 1,
+    "cat": "AI Vision"
+  }
+]
