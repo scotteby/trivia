@@ -1,72 +1,72 @@
 [
   {
     "type": "general",
-    "q": "What technology do modern stadiums use to track exactly where every player is on the field at all times?",
-    "opts": ["GPS watches only", "Computer vision cameras", "Radio signals", "Laser beams"],
-    "ans": 1,
-    "cat": "AI Vision"
+    "q": "Which team uses facial recognition in their stadium?",
+    "opts": ["Phillies", "Guardians", "Yankees", "Rangers"],
+    "ans": 0,
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What is 'Hawk-Eye' technology used for in tennis and cricket?",
-    "opts": ["Watching birds near the stadium", "Tracking the exact path of the ball", "Counting fans in seats", "Finding lost items"],
+    "q": "True or false: facial recognition is used by every sports team.",
+    "opts": ["True", "False"],
     "ans": 1,
-    "cat": "AI Vision"
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What is VAR in soccer?",
-    "opts": ["A type of running play", "Video Assistant Referee using camera technology", "A player position name", "A type of stadium roof"],
-    "ans": 1,
-    "cat": "AI Vision"
+    "q": "What can facial recognition do to help a team?",
+    "opts": ["Help players recover", "Help teams get better stats", "Get players more things that they want"],
+    "ans": 0,
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What can AI cameras track about a basketball player during a game?",
-    "opts": ["Only their jersey number", "Speed, position, and body movements", "What they are thinking", "Only how tall they are"],
-    "ans": 1,
-    "cat": "AI Vision"
-  },
-  {
-    "type": "general",
-    "q": "What does a 'heat map' show coaches after a game?",
-    "opts": ["The temperature of the field", "Areas where players spent the most time", "The weather forecast", "Player injury locations"],
-    "ans": 1,
-    "cat": "AI Vision"
-  },
-  {
-    "type": "general",
-    "q": "How quickly can AI systems measure the speed of a baseball after it is pitched?",
-    "opts": ["They cannot — it moves too fast", "About 10 seconds after the pitch", "Almost instantly, within milliseconds", "Only after the game ends"],
+    "q": "How is facial recognition technology most heavily utilized regarding stadium security and staff?",
+    "opts": ["Automating payroll tracking for players", "Monitoring player heart rates during high-stress moments", "Authenticating credentialed staff entering restricted areas like locker rooms", "Scoring the performance of referees and officials"],
     "ans": 2,
-    "cat": "AI Vision"
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What is 'pose estimation' used for in sports AI?",
-    "opts": ["Taking photos for social media", "Analyzing a player's body position and movement", "Choosing team uniforms", "Scheduling game times"],
-    "ans": 1,
-    "cat": "AI Vision"
+    "q": "Under what real-world stadium conditions does facial recognition experience the highest drop in accuracy?",
+    "opts": ["Static, evenly lit environments", "Empty stadiums with bright overhead lighting", "Moving crowds with shadows and varying viewing angles", "Indoor press conferences with fixed cameras"],
+    "ans": 2,
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What can AI crowd analytics help stadium managers understand?",
-    "opts": ["Players' heart rates", "How many fans are in each section", "What food fans are eating", "Which team will win"],
-    "ans": 1,
-    "cat": "AI Vision"
+    "q": "What is a primary concern raised by privacy watchdogs regarding biometric data collection at sports venues?",
+    "opts": ["It is completely mandatory for all ticket holders", "It is strictly opt-in for fans who choose to use it", "It is only available to VIPs and suite owners", "It requires a physical fingerprint scan alongside the facial scan"],
+    "ans": 0,
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "Why do stadiums need many cameras from different angles instead of just one?",
-    "opts": ["To make the broadcast look nicer", "So AI can build an accurate 3D picture of the whole field", "To record every fan individually", "Because one camera breaks often"],
-    "ans": 1,
-    "cat": "AI Vision"
+    "q": "Which of the following is NOT a use of facial recognition?",
+    "opts": ["Controlling access to buildings", "Identifying people with criminal backgrounds", "Monitoring changes in a person during medical treatment", "Identifying sports players during games"],
+    "ans": 3,
+    "cat": "Facial Recognition"
   },
   {
     "type": "general",
-    "q": "What does 'goal-line technology' use to decide if a ball fully crossed the line?",
-    "opts": ["A referee's best guess", "Multiple high-speed cameras and AI", "A sensor chip inside the ball only", "A single camera behind the goal"],
+    "q": "How does facial recognition work?",
+    "opts": ["A computer measures the distance of facial features", "A sensor analyzes pheromone levels"],
+    "ans": 0,
+    "cat": "Facial Recognition"
+  },
+  {
+    "type": "general",
+    "q": "Facial recognition is real.",
+    "opts": ["True", "False"],
+    "ans": 0,
+    "cat": "Facial Recognition"
+  },
+  {
+    "type": "general",
+    "q": "We do not have a legal right to privacy in the facial features we show in public.",
+    "opts": ["True", "False"],
     "ans": 1,
-    "cat": "AI Vision"
+    "cat": "Facial Recognition"
   }
 ]
